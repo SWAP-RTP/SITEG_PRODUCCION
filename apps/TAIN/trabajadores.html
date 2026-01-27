@@ -1,0 +1,270 @@
+<?php
+require_once 'middleware.php';
+$user = validarAcceso(); 
+?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Trabajadores</title>
+    <link rel="shortcut icon" href="./img/Logo_RTP.png" type="image/x-icon">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="./lib/Bootstrap-5-5.3.0/css/bootstrap.min.css">
+    <!-- fontawesome -->
+    <link rel="stylesheet" type="text/css" href="./lib/fontawesome/css/all.min.css" />
+    <!-- style general -->
+    <link rel="stylesheet" href="./css/style.css">
+    <!-- ESTILO PERSONALIZADO -->
+    <link rel="stylesheet" href="./css/style_trabajadores.css">
+    <!-- Chart.js -->
+    <script src="./lib/chartjs/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <?php include 'header.html'; ?>
+
+    <main>
+        <div class="container-main">
+
+            <div class="d-flex align-items-center position-relative">
+                <button id="btnregresar" class="btn btn-warning btn-lg position-absolute start-0 ms-3"
+                    onclick="location.href='/app-tain/index.html'">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h3 class="flex-fill text-center mb-4">CONTROL DE AUSENTISMOS</h3>
+            </div>
+
+            <form id="formFiltro" class="needs-validation" novalidate>
+                <div class="filtros-trabajadores mb-4 mt-2">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="año_trabajadores" class="form-label">Año *</label>
+                            <select id="año_trabajadores" class="form-select" required>
+                                <option value="" selected disabled>Seleccione un año</option>
+                                <option value="1"> 2025</option>
+                                <option value="2">2024</option>
+                                <option value="3">2023</option>
+                                <option value="4">2022</option>
+                                <option value="5">2021</option>
+                                <option value="6">2020</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="mes_trabajadores" class="form-label">Mes *</label>
+                            <select id="mes_trabajadores" class="form-select" required>
+                                <option value="" disabled selected>Seleccione un Mes</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="modulo_trabajadores" class="form-label">Módulo *</label>
+                            <select id="modulo_trabajadores" class="form-select" required>
+                                <option value="" disabled selected>Seleccione un Modulo</option>
+                                <option value="1">Oficinas Centrales</option>
+                                <option value="2">Módulo 1</option>
+                                <option value="3">Módulo 2</option>
+                                <option value="4">Módulo 3</option>
+                                <option value="5">Módulo 4</option>
+                                <option value="6">Módulo 5</option>
+                                <option value="7">Módulo 6</option>
+                                <option value="8">Módulo 7</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <button id="btnCargarTrabajadores" class="btn btn-success mt-3 mt-md-0" type="submit"><i
+                                    class="fa-solid fa-filter me-1"></i> Aplicar filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="grid text-center">
+                <div class="card-number card_activos" id="card_trabajadores_activos">
+                    <h4 class="text-white">TRABAJADORES ACTIVOS</h4>
+                    <i class="fa-solid fa-user-plus icont"></i>
+                    <div class="value">1400</div>
+                </div>
+                <div class="card-number card_inactivos" id="card_trabajadores_inactivos">
+                    <h4 class="text-white">TRABAJADORES INACTIVOS</h4>
+                    <i class="fa-solid fa-user-minus icont"></i>
+                    <div class="value">300</div>
+                </div>
+            </div>
+            <div class="grid mt-3 mb-3 desplegable" id="trabajadores-activos" hidden>
+                <div class="card-number2 card_activos" id="card_base_activos">
+                    <h3 class="text-white mb-3">TRABAJADORES BASE</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_activos">
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">OPERADORES</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">MANTENIMIENTO</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-number2 card_activos" id="card_estructura_activos">
+                    <h3 class="text-white mb-3">TRABAJADORES ESTRUCTURA</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_activos">
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">FUNCIONARIOS OFICINA</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">FUNCIONARIOS MODULOS</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-number2 card_activos" id="card_confianza_activos">
+                    <h3 class="text-white mb-3">TRABAJADORES CONFIANZA</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_activos">
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">CONFIANZA OFICINA</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_activos">
+                            <h3 class="text-white mb-3">CONFIANZA MODULOS</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid mt-3 mb-3 desplegable" id="trabajadores-inactivos" hidden>
+                <div class="card-number2 card_inactivos" id="card_base_inactivos">
+                    <h3 class="text-white mb-3">TRABAJADORES BASE</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_inactivos">
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">OPERADORES</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">MANTENIMIENTO</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-number2 card_inactivos" id="card_estructura_inactivos">
+                    <h3 class="text-white mb-3">TRABAJADORES ESTRUCTURA</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_inactivos">
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">FUNCIONARIOS OFICINA</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">FUNCIONARIOS MODULOS</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-number2 card_inactivos" id="card_confianza_inactivos">
+                    <h3 class="text-white mb-3">TRABAJADORES CONFIANZA</h3>
+                    <i class="fa-solid fa-people-group mb-3 icont"></i>
+                    <div class="grid2 card_inactivos">
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">CONFIANZA OFICINA</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                        <div class="card_inactivos">
+                            <h3 class="text-white mb-3">CONFIANZA MODULOS</h3>
+                            <div class="value">3,572</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 justify-content-center" id="contenedor-graficas-cards">
+                <div class="col-md-6 grafica-container" id="container-modulos">
+                    <div class="card-graph">
+                        <h4>GRAFICO POR MODULOS</h4>
+                        <canvas id="grafModulos" class="wide-chart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6 contenedor-modulos">
+                    <div class="card-number mb-1" id="modulo1">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 1</h4>
+                            <div class="value">347</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo2">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 2</h4>
+                            <div class="value">892</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo3">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 3</h4>
+                            <div class="value">156</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo4">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 4</h4>
+                            <div class="value">729</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo5">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 5</h4>
+                            <div class="value">483</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo6">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 6</h4>
+                            <div class="value">615</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="modulo7">
+                        <div class="seccion">
+                            <h4 class="text-white">MODULO 7</h4>
+                            <div class="value">941</div>
+                        </div>
+                    </div>
+                    <div class="card-number mb-1" id="oficinasc">
+                        <div class="seccion">
+                            <h4 class="text-white">OFICINAS.C</h4>
+                            <div class="value">278</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </main>
+    <?php include 'footer.html'; ?>
+    <!-- JS de Bootstrap -->
+    <script src="./lib/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- JS fontawesome -->
+    <script src="./lib/fontawesome/js/all.min.js"></script>
+    <!-- Script -->
+    <script src="script/trabajadores.js"></script>
+</body>
+
+</html>

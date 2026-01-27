@@ -1,0 +1,1 @@
+export { RolFormulario } from './RolFormulario';

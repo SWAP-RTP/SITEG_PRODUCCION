@@ -1,0 +1,124 @@
+* {box-sizing: border-box;}
+
+html, body {
+    height: 100vh;
+    margin: 0;
+    /* padding: 5px; */
+}
+
+ul {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    gap: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+header {
+    background-color: white;
+}
+
+nav {
+    background-color: white;
+}
+
+.navmenuitem:hover {
+    background-color: rgb(196, 192, 192);
+    cursor: pointer;
+
+}
+
+.menu-container {
+    width: 100%;
+  }
+  
+  @media (min-width: 892px) {
+    .menu-container {
+      width: 25%;
+    }
+  }
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    overflow-x: auto;
+    /* height: 100vh;
+    height: -webkit-fill-available; 
+    max-height: 100vh;  
+    overflow-y: hidden; */
+  }
+  
+  main {
+    /* padding: 2rem; */
+    background-color: #f8f9fa;
+    border: lightgray solid 1px;
+    border-radius: .4rem;
+    flex-grow: 1;
+    overflow-x: auto;
+    width: 30vw;
+  }
+  
+  /* ToDo: Pasar clases de etiquetas HTML a reglas de CSS ↓
+  header {
+  
+  }
+  
+  footer {
+  
+  }
+  */
+  
+  
+  /* para los botones del menu nominas*/
+  .btn-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+    background-color: transparent;
+    border: 0;
+    gap: 10px;
+  }
+  
+  .btn-toggle:hover,
+  .btn-toggle:focus {
+    background-color: rgba(89, 92, 91, 0.223);
+  }
+  
+  .btn-toggle[aria-expanded="true"] {
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .btn-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  /* para los botones con opciones desplegables*/
+  .btn-toggle-nav a {
+    display: inline-flex;
+    padding: 0.1875rem 0.5rem;
+    margin-top: 0.125rem;
+    margin-left: 1.25rem;
+    text-decoration: none;
+  }
+  
+  .btn-toggle-nav a:hover,
+  .btn-toggle-nav a:focus {
+    background-color: rgba(0, 97, 87, 0.223);
+    color: #cccccc;
+  }
+  
+  .fw-semibold {
+    font-weight: 600;
+  }

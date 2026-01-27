@@ -1,0 +1,278 @@
+<?php
+require_once 'middleware.php';
+$user = validarAcceso(); 
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="images/Swap_8.jpg" type="image/x-icon">
+
+    <!-- TÍTULO DE LA PÁGINA -->
+    <title>SWAP</title>
+
+    <!-- Fuente -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet"
+        type="text/css" />
+
+    <!-- BOOTSTRAP CSS -->
+    <link href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- CSS -->
+    <!-- Estilos CSS ----------------------------------->
+    <link rel="stylesheet" href="/app-swap/public/css/inicioStyles.css" />
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css" />
+</head>
+
+<body>
+
+    <main>
+        <!-- Encabezado -->
+        <?php include 'encabezado_menu.html'; ?>
+
+        <div style="width: 500px;">
+            <h2 class="text-center">Men&uacute;</h2>
+            <hr>
+        </div>
+        <div class="d-flex animate__animated animate__fadeIn">
+            <!-- Menu Lateral -->
+            <div class="menu-container z-3" style="width: 500px;">
+                <div class="flex-shrink-0 p-3" style="width: 500px; background-color: white;">
+                    <!-- INICIO LISTA DE OPCIONES  -->
+                    <ul class="list-unstyled ps-0">
+                        <li class="border-top my-2"></li>
+
+                        <!-- Bloque estatico ADMIN -->
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#admin1" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    ADMINISTRACION DEL SISTEMA
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="admin1">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">
+                                    <li class="pe-2">
+                                        <a href="modulo_template/index.html"
+                                            class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                            <i class="fa-solid fa-code"></i> Modulo_template
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#admin1" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    ADMINISTRACION DEL SISTEMA
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="admin1">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">
+                                    <li class="pe-2">
+                                        <a href="modulo_template/index.html"
+                                            class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                            <i class="fa-solid fa-code"></i> Modulo_template
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>
+
+                        <!-- BLOQUE PHP DINAMICO -->
+                        <?php
+                    $modulos_menu = array();
+                    $admin  = false;
+                    $dg     = false;
+                    $deaf   = false;
+                    $deom   = false;
+
+                    if (!empty($_SESSION['modulos_direccion'])) {
+
+                        foreach ($_SESSION['modulos_direccion'] as $modulo) {
+
+                            if (empty($modulo->pertenencia)) $admin = true;
+                            if ($modulo->pertenencia == 1)   $dg = true;
+                            if ($modulo->pertenencia == 4)   $deaf = true;
+                            if ($modulo->pertenencia == 3)   $deom = true;
+                            if ($modulo->pertenencia == 6)   $deom = true;
+
+                            $modulos_menu[$modulo->modulo_sistem_descrip] = array(
+                                "pertenencia" => $modulo->pertenencia,
+                                "icono"       => $modulo->icono
+                            );
+                        }
+                    }
+
+                    // ADMIN
+                    if ($admin) {
+                        echo '
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#admin2" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    ADMINISTRACION DEL SISTEMA
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="admin2">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">';
+                        
+                        foreach ($modulos_menu as $nombre => $info) {
+                            if (empty($info["pertenencia"])) {
+                                echo '
+                                <li class="pe-2">
+                                    <a href="modulo_' . $nombre . '/index.php"
+                                       class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                        <i class="' . $info["icono"] . '"></i> ' . $nombre . '
+                                    </a>
+                                </li>';
+                            }
+                        }
+
+                        echo '
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>';
+                    }
+
+                    // DG
+                    if ($dg) {
+                        echo '
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#dg_block" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    DIRECCION GENERAL
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="dg_block">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">';
+                        
+                        foreach ($modulos_menu as $nombre => $info) {
+                            if ($info["pertenencia"] == 1) {
+                                echo '
+                                <li class="pe-2">
+                                    <a href="modulo_' . $nombre . '/index.php"
+                                       class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                        <i class="' . $info["icono"] . '"></i> ' . $nombre . '
+                                    </a>
+                                </li>';
+                            }
+                        }
+
+                        echo '
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>';
+                    }
+
+                    // DEAF
+                    if ($deaf) {
+                        echo '
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#deaf_block" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    DIRECCION DE AF
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="deaf_block">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">';
+                        
+                        foreach ($modulos_menu as $nombre => $info) {
+                            if ($info["pertenencia"] == 4) {
+                                echo '
+                                <li class="pe-2">
+                                    <a href="modulo_' . $nombre . '/index.php"
+                                       class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                        <i class="' . $info["icono"] . '"></i> ' . $nombre . '
+                                    </a>
+                                </li>';
+                            }
+                        }
+
+                        echo '
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>';
+                    }
+
+                    // DEOM
+                    if ($deom) {
+                        echo '
+                        <li class="mb-1">
+                            <button class="btn btn-toggle align-items-center rounded collapsed w-100 p-3"
+                                data-bs-toggle="collapse" data-bs-target="#deom_block" aria-expanded="false">
+                                <div class="d-flex align-items-center flex-grow-1 gap-2 justify-content-center">
+                                    DIRECCION DE OM
+                                </div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </button>
+
+                            <div class="collapse" id="deom_block">
+                                <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">';
+                        
+                        foreach ($modulos_menu as $nombre => $info) {
+                            if ($info["pertenencia"] == 3 || $info["pertenencia"] == 6) {
+                                echo '
+                                <li class="pe-2">
+                                    <a href="modulo_' . $nombre . '/index.php"
+                                       class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                        <i class="' . $info["icono"] . '"></i> ' . $nombre . '
+                                    </a>
+                                </li>';
+                            }
+                        }
+
+                        echo '
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="border-top my-2"></li>';
+                    }
+                    ?>
+
+                    </ul>
+                </div>
+            </div>
+            <!-- Imagen de Fondo --------------------------------------------------------------------------->
+            <div class="d-flex flex-column align-items-center h-auto animate__animated animate__fadeIn"
+                style="width:100%;">
+                <h1 class="text-center">Bienvenido</h1>
+                <img src="images/logoRTPMI.png" alt="RTP" width="1000" height="540" class="opacity-50">
+            </div>
+        </div>
+        <?php
+      include 'pie_menu.html';
+    ?>
+    </main>
+
+    <!-- Scripts JS de Bootstrap  --------------------------------------->
+    <script src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <!-- Scripts JS JQuery  --------------------------------------->
+    <script src="/app-swap/public/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+    <!-- JS -->
+    <script type="text/javascript" src="/app-swap/public/fontawesome/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="../js/auth_name.js"></script>
+</body>
+
+</html>

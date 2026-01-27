@@ -1,0 +1,78 @@
+<?php
+require_once __DIR__ . '/../middleware.php';
+$user = validarAcceso(); 
+?>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/app-swap/images/Swap_8.jpg" type="image/x-icon">
+    <!-- TÍTULO DE LA PÁGINA -->
+    <title>Documento</title>
+    <!-- Fuente -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900"/>
+    <!-- Iconos -->
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css"/>
+    <!-- BOOTSTRAP CSS -->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css"/>
+    <!-- DataTable -->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/DataTables-2.0.1/css/dataTables.bootstrap5.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/Buttons-3.0.0/css/buttons.bootstrap5.min.css"/>
+
+    <!-- CSS del Menu, encabezado, main y Titulos (template)-->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/css/custom_rtp.css"/>
+  </head>
+  <body>
+    <?php 
+        include 'encabezado.html'; 
+    ?>
+    <?php 
+        include 'menu.html'; 
+    ?>
+    <main>
+      <h4 class="text-center">
+        Aqui va lo que va a hacer el sistema (APARTADO 1)
+      </h4>
+      <!-- aqui va el codigo -->
+      <div class="panel-body table-responsive">
+        <table id="tabla" class="table table-striped table-bordered table-condensed table-hover w-100">
+          <thead>
+            <tr>
+              <th class="text-center">Credencial</th>
+              <th class="text-center">Nombre del trabajador</th>
+              <th class="text-center">Fecha de ingreso</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </main>
+    <!-- PIE -->
+    <?php 
+        include 'pie.html'; 
+    ?>
+    <!-- jquery -->
+    <script type="text/javascript" src="/app-swap/public/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+    <!-- BOOTSTRAP JS  -->
+    <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script type="text/javascript" src="/app-swap/public/JSZip-3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/DataTables-2.0.1/js/dataTables.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/DataTables-2.0.1/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/Buttons-3.0.0/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/Buttons-3.0.0/js/buttons.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/Buttons-3.0.0/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/Buttons-3.0.0/js/buttons.html5.min.js"></script>
+    <!-- FONTAWESOME -->
+    <script type="text/javascript" src="/app-swap/public/fontawesome/js/all.min.js"></script>
+    <!-- alertas -->
+    <script type="text/javascript" src="/app-swap/public/sweetalert2/sweetalert2.all.min.js"></script>
+    <!-- js del menu lateral -->
+    <script type="text/javascript" src="/app-swap/public/js/menu.js"></script>
+    <!-- js del sistema -->
+    <script type="text/javascript" src="scripts/nombre_del_js.js"></script>
+  </body>
+</html>

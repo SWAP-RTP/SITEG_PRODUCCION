@@ -1,0 +1,47 @@
+# =========================
+# ENV & SECRETOS
+# =========================
+.env
+.env.*
+
+# JWT
+jwt.key
+jwt.key.pub
+/config/jwt/
+
+# =========================
+# DEPENDENCIAS
+# =========================
+vendor/
+node_modules/
+
+# =========================
+# DOCKER DATA
+# =========================
+docker-data/
+mysql-data/
+postgres-data/
+pgdata/
+data/
+
+# =========================
+# LOGS & CACHE
+# =========================
+logs/
+*.log
+tmp/
+cache/
+
+# =========================
+# BUILD
+# =========================
+dist/
+build/
+
+# =========================
+# IDE & SISTEMA
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

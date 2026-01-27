@@ -1,0 +1,75 @@
+.card1 {
+  width: 95vw; /* Ocupa todo el ancho de la ventana */
+  max-width: 100vw; /* No se limita */
+  margin-left: 1vw; /* Opcional: para compensar el padding del body/main si lo hay */
+  background: transparent;
+  border-radius: 0;
+}
+.card-header,
+.card-body {
+  width: 100%;
+}
+
+.card1.nav-link {
+  color: white;
+  background-color: #132c46 !important;
+}
+
+.card1 .card-body {
+  color: white;
+  background-color: #132c46 !important;
+}
+
+.nav-tabs {
+  width: 100%;
+  border-bottom: none !important;
+}
+/* Sobrescribe los estilos oscuros para la pestaña activa */
+.nav-tabs .nav-link.active {
+  background-color: #132c46 !important;
+  color: white !important;
+  border-color: #132c46;
+}
+
+/* Estilo para las pestañas inactivas si las quieres más claras */
+.nav-tabs .nav-link {
+  color: #ffffff;
+  border-color: #132c46;
+  background: rgb(14, 26, 43);
+}
+
+.card-body {
+  background-color: #132c46 !important;
+}
+/* estilo card carpeta */
+.grid {
+  color: white;
+  display: grid;
+  /* grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); */
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas fijas */
+  gap: 25px;
+}
+/* Pantallas medianas (tablets, laptops pequeños) */
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 por fila */
+  }
+}
+/* Tablets verticales o pantallas pequeñas */
+@media (max-width: 992px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 por fila */
+  }
+}
+/* Celulares */
+@media (max-width: 576px) {
+  .grid {
+    grid-template-columns: 1fr; /* 1 por fila */
+  }
+}
+
+/* contenido */
+.titulo {
+  margin: 0 auto;
+  margin-top: -15px;
+}

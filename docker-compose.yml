@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app_login:
+    build: .
+    environment:
+      - JWT_SECRET=CLAVE_SUPER_SECRETA_PARA_SITEG_LARGA_2026_MUY_SEGURA
+    container_name: app_login
+    volumes:
+      - ./apps/login:/var/www/html
+    networks:
+      - internal-network
+
+  app_swap:
+    build: .
+    environment:
+      - JWT_SECRET=CLAVE_SUPER_SECRETA_PARA_SITEG_LARGA_2026_MUY_SEGURA
+    container_name: app_swap
+    volumes:
+      - ./apps/SWAP:/var/www/html
+    networks:
+      - internal-network
+
+  app_tain:
+    build: .
+    environment:
+      - JWT_SECRET=CLAVE_SUPER_SECRETA_PARA_SITEG_LARGA_2026_MUY_SEGURA
+    container_name: app_tain
+    volumes:
+      - ./apps/TAIN:/var/www/html
+    networks:
+      - internal-network
+
+  # Nginx como puerta de entrada (Puerto 8086)
+  # SITEG ES LA IMAGEN DEL SISTEMA INSTEGRADO (DIRECCIONA EL TRAFICO)
+  gateway:
+    image: nginx:alpine
+    container_name: SITEG
+    ports:
+      - "8086:80"
+    volumes:
+      - ./apps/login/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app_login
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge

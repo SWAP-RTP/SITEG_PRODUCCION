@@ -1,0 +1,1 @@
+export { useEditarRolPorPeriodo } from './useEditarRol';
