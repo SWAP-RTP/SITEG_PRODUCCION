@@ -33,35 +33,38 @@ $user = validarAcceso();
 
     <main class="container-fluid p-0">
         <div>
-            <div>
-                <h3 class="text-white text-center titulo">Administracion </h3>
-            </div>
-            <div class="card card1 text-center border-0">
-                <div class="card-header">
 
-                    <ul class="nav nav-tabs card-header-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'usuarios' ? 'active' : ''); ?>"
-                                href="?tab=usuarios">
-                                Usuarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'modulos' ? 'active' : ''); ?>"
-                                href="?tab=modulos">
-                                Modulos del Sistema
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'permisos' ? 'active' : ''); ?>"
-                                href="?tab=permisos">
-                                Permisos
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body">
-                    <?php
+
+
+            <h3 class="text-white text-center titulo">Cambios git V2</h3>
+
+        </div>
+        <div class="card card1 text-center border-0">
+            <div class="card-header">
+
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'usuarios' ? 'active' : ''); ?>"
+                            href="?tab=usuarios">
+                            Usuarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'modulos' ? 'active' : ''); ?>"
+                            href="?tab=modulos">
+                            Modulos del Sistema
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo (($_GET['tab'] ?? 'datos') == 'permisos' ? 'active' : ''); ?>"
+                            href="?tab=permisos">
+                            Permisos
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <?php
                     $tab = $_GET['tab'] ?? 'datos';
 
                     if ($tab == 'usuarios') {
@@ -72,8 +75,8 @@ $user = validarAcceso();
                         include 'permisos.html';
                     }
                 ?>
-                </div>
             </div>
+        </div>
         </div>
     </main>
 
