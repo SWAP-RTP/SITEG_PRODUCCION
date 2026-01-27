@@ -15,7 +15,7 @@
                 aria-labelledby="offcanvasNavbarLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
-                        <i class="fa-solid fa-user"></i> Nombre del usuario
+                        <i class="fa-solid fa-user"></i> <span class="nombre-usuario">Nombre del usuario</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
@@ -30,7 +30,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="./admin/index.html">
+                            <a class="nav-link active" aria-current="page" href="/admin/index.html">
                                 <i class="bi bi-house-gear-fill"></i> Admin
                             </a>
                         </li>
@@ -46,3 +46,6 @@
         </div>
     </nav>
 </header>
+
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+<script src="../js/auth_name.js"></script>
