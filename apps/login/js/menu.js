@@ -48,4 +48,3 @@ document.addEventListener("DOMContentLoaded", function () {
   acceso();
   animacion_cards();
 });
-
