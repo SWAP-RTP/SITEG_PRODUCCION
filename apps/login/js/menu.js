@@ -6,7 +6,7 @@ function acceso() {
   // Función de manejo genérica
   const handleButtonClick = (appPath) => {
     // Redirige al puerto EXTERNO (8086), que es el proxy Nginx
-    const appUrl = "http://localhost:8086/" + appPath + "/";
+    const appUrl = "http://localhost:8006/" + appPath + "/";
     window.open(appUrl, "_blank");
   };
 
