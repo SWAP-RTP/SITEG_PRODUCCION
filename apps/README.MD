@@ -26,3 +26,4 @@ Para obtener el nombre del usuario desde el frontend:
 
 - Esta función se encarga de leer el token y extraer el nombre del usuario para su uso en la interfaz.
 
+
