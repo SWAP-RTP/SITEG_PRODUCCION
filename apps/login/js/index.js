@@ -11,6 +11,17 @@ window.mostrarPassword = function () {
   }
 };
 
+// EVITA QUE AL ESTAR LOGUEADO  MUESTRE EL LOGIN Y SE BLOQUEE SOLO EN LA PANTALLA DEL MENU 
+window.addEventListener('pageshow', function (event) {
+  if (document.cookie.includes('access_token')) {
+    window.location.replace('menu.html');
+  }
+});
+
+if (document.cookie.includes('access_token')) {
+  window.location.replace('menu.html')
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const loader = document.querySelector(".contenedor_carga");
