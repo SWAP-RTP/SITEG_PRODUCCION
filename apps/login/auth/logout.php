@@ -8,4 +8,3 @@ setcookie("access_token", "", [
 
 header("Location: http://10.10.30.28:8086/");
 exit();
-
