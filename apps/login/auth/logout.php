@@ -6,6 +6,6 @@ setcookie("access_token", "", [
     'samesite' => 'Lax'
 ]);
 
-header("Location: http://localhost:8086/");
+header("Location: http://localhost:808/");
 exit();
 
