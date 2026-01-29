@@ -47,10 +47,4 @@ build/
 .DS_Store
 Thumbs.db
 
-<<<<<<< HEAD
-=======
-
 # archivo de rutas para produccion
-apps/login/js/menu.js
-apps/login/auth/logout.php
->>>>>>> 28589608ae8110c2cf60e8816f46085cc7e09fc2
