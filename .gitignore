@@ -48,4 +48,5 @@ build/
 Thumbs.db
 
 # archivo de rutas para produccion
-
+apps/login/js/menu.js
+apps/login/auth/logout.php
