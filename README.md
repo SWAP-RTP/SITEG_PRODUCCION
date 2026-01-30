@@ -3,10 +3,15 @@
 3. Una vez que clones tu repositorio debes construir y levantar tu contenedor, con el comando docker compose up --build, y una ves que este levantado en cada carpeta (login,SWAP,TAIN) debes ejecutar los siguientes comandos para instalar la libreria de firebase
 
 # Para el sistema de Login
+
 docker exec -it app_login composer require firebase/php-jwt
+
 # Para el sistema TAIN
+
 docker exec -it app_tain composer require firebase/php-jwt
+
 # Para el sistema SWAP
+
 docker exec -it app_swap composer require firebase/php-jwt
 
 docker exec -it app_login composer require firebase/php-jwt
@@ -27,3 +32,5 @@ Esto para que el token se pueda usar
 git add remote <repositorio produccion>
 
 git push produccion main
+
+#despues de esto----
