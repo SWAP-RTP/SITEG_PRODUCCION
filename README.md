@@ -12,7 +12,12 @@ docker exec -it app_swap composer require firebase/php-jwt
 #Esto para que el token se pueda usar 
 
 4. Estos comandos funcionan para que git no cargue menu.js y auth.php para no tener conflicto con las rutas de local host y el servidor real 
+#ignoran los archivos
 git update-index --assume-unchanged apps/login/js/menu.js
 git update-index --assume-unchanged apps/login/auth/logout.php
 
 
+conectar el repo, ese token puede variar
+git remote add produccion https://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@github.com/SWAP-RTP/SITEG_PRODUCCION.git
+#para mandar a proudccion
+git push prodccion main
