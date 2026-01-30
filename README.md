@@ -8,8 +8,11 @@ docker exec -it app_login composer require firebase/php-jwt
 docker exec -it app_tain composer require firebase/php-jwt
 # Para el sistema SWAP
 docker exec -it app_swap composer require firebase/php-jwt
-Esto para que el token se pueda usar 
+
+#Esto para que el token se pueda usar 
 
 4. Estos comandos funcionan para que git no cargue menu.js y auth.php para no tener conflicto con las rutas de local host y el servidor real 
 git update-index --assume-unchanged apps/login/js/menu.js
 git update-index --assume-unchanged apps/login/auth/logout.php
+
+
