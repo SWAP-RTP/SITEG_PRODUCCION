@@ -1,36 +1,87 @@
-1. Al hacer el git clone es importante que el archivo menu.js dentro de la carpeta de login , se cambie la ruta a: http://localhost:8086/, y en el archivo .gitignore agregar la ruta del menu , para que el archivo js no afecte al menu.js de produccion cuando se haga un push y se haga un merge de la tu rama con el main.
-2. En el archivo logout.php ubicado en la carpeta auth dentro de login , igual cambiar la ruta y apuntar a la misma direccion: http://localhost:8086/ para que todo se mantenga de manera local y no redirija a el servidor de produccion , y de igual manera agregar al .gitignore para que al hacer un push no haya conflicto de rutas.
-3. Una vez que clones tu repositorio debes construir y levantar tu contenedor, con el comando docker compose up --build, y una ves que este levantado en cada carpeta (login,SWAP,TAIN) debes ejecutar los siguientes comandos para instalar la libreria de firebase
+# SITEG Desarrollo – Guía de Configuración Local
 
-# Para el sistema de Login
+Este repositorio contiene los sistemas **Login**, **TAIN** y **SWAP**.  
+Sigue estos pasos para configurar tu entorno de desarrollo local **sin afectar el servidor de producción**.
 
-docker exec -it app_login composer require firebase/php-jwt
+Ten en cuenta que deberas tener instalado docker desktop para poder levantar este proyecto.
+Ademas de tener conocimientos en Git y Github
 
-# Para el sistema TAIN
+---
 
-docker exec -it app_tain composer require firebase/php-jwt
+## 1. Configuración de Rutas Locales
 
-# Para el sistema SWAP
+Antes de levantar los servicios, ajusta las rutas para que apunten a tu entorno local (`http://localhost:8086/`).
 
-docker exec -it app_swap composer require firebase/php-jwt
+**Ajustes Manuales:**
 
-docker exec -it app_login composer require firebase/php-jwt
+- **Archivo:** `apps/login/js/menu.js`  
+  Cambia la URL base a `http://localhost:8086/`.
 
-# Para el sistema TAIN
+- **Archivo:** `apps/login/auth/logout.php`  
+  Cambia la redirección a `http://localhost:8086/`.
 
-docker exec -it app_tain composer require firebase/php-jwt
+**Ignorar cambios de rutas en Git:**
 
-# Para el sistema SWAP
+Para evitar que estas rutas locales se suban por error al servidor de producción, ejecuta en tu terminal:
 
-docker exec -it app_swap composer require firebase/php-jwt
-Esto para que el token se pueda usar
+```bash
+git update-index --assume-unchanged apps/login/js/menu.js
+git update-index --assume-unchanged apps/login/auth/logout.php
+```
 
-4. Estos comandos funcionan para que git no cargue menu.js y auth.php para no tener conflicto con las rutas de local host y el servidor real
-   git update-index --assume-unchanged apps/login/js/menu.js
-   git update-index --assume-unchanged apps/login/auth/logout.php
+---
 
-git add remote <repositorio produccion>
+## 2. Despliegue con Docker
 
-git push produccion main
+Una vez clonado el repositorio y ajustadas las rutas, construye y levanta los contenedores:
 
-#despues de esto-----
+```bash
+docker compose up --build -d
+```
+
+---
+
+## 3. Instalación de Dependencias (Firebase JWT)
+
+Para que el sistema de autenticación por tokens funcione correctamente, instala la librería `firebase/php-jwt` dentro de cada contenedor.
+
+**Comandos por módulo:**
+
+- **Sistema de Login**
+
+  ```bash
+  docker exec -it app_login composer require firebase/php-jwt
+  ```
+
+- **Sistema TAIN**
+
+  ```bash
+  docker exec -it app_tain composer require firebase/php-jwt
+  ```
+
+- **Sistema SWAP**
+  ```bash
+  docker exec -it app_swap composer require firebase/php-jwt
+  ```
+
+---
+
+## 4. Flujo de Trabajo con Git
+
+Si necesitas enviar tus cambios a producción después de trabajar en tu rama:
+
+1. Realiza el merge de tu rama con `main`.
+2. Agrega el remoto de producción (si no está configurado).
+3. Sube los cambios:
+
+   ```bash
+   git push produccion main
+   ```
+
+---
+
+## Notas Adicionales
+
+- **Importante:**  
+  No incluyas `menu.js` o `logout.php` en el `.gitignore` si ya existen en el repositorio, ya que eso causaría que desaparezcan del servidor en el próximo despliegue.  
+  El comando `git update-index --assume-unchanged` es la forma correcta de manejar esto.
