@@ -1,7 +1,35 @@
+<div class="d-flex justify-content-center align-items-start flex-row gap-5 mb-5 mt-4 text-white">
+    <div class="d-flex align-items-center gap-2">
+        <span>Credencial:</span>
+        <input type="text" class="form-control">
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <span>Nombre:</span>
+        <input type="text" class="form-control">
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span>Correo:</span>
+        <input type="text" class="form-control" value="@rtp.gob.mx">
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span>Contraseña:</span>
+        <input type="password" class="form-control">
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span>Modulo:</span>
+        <select name="select_modulos" id="select_modulos" class="form-select">
+        </select>
+    </div>
+
+    <div>
+        <button class="btn btn-color btn-md">Buscar</button>
+    </div>
+</div>
+<hr>
 <div class="row mt-5 mb-4 justify-content-end align-content-center d-flex" id="tabla_correctivo">
     <div style="overflow-x:auto; width:100%;">
-        <table id="tabla_orden_alta" class="table table-striped-columns align-content-center mb-0"
-            style="min-width:800px;">
+        <table id="tabla_orden_alta" style="width:100%; min-width:800px;">
             <thead>
                 <tr>
                     <!-- Tus columnas aquí -->

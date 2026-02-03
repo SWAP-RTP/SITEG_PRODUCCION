@@ -1,10 +1,9 @@
 <?php
-$host = "10.10.31.207";
-$port = 5435;
-$dbname = "sugo-pruebas";
-$user = "desarrollo";
-$password = "desarrollo1";
-
+$host = "192.168.1.65";
+$port = 5439;
+$dbname = "siteg";
+$user = "siteg";
+$password = "siteg";
 header('Content-Type: application/json');
 
 function getUsuarios($host, $port, $dbname, $user, $password)
