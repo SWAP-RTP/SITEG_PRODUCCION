@@ -2,11 +2,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 
-$host = "10.10.31.207";
-$port = 5435;
-$dbname = "sugo-pruebas";
-$user = "desarrollo";
-$password = "desarrollo1";
+require "../conf/conexion.php";
 
 try {
     //CREAMOS LA CONEXION A LA BASE DE DATOS CON LAS CREDENCIALES DEFINIDAS ARRIBA

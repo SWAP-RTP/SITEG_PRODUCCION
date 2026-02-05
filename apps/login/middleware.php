@@ -24,7 +24,7 @@ function validarAcceso()
 
     if (!$jwt) {
         // Redirección al puerto 8086 del Login
-        header("Location: http://10.10.30.28:8086/index.html?error=necesitas_loguearte");
+        header("Location: http://localhost:8086/index.html?error=necesitas_loguearte");
         exit;
     }
 
