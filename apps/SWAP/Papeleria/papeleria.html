@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="/app-swap/images/Swap_8.jpg" type="image/x-icon">
     <!-- TÍTULO DE LA PÁGINA -->
-    <title>Documento</title>
+    <title>Entrada de materiales</title>
     <!-- Iconos -->
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css" />
@@ -29,29 +29,30 @@
 <!--INICIA MAIN-->
 
 <main>
-<h1 class="titulo1 mt-12 fw-bold text-center">Entrada de materiales</h1>
+<h1 class="titulo1 mt-12 fw-bold text-center" style="text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: #000;">Entrada de materiales</h1>
 
 <div class="row">
   <div class="col-12 mx-auto" style="max-width:640px;">
     <div class="bg-white rounded-3 p-4 shadow-sm">
-      <form class="mt-0">
+      <!--inicia formulario-->
+      <form class="mt-12">
         <div class="mb-3">
           <label for="material" class="form-label"><b>Material:</b></label>
           <input id="material" name="material" type="text" class="form-control" placeholder="Nombre del material">
         </div>
 
         <div class="row g-3">
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-">
             <label for="cantidad" class="form-label"><b>Cantidad:</b></label>
             <input id="cantidad" name="cantidad" type="number" min="1" class="form-control" placeholder="0">
           </div>
 
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <label for="credencial" class="form-label"><b>Credencial:</b></label>
             <input id="credencial" name="credencial" type="text" class="form-control" placeholder="Usuario o ID">
           </div>
 
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <label for="area" class="form-label"><b>Área:</b></label>
             <select id="area" name="area" class="form-select">
               <option value="">Selecciona...</option>
@@ -65,6 +66,7 @@
         <div class="d-flex justify-content-end mt-4">
           <button type="submit" class="btn btn-primary">Agregar</button>
         </div>
+        <!--Termina formulario-->
       </form>
     </div>
   </div>
@@ -85,6 +87,8 @@
     <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
     <!-- js del menu lateral -->
     <script type="text/javascript" src="/app-swap/public/js/menu.js"></script>
+
+    <script type="text/javascript" src ="scripts/entrada_materiales.js"></script>
 
 
 
