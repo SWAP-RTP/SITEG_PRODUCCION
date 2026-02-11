@@ -39,7 +39,7 @@ function dataTable(datosTabla, id_tabla, columns) {
   dataTable(datos, "#tabla_orden_alta", [
     { data: "id", title: "id" },
     { data: "nombre", title: "nombre" },
-    { data: "credencial", title: "credencial" },
+    { data: "trab_credencial", title: "trab_credencial" },
     { data: "correo", title: "correo" },
     { data: "contrasena", title: "contrasena" },
     {
