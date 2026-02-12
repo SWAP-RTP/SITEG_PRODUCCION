@@ -1,0 +1,42 @@
+:root {
+  --rtp-green: #165a2a;
+  --rtp-green-light: #5bb836;
+  --rtp-ink: #0f2915;
+  --rtp-soft: #d4f0dc;
+}
+
+main {
+  padding: 40px 16px 64px;
+}
+
+.titulo1 {
+  margin: 0 auto;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: clamp(28px, 3.2vw, 44px);
+  letter-spacing: .12em;
+  color: var(--rtp-ink);
+}
+
+.titulo2 {
+  margin: 0;
+  color: #2d4a2f;
+  font-size: 16px;
+}
+
+.logo_rtp {
+  margin: 24px auto 0;
+  max-width: 980px;
+  padding: 32px;
+  border: 2px solid #4a9d5f;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #c8ead4 0%, #a8d9b8 55%, #d4f0dc 100%);
+  box-shadow: 0 18px 40px rgba(22, 90, 42, 0.25);
+}
+
+.logo_rtp img {
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 12px 22px rgba(22, 90, 42, 0.25));
+}
