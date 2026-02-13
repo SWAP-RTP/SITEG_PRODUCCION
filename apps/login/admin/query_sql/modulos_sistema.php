@@ -8,8 +8,8 @@ function getModulos_sistema($host, $port, $dbname, $user, $password)
         echo json_encode(["error" => "Error de conexión a la base de datos"]);
         exit;
     }
-    $sql = "SELECT * FROM sistemas_siteg order BY estatus desc;";
-    $resultado = pg_query($conexion, $sql);
+    $sql = "SELECT * FROM modulo_sistem";
+    $resultado = @pg_query($conexion, $sql);
 
 
     if (!$resultado) {
