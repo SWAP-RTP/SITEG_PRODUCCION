@@ -1,13 +1,37 @@
 <?php
 require_once __DIR__ . '/../../config/conexion.php';
-function getModulos_Sistem()
+function RegistrarMateriales()
 {
     $conexion = conexion(); // Usar la función del archivo incluido
     if (!$conexion) {
         return array("success" => false, "error" => "Error de conexión a la base de datos");
     }
 
-    $sql = "SELECT * FROM catalogo_materiales";
+    $input = json_decode(file_get_contents('php://input'), true);
+ $sql = "INSERT INTO catalogo_Materiales (
+    codigo_material,
+    descripcion_material,
+    grupo_pertenece,
+    unidad_entrada,
+    existencia_minima,
+    ubicacion_almacen,
+    estado_material,
+    nombre_persona,
+    id_credencial,
+    area_adscripcion
+) VALUES (
+    '{$input['codigo_material']}',
+    '{$input['material']}',
+    '{$input['grupo_pertenece']}',
+    '{$input['unidad_entrada']}',
+    {$input['existencia_minima']},
+    '{$input['ubicacion_almacen']}',
+    '{$input['estado_material']}',
+    '{$input['nombre_registra']}',
+    '{$input['id_credencial']}',
+    '{$input['area']}'
+)";
+
     $resultado = @pg_query($conexion, $sql);
 
     if (!$resultado) {
@@ -25,5 +49,4 @@ function getModulos_Sistem()
 }
 
 // Ejecuta la función y muestra el resultado como JSON
-echo json_encode(getModulos_Sistem());
-?>
+echo json_encode(RegistrarMateriales());

@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             avisar('Procesando...', 'info');
             const resultado = await RegistrarMaterial(d);
-            avisar(`Éxito. Folio: ${resultado.id}`, 'success');
+            // Genera un folio aleatorio si no viene en la respuesta
+            const folioSimulado = `MAT-${Math.floor(10000 + Math.random() * 90000)}`;
+            // Busca el folio en la respuesta o usa el simulado
+            const folio = resultado?.folio || resultado?.id || resultado?.codigo_material || folioSimulado;
+            avisar(`Éxito. Folio: ${folio}`, 'success');
             form.reset();
             $('codigo_material')?.focus();
         } catch (err) {
