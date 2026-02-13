@@ -1,40 +1,47 @@
-const RegistrarDatos = async (datos) => {
-    const respuesta = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
+const RegistrarMaterial = async (datos) => {
+    const res = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
     });
-    if (!respuesta.ok) throw new Error('Fallo en la conexion con la API');
-    return await respuesta.json();
+    if (!res.ok) throw new Error('Error en servidor');
+    return await res.json();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
-    if (!form) return;
-
     const $ = (id) => document.getElementById(id);
-    const msg = Object.assign(document.createElement('div'));
-    form.prepend(msg);
+    // Crea el contenedor de mensajes arriba del formulario
+    const msg = form.parentElement.insertBefore(document.createElement('div'), form);
 
-    const mostrar = (html) => msg.innerHTML = html;
-    const validar = (campo, condicion, texto) => condicion || (mostrar(`<div class="alert alert-warning">${texto}</div>`), $(campo)?.focus(), false);
-    
     form.onsubmit = async (e) => {
         e.preventDefault();
         const d = Object.fromEntries(new FormData(form));
-        d.accion = $('accion')?.value || '';
+        const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls}">${txt}</div>`;
 
-        if (!validar('material', d.material?.trim(), 'El campo Material es obligatorio') || !validar('cantidad', d.cantidad > 0, 'La Cantidad debe ser mayor a 0') || !validar('credencial', d.credencial?.trim(), 'La Credencial es obligatoria') || !validar('area', d.area && d.area !== 'Selecciona...', 'Debe seleccionar un Área'))
+        // Reglas de validación
+        const reglas = [
+            { id: 'codigo_material', ok: d.codigo_material?.trim(), msg: 'Código obligatorio' },
+            { id: 'material',        ok: d.material?.trim(),        msg: 'Nombre obligatorio' },
+            { id: 'nombre_registra', ok: d.nombre_registra?.trim(), msg: 'Nombre del responsable obligatorio' },
+            { id: 'area',            ok: d.area !== '',             msg: 'Seleccione un área' }
+        ];
+
+        const error = reglas.find(r => !r.ok);
+        if (error) {
+            avisar(error.msg, 'warning');
+            $(error.id)?.focus();
             return;
+        }
 
         try {
-            mostrar('<div class="alert alert-info">Procesando...</div>');
-            const res = await RegistrarDatos(d);
-            mostrar(`<div class="alert alert-success"> Registrado con exito (Folio: ${res.id})</div>`);
+            avisar('Procesando...', 'info');
+            const resultado = await RegistrarMaterial(d);
+            avisar(`Éxito. Folio: ${resultado.id}`, 'success');
             form.reset();
-            $('material')?.focus();
-        } catch (error) {
-            mostrar(`<div class="alert alert-danger">Error: ${error.message}</div>`);
+            $('codigo_material')?.focus();
+        } catch (err) {
+            avisar(err.message, 'danger');
         }
     };
 });
