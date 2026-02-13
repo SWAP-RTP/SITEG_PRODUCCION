@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../../login/conf/conexion.php';
+require_once __DIR__ . '../../../../login/conf/conexion.php';
 
 function getModulos_Sistem($host, $port, $dbname, $user, $password)
 {
@@ -7,6 +7,7 @@ function getModulos_Sistem($host, $port, $dbname, $user, $password)
     if (!$conexion) {
         return array("success" => false, "error" => "Error de conexión a la base de datos");
     }
+
 
     $sql = "SELECT * FROM materiales_registrados";
     $resultado = pg_query($conexion, $sql);
