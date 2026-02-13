@@ -43,66 +43,106 @@
         </div>
 
         <!--inicia formulario-->
-        <form class="mt-12">
-          <div class="mb-3">
-            <label for="material" class="form-label"><b>Material:</b></label>
-            <input id="material" name="material" type="text" class="form-control" placeholder="Nombre del material">
-          </div>
+       <form class="mt-12">
+  <div class="row g-3">
+    
+    <div class="col-12 col-md-4">
+      <label for="codigo_material" class="form-label"><b>Código del Material:</b></label>
+      <input id="codigo_material" name="codigo_material" type="text" class="form-control" placeholder="Ej: MAT-001">
+    </div>
 
-          <div class="row g-3">
-            <div class="col-12 col-md-">
-              <label for="cantidad" class="form-label"><b>Cantidad:</b></label>
-              <input id="cantidad" name="cantidad" type="number" min="1" class="form-control" placeholder="0">
-            </div>
+    <div class="col-12 col-md-8">
+      <label for="material" class="form-label"><b>Nombre del Material:</b></label>
+      <input id="material" name="material" type="text" class="form-control" placeholder="Nombre corto">
+    </div>
 
-            <div class="col-12 col-md-6">
-              <label for="credencial" class="form-label"><b>Credencial:</b></label>
-              <input id="credencial" name="credencial" type="text" class="form-control" placeholder="Usuario o ID">
-            </div>
+    <div class="col-12">
+      <label for="descripcion_material" class="form-label"><b>Descripción Detallada:</b></label>
+      <textarea id="descripcion_material" name="descripcion_material" class="form-control" rows="2" placeholder="Características específicas..."></textarea>
+    </div>
 
-            <div class="col-12 col-md-6">
-              <label for="fecha_registro" class="form-label"><b>Fecha de registro:</b></label>
-              <input id="fecha_registro" name="fecha_registro" type="date" class="form-control">
-            </div>
+    <div class="col-12 col-md-4">
+      <label for="familia_material" class="form-label"><b>Categoría / Familia:</b></label>
+      <select id="familia_material" name="familia_material" class="form-select">
+        <option value="">Selecciona...</option>
+        <option value="papeleria">Papelería</option>
+        <option value="limpieza">Limpieza</option>
+        <option value="herramientas">Herramientas</option>
+      </select>
+    </div>
 
-            <div class="col-12 col-md-6">
-              <label for="area" class="form-label"><b>Área:</b></label>
-              <select id="area" name="area" class="form-select">
-                <option value="">Selecciona...</option>
-                <option value="oficinas centrales">Oficinas centrales</option>
-                <option value="modulo 1">Módulo 1</option>
-                <option value="modulo 2">Módulo 2</option>
-                <option value="modulo 3">Módulo 3</option>
-                <option value="modulo 4">Módulo 4</option>
-                <option value="modulo 5">Módulo 5</option>
-                <option value="modulo 6">Módulo 6</option>
-                <option value="modulo 7">Módulo 7</option>
-              </select>
-            </div>
-          </div>
-          <input type="hidden" id="accion" name="accion" value="agregar">
+    <div class="col-12 col-md-4">
+      <label for="unidad_entrada" class="form-label"><b>Unidad de Medida:</b></label>
+      <select id="unidad_entrada" name="unidad_entrada" class="form-select">
+        <option value="">Selecciona...</option>
+        <option value="pieza">Pieza (Pz)</option>
+        <option value="caja">Caja</option>
+        <option value="paquete">Paquete</option>
+        <option value="litro">Litro</option>
+      </select>
+    </div>
 
-          <div class="d-flex justify-content-end mt-3">
-            <div class="btn-group" role="group" aria-label="Acciones">
-              <button type="submit" id="btnAgregar"
-                class="btn btn-danger btn-sm text-uppercase fw-semibold shadow-sm me-2">
-                Agregar
-              </button>
-              <!-- <button type="button" id="btnConsultar" class="btn btn-danger btn-sm text-uppercase fw-semibold shadow-sm">
-                  Consultar
-                </button> -->
-            </div>
-          </div>
-      </div>
-      <!--Termina formulario-->
-      </form>
+    <div class="col-12 col-md-4">
+      <label for="existencia_minima" class="form-label"><b>Stock Mínimo (Alerta):</b></label>
+      <input id="existencia_minima" name="existencia_minima" type="number" min="0" class="form-control" placeholder="Mínimo permitido">
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="ubicacion_almacen" class="form-label"><b>Ubicación en Almacén:</b></label>
+      <input id="ubicacion_almacen" name="ubicacion_almacen" type="text" class="form-control" placeholder="Pasillo / Estante">
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="estado_material" class="form-label"><b>Estado del Material:</b></label>
+      <select id="estado_material" name="estado_material" class="form-select">
+        <option value="nuevo">Nuevo / Disponible</option>
+        <option value="dañado">Dañado</option>
+        <option value="mantenimiento">En mantenimiento</option>
+      </select>
+    </div>
+
+    <hr class="my-4"> <div class="col-12 col-md-8">
+      <label for="nombre_registra" class="form-label"><b>Registrado por:</b></label>
+      <input id="nombre_registra" name="nombre_registra" type="text" class="form-control" placeholder="Nombre completo de la persona">
+    </div>
+
+    <div class="col-12 col-md-4">
+      <label for="credencial" class="form-label"><b>Número de Credencial:</b></label>
+      <input id="credencial" name="credencial" type="text" class="form-control" placeholder="ID de empleado">
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="area" class="form-label"><b>Área de Adscripción:</b></label>
+      <select id="area" name="area" class="form-select">
+        <option value="">Selecciona área...</option>
+        <option value="oficinas centrales">Oficinas centrales</option>
+        <option value="modulo 1">Módulo 1</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="fecha_alta" class="form-label"><b>Fecha de Alta:</b></label>
+      <input id="fecha_alta" name="fecha_alta" type="date" class="form-control">
+    </div>
+
+  </div>
+
+  <input type="hidden" id="accion" name="accion" value="agregar">
+
+  <div class="d-flex justify-content-end mt-4">
+    <button type="submit" id="btnAgregar" class="btn btn-danger btn-lg text-uppercase fw-semibold shadow-sm">
+      Dar de Alta Material
+    </button>
+  </div>
+</form>
+<!--TERMINA MAIN-->
+
     </div>
     </div>
     </div>
   </main>
 
-  <!--TERMINA MAIN-->
-
+  
 
 
 
