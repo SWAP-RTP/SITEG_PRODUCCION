@@ -1,24 +1,14 @@
-// const RegistrarMaterial = async (datos) => {
-//     const res = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(datos)
-//     });
-//     if (!res.ok) throw new Error('Error en servidor');
-//     return await res.json();
-// };
-
-// ESTA ES TU API DE SIMULACIÓN (No busca archivos externos)
 const RegistrarMaterial = async (datos) => {
-    // Simulamos que el servidor tarda medio segundo en responder
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mostramos en la consola del navegador qué datos se "enviarían"
-    console.log("Datos capturados:", datos);
-    
-    // Devolvemos un objeto de éxito igual al que daría el PHP
-    return { id: "SIM-99" }; 
+    const res = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+    });
+    if (!res.ok) throw new Error('Error en servidor');
+    return await res.json();
 };
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     const $ = (id) => document.getElementById(id);
