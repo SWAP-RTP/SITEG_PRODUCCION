@@ -1,5 +1,5 @@
 const RegistrarDatos = async (datos) => {
-    const respuesta = await fetch('https://jsonplaceholder.typicode.com/posts', {
+    const respuesta = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
