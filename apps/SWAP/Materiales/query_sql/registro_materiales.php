@@ -33,3 +33,5 @@ function RegistrarMateriales()
 
 // Ejecuta la función y muestra el resultado como JSON
 echo json_encode(RegistrarMateriales());
+
+

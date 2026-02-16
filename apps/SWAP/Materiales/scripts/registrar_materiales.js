@@ -7,11 +7,22 @@ const RegistrarMaterial = async (datos) => {
     if (!res.ok) throw new Error('Error en servidor');
     return await res.json();
 };
-
+ 
+const ConsultarMaterial = async (codigo) => {
+    const res = await fetch(`query_sql/consulta_materiales.php?codigo=${encodeURIComponent(codigo)}`);
+    if (!res.ok) throw new Error('Error en servidor');
+    return await res.json();
+};
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     const $ = (id) => document.getElementById(id);
     const msg = form.parentElement.insertBefore(document.createElement('div'), form);
+
+     // Limpiar mensaje de alerta y enfocar el primer campo al hacer reset
+    form.onreset = () => {
+        msg.innerHTML = '';
+        $('codigo_material')?.focus();
+    };
 
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -21,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls} mt-2">${txt}</div>`;
 
         // 2. MAPEO CRÍTICO: Ajustamos los nombres para el PHP reutilizable
-        // El PHP espera $input['area_adscripcion'], pero tu HTML tiene id="area"
+        // El PHP espera $input['area_adscripcion']
         d.area_adscripcion = d.area; 
 
         // 3. Reglas de validación (usando los IDs del HTML)
@@ -39,23 +50,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        try {
-            avisar('Procesando...', 'info');
-            
-            // 4. Enviamos d (que ya incluye todas las llaves que pide el PHP)
-            const resultado = await RegistrarMaterial(d);
-            
-            if (resultado.success) {
-                // Si el PHP devuelve datos en "data", los usamos, si no, el folio de la tabla
-                const folio = resultado.data?.[0]?.codigo_material || d.codigo_material;
-                avisar(`Éxito. Material registrado con código: ${folio}`, 'success');
-                form.reset();
-                $('codigo_material')?.focus();
-            } else {
-                avisar(resultado.error || 'Error desconocido', 'danger');
-            }
-        } catch (err) {
-            avisar(err.message, 'danger');
+         try {
+        avisar('Procesando...', 'info');
+        const resultado = await RegistrarMaterial(d);
+        if (resultado.success) {
+            const folio = resultado.data?.[0]?.codigo_material || d.codigo_material;
+            avisar(`Éxito. Material registrado con código: ${folio}`, 'success');
+                /*form.reset(); Con este reset se limpia el formulario  cuando se le da click
+                en el bootn de "Guardar registro", por eso se omite
+                */
+            $('codigo_material')?.focus();
+        } else {
+            avisar(resultado.error || 'Error desconocido', 'danger');
         }
+    } catch (err) {
+        avisar(err.message, 'danger');
+    }
+       
     };
+   
 });
