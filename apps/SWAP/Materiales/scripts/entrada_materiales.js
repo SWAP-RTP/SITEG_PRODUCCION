@@ -1,31 +1,35 @@
 const RegistrarMaterial = async (datos) => {
-    const res = await fetch('/app-swap/Materiales/query_sql/registro_materiales.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-    });
+   const res = await fetch('query_sql/registro_materiales.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos)
+});
     if (!res.ok) throw new Error('Error en servidor');
     return await res.json();
 };
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     const $ = (id) => document.getElementById(id);
-    // Crea el contenedor de mensajes arriba del formulario
     const msg = form.parentElement.insertBefore(document.createElement('div'), form);
 
     form.onsubmit = async (e) => {
         e.preventDefault();
+        
+        // 1. Capturamos los datos del formulario
         const d = Object.fromEntries(new FormData(form));
-        const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls}">${txt}</div>`;
+        const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls} mt-2">${txt}</div>`;
 
-        // Reglas de validación
+        // 2. MAPEO CRÍTICO: Ajustamos los nombres para el PHP reutilizable
+        // El PHP espera $input['area_adscripcion'], pero tu HTML tiene id="area"
+        d.area_adscripcion = d.area; 
+
+        // 3. Reglas de validación (usando los IDs del HTML)
         const reglas = [
             { id: 'codigo_material', ok: d.codigo_material?.trim(), msg: 'Código obligatorio' },
-            { id: 'material',        ok: d.material?.trim(),        msg: 'Nombre obligatorio' },
-            { id: 'nombre_registra', ok: d.nombre_registra?.trim(), msg: 'Nombre del responsable obligatorio' },
-            { id: 'area',            ok: d.area !== '',             msg: 'Seleccione un área' }
+            { id: 'material',        ok: d.material?.trim(),        msg: 'Descripción obligatoria' },
+            { id: 'area',            ok: d.area !== '',             msg: 'Seleccione un área' },
+            { id: 'nombre_registra', ok: d.nombre_registra?.trim(), msg: 'Nombre de responsable obligatorio' }
         ];
 
         const error = reglas.find(r => !r.ok);
@@ -37,14 +41,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             avisar('Procesando...', 'info');
+            
+            // 4. Enviamos d (que ya incluye todas las llaves que pide el PHP)
             const resultado = await RegistrarMaterial(d);
-            // Genera un folio aleatorio si no viene en la respuesta
-            const folioSimulado = `MAT-${Math.floor(10000 + Math.random() * 90000)}`;
-            // Busca el folio en la respuesta o usa el simulado
-            const folio = resultado?.folio || resultado?.id || resultado?.codigo_material || folioSimulado;
-            avisar(`Éxito. Folio: ${folio}`, 'success');
-            form.reset();
-            $('codigo_material')?.focus();
+            
+            if (resultado.success) {
+                // Si el PHP devuelve datos en "data", los usamos, si no, el folio de la tabla
+                const folio = resultado.data?.[0]?.codigo_material || d.codigo_material;
+                avisar(`Éxito. Material registrado con código: ${folio}`, 'success');
+                form.reset();
+                $('codigo_material')?.focus();
+            } else {
+                avisar(resultado.error || 'Error desconocido', 'danger');
+            }
         } catch (err) {
             avisar(err.message, 'danger');
         }
