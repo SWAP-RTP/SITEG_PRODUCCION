@@ -28,10 +28,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const DATOS_TABLERO = {
-    // Accidentes del periodo actual / previo (para variación)
     periodoActual: 120,
     periodoPrevio: 95,
-
     // Accidentes por módulo (para módulo más crítico)
     modulos: [
         { nombre: "Oficinas Centrales", accidentes: 1 },
@@ -255,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function abrirRankingModulos() {
         if (!panelRanking) return;
-        llenarRankingModulos();          // llena con datos actuales
+        llenarRankingModulos();          
         panelRanking.hidden = false;     // lo hace visible en el DOM
         // forzar reflujo para que aplique transición
         void panelRanking.offsetHeight;
@@ -567,142 +565,339 @@ if (btnCerrarRutas && panelRutas) {
     // }
 
    
-    //  GRÁFICA: ACCIDENTES POR TIPO (BARRAS)
-    const lienzoTipos = document.getElementById("grafTipos");
-    if (lienzoTipos) {
-        new Chart(lienzoTipos, {
-            type: "bar",
-            data: {
-                labels: DATOS_TABLERO.tipos.labels,
-                datasets: [{
-                    label: "Accidentes",
-                    data: DATOS_TABLERO.tipos.totales,
-                    backgroundColor: ["#4da3ff","#ff6b81","#ffbf42","#34d399","#a78bfa"],
-                    borderColor: "#0e1a2b",
-                    borderWidth: 1
-                }]
-            },
-            options: opcionesComunXY
-        });
-    }
+//  GRÁFICA: ACCIDENTES POR TIPO 
+const lienzoTipos = document.getElementById("grafTipos");
+if (lienzoTipos) {
 
+    fetch("http://accidentes-pv.rtp.gob.mx/accidentes/query_sql/tipo_accidentes_tablero.php")
+        .then(response => response.json())
+        .then(data => {
+            const labels = data.map(item => item.descripcion);
+            const totales = data.map(item => item.total);
 
-    //  GRÁFICA: ACCIDENTES EN EL TIEMPO (LÍNEAS)
-    const lienzoTiempo = document.getElementById("grafTiempoLineal");
-    if (lienzoTiempo) {
-        const serie = DATOS_TABLERO.tipos.serieMensual;
-        new Chart(lienzoTiempo, {
-            type: "line",
-            data: {
-                labels: serie.labels,
-                datasets: [
-                    {
-                        label: "Colisión Laminero",
-                        data: serie["Colisión Laminero"],
-                        borderColor: "#4da3ff",
-                        pointBackgroundColor: "#4da3ff",
-                        tension: 0.3,
-                        borderWidth: 2
-                    },
-                    {
-                        label: "Usuario: caídas/golpes",
-                        data: serie["Usuario: caídas/golpes"],
-                        borderColor: "#34d399",
-                        pointBackgroundColor: "#34d399",
-                        tension: 0.3,
-                        borderWidth: 2
-                    },
-                    {
-                        label: "Otros",
-                        data: serie["Otros"],
-                        borderColor: "#f97316",
-                        pointBackgroundColor: "#f97316",
-                        tension: 0.3,
-                        borderWidth: 2
-                    },
-                    {
-                        label: "Vandalismo",
-                        data: serie["Vandalismo"],
-                        borderColor: "#eab308",
-                        pointBackgroundColor: "#eab308",
-                        tension: 0.3,
-                        borderWidth: 2
-                    },
-                    {
-                        label: "Colisión",
-                        data: serie["Colisión"],
-                        borderColor: "#a855f7",
-                        pointBackgroundColor: "#a855f7",
-                        tension: 0.3,
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: opcionesComunXY
-        });
-    }
-
- 
-    //  GRÁFICA: TOP 10 RUTAS (BARRAS HORIZONTALES)
-    const lienzoTopRutas = document.getElementById("grafTopRutas");
-    if (lienzoTopRutas) {
-
-        const etiquetasRutas = DATOS_TABLERO.topRutas.map(r => r.ruta);
-        const valoresRutas   = DATOS_TABLERO.topRutas.map(r => r.accidentes);
-
-        const colores = [
-            "#f97316","#4da3ff","#34d399","#ff6b81","#a78bfa",
-            "#ffbf42","#00c2d1","#ff8f6b","#86efac","#c084fc"
-        ];
-
-        new Chart(lienzoTopRutas, {
-            type: "bar",
-            data: {
-                labels: etiquetasRutas,
-                datasets: [{
-                    label: "Accidentes",
-                    data: valoresRutas,
-                    backgroundColor: colores.slice(0, valoresRutas.length),
-                    borderColor: "#0e1a2b",
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                indexAxis: "y",
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: { color: "#ffffff", font: { size: 11 } },
-                        grid: { color: "rgba(255,255,255,0.1)" }
-                    },
-                    y: {
-                        ticks: { color: "#ffffff", font: { size: 11 } },
-                        grid: { color: "rgba(255,255,255,0.1)" }
-                    }
+            new Chart(lienzoTipos, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Accidentes",
+                        data: totales,
+                        backgroundColor: [
+                            "#4da3ff",
+                            "#ff6b81",
+                            "#ffbf42",
+                            "#34d399",
+                            "#a78bfa",
+                            "#fb7185",
+                            "#60a5fa",
+                            "#facc15",
+                            "#22d3ee",
+                            "#c084fc",
+                            "#f97316",
+                            "#14b8a6"
+                        ],
+                        borderColor: "#0e1a2b",
+                        borderWidth: 1
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: "#ffffff",
-                            font: { size: 11 }
+                options: opcionesComunXY
+            });
+
+        })
+        .catch(error => {
+            console.error("Error al cargar Accidentes por Tipo:", error);
+        });
+}
+
+
+
+// GRÁFICA: ACCIDENTES EN EL TIEMPO (LÍNEAS - DATOS REALES)
+const lienzoTiempo = document.getElementById("grafTiempoLineal");
+
+if (lienzoTiempo) {
+
+    fetch("http://accidentes-pv.rtp.gob.mx/accidentes/query_sql/accidentes_en_tiempo_tablero.php")
+        .then(response => response.json())
+        .then(data => {
+
+            // Meses fijos
+            const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+            // Tipos que queremos mostrar (los principales del tablero)
+            const tipos = {
+                "COLISION LAMINERO":        { label: "Colisión Laminero", color: "#4da3ff" },
+                "USUARIO ( CAIDA, GOLPE CON PUERTAS, ETC )": { label: "Usuario: caídas/golpes", color: "#34d399" },
+                "OTROS":                   { label: "Otros", color: "#f97316" },
+                "VANDALISMO (a unidad/eco)":{ label: "Vandalismo", color: "#eab308" },
+                "COLISIÓN ( BARDAS, MARQUESINAS, ETC )": { label: "Colisión", color: "#a855f7" }
+            };
+
+            // Inicializar estructura [12 meses en cero]
+            const series = {};
+            Object.keys(tipos).forEach(tipo => {
+                series[tipo] = Array(12).fill(0);
+            });
+
+            // Llenar series desde la API (solo año 2025)
+            data.forEach(item => {
+                if (item.anio === 2025 && series[item.descripcion]) {
+                    const mesIndex = item.mes - 1;
+                    series[item.descripcion][mesIndex] += item.total;
+                }
+            });
+
+            // Construir datasets para Chart.js
+            const datasets = Object.keys(tipos).map(tipo => ({
+                label: tipos[tipo].label,
+                data: series[tipo],
+                borderColor: tipos[tipo].color,
+                pointBackgroundColor: tipos[tipo].color,
+                tension: 0.3,
+                borderWidth: 2
+            }));
+
+            new Chart(lienzoTiempo, {
+                type: "line",
+                data: {
+                    labels: meses,
+                    datasets: datasets
+                },
+                options: opcionesComunXY
+            });
+
+        })
+        .catch(error => {
+            console.error("Error al cargar Accidentes en el Tiempo:", error);
+        });
+}
+
+ //TABLA DE DETALLE DE ACCIDENTES
+ (() => {
+
+    const tbody = document.getElementById("tablaSeguridadBody");
+    const paginacion = document.getElementById("paginacionSeg");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let datos = [];
+    let paginaActual = 1;
+
+    fetch("http://accidentes-pv.rtp.gob.mx/accidentes/query_sql/accidentes_totales_tablero.php")
+        .then(response => response.json())
+        .then(data => {
+
+            datos = Array.isArray(data) ? data : [];
+            paginaActual = 1;
+
+            tbody.innerHTML = "";
+
+            if (!datos.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No hay registros disponibles
+                        </td>
+                    </tr>`;
+                paginacion.innerHTML = "";
+                return;
+            }
+
+            renderTabla();
+            renderPaginacion();
+        })
+        .catch(error => {
+            console.error("Error al cargar Detalle de Accidentes:", error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-danger">
+                        Error al cargar la información
+                    </td>
+                </tr>`;
+        });
+
+    // =======================
+    function renderTabla() {
+
+        tbody.innerHTML = "";
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = inicio + REGISTROS_POR_PAGINA;
+
+        datos.slice(inicio, fin).forEach(item => {
+
+            const fecha = item.alta_fecha
+                ? String(item.alta_fecha)
+                : "N/D";
+
+            const fila = document.createElement("tr");
+
+            fila.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.descripcion_accidente || "SIN DESCRIPCIÓN"}</td>
+                <td>${item.economico ?? "N/D"}</td>
+                <td>${item.ruta ?? "N/D"}</td>
+                <td>${item.estatus || "SIN ESTATUS"}</td>
+                <td>${fecha}</td>
+            `;
+
+            tbody.appendChild(fila);
+        });
+    }
+
+    // =======================
+function renderPaginacion() {
+
+    paginacion.innerHTML = "";
+
+    const totalPaginas = Math.ceil(datos.length / REGISTROS_POR_PAGINA);
+    const MAX_VISIBLE = 5;
+
+    const grupo = document.createElement("div");
+    grupo.className = "btn-group btn-group-sm";
+
+    // Anterior
+    grupo.appendChild(
+        crearBoton("Anterior", paginaActual - 1, paginaActual === 1)
+    );
+
+    let inicio = Math.max(1, paginaActual - Math.floor(MAX_VISIBLE / 2));
+    let fin = inicio + MAX_VISIBLE - 1;
+
+    if (fin > totalPaginas) {
+        fin = totalPaginas;
+        inicio = Math.max(1, fin - MAX_VISIBLE + 1);
+    }
+
+    // Primera página
+    if (inicio > 1) {
+        grupo.appendChild(crearBoton(1, 1));
+        if (inicio > 2) {
+            grupo.appendChild(crearSeparador());
+        }
+    }
+
+    // Páginas visibles
+    for (let i = inicio; i <= fin; i++) {
+        grupo.appendChild(
+            crearBoton(i, i, false, i === paginaActual)
+        );
+    }
+
+    // Última página
+    if (fin < totalPaginas) {
+        if (fin < totalPaginas - 1) {
+            grupo.appendChild(crearSeparador());
+        }
+        grupo.appendChild(crearBoton(totalPaginas, totalPaginas));
+    }
+
+    // Siguiente
+    grupo.appendChild(
+        crearBoton("Siguiente", paginaActual + 1, paginaActual === totalPaginas)
+    );
+
+    paginacion.appendChild(grupo);
+}
+
+
+    function crearBoton(texto, pagina, disabled = false, activo = false) {
+
+        const btn = document.createElement("button");
+
+        btn.className = `btn ${activo ? "btn-info" : "btn-outline-info"}`;
+        btn.textContent = texto;
+        btn.disabled = disabled;
+
+        btn.onclick = () => {
+            paginaActual = pagina;
+            renderTabla();
+            renderPaginacion();
+        };
+
+        return btn;
+    }
+    function crearSeparador() {
+    const span = document.createElement("span");
+    span.className = "btn btn-outline-info disabled";
+    span.textContent = "...";
+    return span;
+}
+
+
+})();
+
+
+
+// GRÁFICA: TOP 10 RUTAS CON MAYOR INCIDENCIA (DATOS REALES)
+const lienzoTopRutas = document.getElementById("grafTopRutas");
+
+if (lienzoTopRutas) {
+
+    fetch("http://accidentes-pv.rtp.gob.mx/accidentes/query_sql/top_rutas_tablero.php")
+        .then(response => response.json())
+        .then(data => {
+
+            const etiquetasRutas = data.map(item => `Ruta ${item.ruta}`);
+            const valoresRutas   = data.map(item => item.total);
+
+            const colores = [
+                "#f97316","#4da3ff","#34d399","#ff6b81","#a78bfa",
+                "#ffbf42","#00c2d1","#ff8f6b","#86efac","#c084fc"
+            ];
+
+            new Chart(lienzoTopRutas, {
+                type: "bar",
+                data: {
+                    labels: etiquetasRutas,
+                    datasets: [{
+                        label: "Accidentes",
+                        data: valoresRutas,
+                        backgroundColor: colores.slice(0, valoresRutas.length),
+                        borderColor: "#0e1a2b",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { color: "#ffffff", font: { size: 11 } },
+                            grid: { color: "rgba(255,255,255,0.1)" }
+                        },
+                        y: {
+                            ticks: { color: "#ffffff", font: { size: 11 } },
+                            grid: { color: "rgba(255,255,255,0.1)" }
                         }
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                const ruta  = ctx.label;
-                                const valor = ctx.parsed.x ?? ctx.parsed;
-                                return `${ruta}: ${valor} accidentes`;
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: "#ffffff",
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    const ruta  = ctx.label;
+                                    const valor = ctx.parsed.x;
+                                    return `${ruta}: ${valor} accidentes`;
+                                }
                             }
                         }
-                    }
-                },
-                layout: { padding: 10 }
-            }
+                    },
+                    layout: { padding: 10 }
+                }
+            });
+
+        })
+        .catch(error => {
+            console.error("Error al cargar Top Rutas:", error);
         });
-    }
+}
+
 
     //  TABLA + PAGINACIÓN + FILTROS
     const tabla = document.getElementById('tablaSeguridad');

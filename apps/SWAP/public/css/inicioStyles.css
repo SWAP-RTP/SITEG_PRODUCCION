@@ -70,17 +70,6 @@ nav {
     width: 30vw;
   }
   
-  /* ToDo: Pasar clases de etiquetas HTML a reglas de CSS ↓
-  header {
-  
-  }
-  
-  footer {
-  
-  }
-  */
-  
-  
   /* para los botones del menu nominas*/
   .btn-toggle {
     display: inline-flex;

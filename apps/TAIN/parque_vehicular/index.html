@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../middleware.php';
+require_once '../middleware.php';
 $user = validarAcceso(); 
 ?>
 <!DOCTYPE html>
@@ -7,18 +7,18 @@ $user = validarAcceso();
 <head>
     <meta charset="UTF-8">
     <title>Parque Vehicular</title>
-    <link rel="shortcut icon" href="/app-tain/img/Logo_RTP.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../img/Logo_RTP.png" type="image/x-icon">
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="/app-tain/lib/Bootstrap-5-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../lib/Bootstrap-5-5.3.0/css/bootstrap.min.css">
     <!-- FontAwesome -->
-    <link rel="stylesheet" type="text/css" href="/app-tain/lib/fontawesome/css/all.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../lib/fontawesome/css/all.min.css"/>
     <!-- style general -->
-    <link rel="stylesheet" href="/app-tain/css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Componentes -->
-    <link rel="stylesheet" href="/app-tain/css/style_componentes.css">
+    <link rel="stylesheet" href="../css/style_componentes.css">
     <!-- CSS personalizado para el módulo de parque vehicular -->
-    <link rel="stylesheet" href="/app-tain/css/style_parque.css">
+    <link rel="stylesheet" href="../css/style_parque.css">
 </head>
 <body>
     <?php include '../header.html'; ?>
@@ -30,64 +30,46 @@ $user = validarAcceso();
             ====================================================== -->
             <div class="d-flex align-items-center position-relative mb-4">
                 <button id="btnregresar" class="btn btn-warning btn-lg position-absolute start-0 ms-3"
-                    onclick="location.href='/app-tain/index.html'">
+                    onclick="location.href='../index.html'">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <h3 class="flex-fill text-center">CONTROL DE PARQUE VEHICULAR</h3>
+                <h3 class="flex-fill text-center">DISTRIBUCIÓN DE PARQUE VEHICULAR</h3>
             </div>
 
             <!-- =====================================================
                 FILTROS DE CONSULTA
             ====================================================== -->
             <div class="card filtro-box p-3 mb-4">
-                <div class="row g-3">
-                    <!-- Año -->
-                    <div class="col-md-3">
-                        <label for="año" class="form-label">Año</label>
-                        <select id="año" class="form-select">
-                            <option>2025</option>
-                            <option>2024</option>
-                            <option>2023</option>
-                            <option>2022</option>
-                            <option>2021</option>
-                            <option>2020</option>
-                        </select>
+                <form id="filtro_pv">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="año" class="form-label">Fecha inicio:</label>
+                            <input type="date" class="form-control" id="fech_inicio" name="fech_inicio">
+                        </div>
+    
+                        <div class="col-md-3">
+                            <label for="año" class="form-label">Fecha fin:</label>
+                            <input type="date" class="form-control" id="fech_final" name="fech_final">
+                        </div>                    
+        
+                        <div class="col-md-3">
+                            <label for="filtro_por" class="form-label">Filtrar por</label>
+                            <select id="filtro_por" class="form-select">
+                                <option value="1">Todos</option>
+                                <option value="2">Por modulo</option>
+                            </select>
+                        </div>
+    
+                        <div class="col gap-2 d-flex align-items-end justify-content-end">
+                            <button type="button" id="btn_limpiar" class="btn btn-warning">
+                                <i class="fa-solid fa-broom me-1"></i> Limpiar filtros
+                            </button>
+                            <button type="button" id="btn_filtrar" class="btn btn-success">
+                                <i class="fa-solid fa-filter me-1"></i> Aplicar filtros
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- Mes -->
-                    <div class="col-md-3">
-                        <label for="mes" class="form-label">Mes</label>
-                        <select id="mes" class="form-select">
-                            <option value="">Todos</option>
-                            <option>Enero</option>
-                            <option>Febrero</option>
-                            <option>Marzo</option>
-                            <option>Abril</option>
-                            <option>Mayo</option>
-                            <option>Junio</option>
-                            <option>Julio</option>
-                            <option>Agosto</option>
-                            <option>Septiembre</option>
-                            <option>Octubre</option>
-                            <option>Noviembre</option>
-                            <option>Diciembre</option>
-                        </select>
-                    </div>
-                    <!-- Mes -->
-                    <div class="col-md-3">
-                        <label for="filtro_por" class="form-label">Filtrar por</label>
-                        <select id="filtro_por" class="form-select">
-                            <option value="1">Todos</option>
-                            <option value="2">Por modulo</option>
-                        </select>
-                    </div>
-
-                    <div class="col d-flex align-items-end justify-content-end">
-                        <button id="btn_filtrar" class="btn btn-success">
-                            <i class="fa-solid fa-filter me-1"></i> Aplicar filtros
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
 
             <!-- =====================================================
@@ -99,41 +81,39 @@ $user = validarAcceso();
             <div id="indicadores_por_modulo" hidden>
                 <?php include 'indicadores_por_modulo.html'; ?>
             </div>
-            
         </div>
     </main>
 
     <?php include '../footer.html'; ?>
 
-    <!-- MODAL DETALLE (FULLSCREEN) -->
+    <!-- MODAL DETALLE -->
     <div class="modal fade" id="modalDetalleModulo" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen modal-dialog-centered">
-            <div class="modal-content" style="background:#0e1a2b; color:white;">
-            
-            <div class="modal-header border-0">
-                <h2 class="modal-title" id="tituloModalModulo"></h2>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <!-- Aquí se inyectan los bloques de segmentos (cada uno con porcentaje + desglose) -->
-                    <div id="contenedorDetallesModulo" class="row g-4"></div>
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h2 class="modal-title" id="tituloModalModulo"></h2>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
 
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div id="contenedorDetallesModulo" class="row g-4">
+                            <!-- aqui dibujamos el desglose por modulo con cards dinamoscos -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
     <!-- JS de Bootstrap -->
-    <script src="/app-tain/lib/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
     <!-- JS JQuery  --->
-    <script src="/app-tain/lib/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+    <script src="../lib/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
     <!-- Chart.js local -->
-    <script src="/app-tain/lib/chartjs/chart.umd.min.js"></script>
+    <script src="../lib/chartjs/chart.umd.min.js"></script>
 
     <!-- JS del módulo de parque vehicular -->
-    <script type="module" src="/app-tain/parque_vehicular/script/parque.js"></script>
+    <script type="module" src="./script/parque.js"></script>
+    <script src="../../js/auth_name.js"></script>
 </body>
 </html>
