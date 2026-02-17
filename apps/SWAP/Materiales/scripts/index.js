@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const msg = form.parentElement.insertBefore(document.createElement("div"), form);
   const camposObligatorios = Array.from(form.querySelectorAll("[required]")).map(el => el.name);
 
+  // Ocultar la tabla de registros al cargar la página
+  $("tabla_registros").classList.add("d-none");
+
   const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls} mt-2">${txt}</div>`;
   const limpiar = () => { msg.innerHTML = ""; $("codigo_material")?.focus(); $("tabla_registros").classList.add("d-none"); };
   const faltanCampos = d => camposObligatorios.filter(c => !d[c]?.trim());
@@ -40,6 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r.success && r.data.length) renderTabla(r.data);
       else { renderTabla([]); alert("No hay registros para mostrar."); }
     } catch { alert("Error en servidor"); }
+    // Mostrar la tabla de registros sólo al consultar
+    $("tabla_registros").classList.remove("d-none");
   };
 
   $("id_credencial").oninput = async function() {
