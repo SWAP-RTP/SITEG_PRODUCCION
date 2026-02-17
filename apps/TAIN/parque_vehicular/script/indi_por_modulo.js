@@ -1,263 +1,256 @@
-// ======================================================================
-// DATOS DE EJEMPLO (por módulo), incluye porcentajes y desglose
-// ======================================================================
-export function indi_modulos(){
-    const datosModulos = {
-        "Oficinas Centrales": {
-            porcentajes: { operable: 60, enRuta: 22, disponible: 10, mantenimiento: 6, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 6, Ordinarios: 20, Articulados: 8, Nochebus: 2 },
-                enRuta:        { Expresos: 5, Ordinarios: 10, Articulados: 3, Nochebus: 2 },
-                disponible:    { Expresos: 2, Ordinarios: 5, Articulados: 1, Nochebus: 1 },
-                mantenimiento: { Expresos: 1, Ordinarios: 2, Articulados: 1, Nochebus: 2 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 1 }
-            },
+// variable global
+let datosPVPorModulo = null;
+let triggerModalDetalle = null;
+
+export function cargarDistrubucionPV_modulo_con_filtro(opcion){
+    const Token = "#!!TOKEN_SUGO_123_POR_FILTRO$%";
+    const filtro_por = $("#filtro_por").val();
+    const filtro = document.getElementById("filtro_pv");
+    const form = new FormData(filtro);
+          form.append('opcion', 2);
+
+    $.ajax({
+        url: 'query_sql/get_pv_estados_por_filtro.php',
+        method: 'POST',
+        data: form,
+        processData: false,
+        contentType: false,
+        headers: {
+            // Se agrega el encabezado de autorización
+            'Authorization': 'Bearer ' + Token
         },
-    
-        "Módulo 1": {
-            porcentajes: { operable: 70, enRuta: 15, disponible: 8, mantenimiento: 5, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 12, Ordinarios: 20, Articulados: 5, Nochebus: 2 },
-                enRuta:        { Expresos: 3, Ordinarios: 10, Articulados: 4, Nochebus: 1 },
-                disponible:    { Expresos: 1, Ordinarios: 5, Articulados: 2, Nochebus: 1 },
-                mantenimiento: { Expresos: 0, Ordinarios: 2, Articulados: 1, Nochebus: 1 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 2": {
-            porcentajes: { operable: 62, enRuta: 20, disponible: 10, mantenimiento: 6, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 10, Ordinarios: 22, Articulados: 6, Nochebus: 2 },
-                enRuta:        { Expresos: 4, Ordinarios: 12, Articulados: 3, Nochebus: 0 },
-                disponible:    { Expresos: 2, Ordinarios: 6, Articulados: 1, Nochebus: 0 },
-                mantenimiento: { Expresos: 1, Ordinarios: 2, Articulados: 2, Nochebus: 1 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 3": {
-            porcentajes: { operable: 68, enRuta: 18, disponible: 8, mantenimiento: 4, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 11, Ordinarios: 18, Articulados: 6, Nochebus: 3 },
-                enRuta:        { Expresos: 5, Ordinarios: 7, Articulados: 3, Nochebus: 1 },
-                disponible:    { Expresos: 2, Ordinarios: 4, Articulados: 1, Nochebus: 0 },
-                mantenimiento: { Expresos: 0, Ordinarios: 1, Articulados: 1, Nochebus: 2 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 4": {
-            porcentajes: { operable: 66, enRuta: 19, disponible: 9, mantenimiento: 5, especiales: 1 },
-            desglose: {
-                operable:      { Expresos: 9, Ordinarios: 20, Articulados: 7, Nochebus: 2, Metrobus: 2 },
-                enRuta:        { Expresos: 3, Ordinarios: 10, Articulados: 4, Nochebus: 1, Metrobus: 2 },
-                disponible:    { Expresos: 2, Ordinarios: 4, Articulados: 2, Nochebus: 0, Metrobus: 2 },
-                mantenimiento: { Expresos: 1, Ordinarios: 2, Articulados: 1, Nochebus: 1, Metrobus: 2 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 5": {
-            porcentajes: { operable: 72, enRuta: 14, disponible: 7, mantenimiento: 5, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 14, Ordinarios: 18, Articulados: 6, Nochebus: 2 },
-                enRuta:        { Expresos: 3, Ordinarios: 8, Articulados: 2, Nochebus: 0 },
-                disponible:    { Expresos: 1, Ordinarios: 4, Articulados: 1, Nochebus: 0 },
-                mantenimiento: { Expresos: 0, Ordinarios: 2, Articulados: 0, Nochebus: 1 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 6": {
-            porcentajes: { operable: 64, enRuta: 18, disponible: 11, mantenimiento: 5, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 10, Ordinarios: 16, Articulados: 7, Nochebus: 3 },
-                enRuta:        { Expresos: 4, Ordinarios: 8, Articulados: 3, Nochebus: 1 },
-                disponible:    { Expresos: 2, Ordinarios: 6, Articulados: 2, Nochebus: 0 },
-                mantenimiento: { Expresos: 1, Ordinarios: 2, Articulados: 1, Nochebus: 1 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        },
-    
-        "Módulo 7": {
-            porcentajes: { operable: 63, enRuta: 20, disponible: 10, mantenimiento: 5, especiales: 2 },
-            desglose: {
-                operable:      { Expresos: 9, Ordinarios: 18, Articulados: 8, Nochebus: 2 },
-                enRuta:        { Expresos: 5, Ordinarios: 8, Articulados: 3, Nochebus: 2 },
-                disponible:    { Expresos: 2, Ordinarios: 5, Articulados: 2, Nochebus: 0 },
-                mantenimiento: { Expresos: 1, Ordinarios: 2, Articulados: 1, Nochebus: 1 },
-                especiales:    { Expresos: 0, Ordinarios: 1, Articulados: 0, Nochebus: 0 }
-            },
-            salidas: 20,
-            entradas: 15
-        }
-    };
-    
-    
-    
-    // ======================================================================
-    // BOTÓN DE FILTROS – LÓGICA FUTURA PARA CONEXIÓN A BACKEND
-    // ======================================================================
-    const btnCargar = document.getElementById("btnCargar");
-    if (btnCargar) {
-        btnCargar.addEventListener("click", () => {
-            // Integración futura con backend
-            alert("Aquí se aplicarán los filtros cuando conectes el backend.");
-        });
-    }
-    
-    // ======================================================================
-    // CLICK EN CARDS – ABRIR MODAL Y RELLENAR DATOS
-    // ======================================================================
-    document.querySelectorAll(".card-info").forEach(card => {
-        card.addEventListener("click", () => {
-            const moduleName = card.dataset.module || card.querySelector("h3").textContent.trim();
-            const info = datosModulos[moduleName];
-    
-            // Si no hay datos para el módulo, mostramos un aviso simple
-            if (!info) {
-                // construir una estructura vacía conservadora
-                alert("No hay datos de ejemplo para: " + moduleName);
-                return;
-            }
-    
-            // Título del modal
-            document.getElementById("tituloModalModulo").textContent = moduleName;
-    
-            // Contenedor donde inyectaremos las tarjetas de segmentos
-            const cont = document.getElementById("contenedorDetallesModulo");
-            cont.innerHTML = "";
-    
-            // CARD DE NETRADAS Y SALIDAS POR MODULO
-            cont.innerHTML += `
-                <div class="d-flex gap-3">
-                    <div class="col card-segmento">
-                        <p class="m-0 fs-3"><strong>Entradas:</strong> ${info.entradas}</p>
-                    </div>
-                    <div class="col card-segmento">
-                        <p class="m-0 fs-3"><strong>Salidas:</strong> ${info.salidas}</p>
-                    </div>
-                </div>
-            `;
-    
-            const segmentos = [
-                { key: "operable", titulo: "Operable" },
-                { key: "enRuta", titulo: "En Ruta" },
-                { key: "disponible", titulo: "Disponible" },
-                { key: "mantenimiento", titulo: "Mantenimiento" },
-                { key: "especiales", titulo: "Servicios Especiales" }
-            ];
-    
-            // Categorías internas
-            const categorias = ["Expresos", "Ordinarios", "Articulados", "Nochebus", "Metrobus"];
-    
-            segmentos.forEach(seg => {
-                const pct = info.porcentajes[seg.key] ?? 0;
-                const desg = info.desglose[seg.key] ?? { Expresos:0, Ordinarios:0, Articulados:0, Nochebus:0, Metrobus:0};
-    
-                // construir lista
-                let listaHtml = "";
-                categorias.forEach(cat => {
-                    const val = desg[cat] ?? 0;
-                    listaHtml += `<li><strong>${cat}:</strong> ${val}</li>`;
-                });
-    
-                cont.innerHTML += `
-                    <div class="col-lg-4 col-md-6 col-12">
-                        <div class="card-segmento">
-                            <h3>${seg.titulo}</h3>
-                            <div class="porcentaje">${pct}%</div>
-                            <ul>
-                                ${listaHtml}
-                            </ul>
+        success: function (resp) {
+            // console.log(resp);
+            // guardamos el resp en la variable global
+            datosPVPorModulo = resp.data;
+            grafica_pastel_modulos(resp);
+
+            let template = "";
+
+            Object.entries(resp.data).forEach(([moduloKey, registros]) => {
+
+                // Sumar todos los total_camiones del modulo
+                const total_camiones = registros.reduce((suma, item) => {
+                    return suma + Number(item.total_camiones);
+                }, 0);
+
+                template += `
+                    <div class="card-info col" data-modulo="${moduloKey}">
+                        <div class="text-center p-2" id="modulo${moduloKey.replace('m', '')}">
+                            <h3>Módulo ${moduloKey.replace('m', '')}</h3>
+                            <p class="display-6" id="val_modulo1">${total_camiones}</p>
                         </div>
                     </div>
                 `;
             });
-    
-            // Mostrar modal (Bootstrap 5)
-            const bsModal = new bootstrap.Modal(document.getElementById("modalDetalleModulo"));
-            bsModal.show();
-        });
+
+            if(resp.fecha_inicio){
+                $("#titulo_fecha2").html(`Total de registros por Módulo del día ${resp.fecha_inicio}`);
+            }
+            if(resp.fecha_final){
+                $("#titulo_fecha2").html(`Total de registros por Módulo del día ${resp.fecha_final}`);
+            }
+            if(resp.fecha_inicio && resp.fecha_final){
+                $("#titulo_fecha2").html(`Total de registros por Módulo del día ${resp.fecha_inicio} al ${resp.fecha_final}`);
+            }
+
+            $("#total_por_modulo").html(template);
+        },
+        error: function (xhr, status, error) {
+            if (xhr.status === 401) {
+                console.error("Error: No estás autorizado (Token inválido)");
+            } else {
+                console.error("Error al obtener la distribucion del pv por modulo:", error);
+            }
+        }
     });
 }
 
-export function grafica_lineal(){
-    const labels = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    const data = {
-        labels: labels,
+export function cargarDistrubucionPV_modulo(){
+    // contrasela token
+    const Token = "#!!TOKEN_SUGO_123$%";
+    $.ajax({
+        url: 'query_sql/get_pv_estados.php',
+        method: 'GET',
+        dataType: 'json',
+        headers: {
+            // Se agrega el encabezado de autorización
+            'Authorization': 'Bearer ' + Token
+        },
+        data: {opcion: 2},
+        success: function (resp) {
+            // console.log(resp);
+            // guardamos el resp en la variable global
+            datosPVPorModulo = resp.data;
+            grafica_pastel_modulos(resp);
 
-        datasets: [
-            {
-                label: 'Modulo 1',
-                data: [10, 20, 30, 25, 40, 35, 50, 80, 50, 60, 60, 70],
-                fill: false,
-                borderColor: 'rgb(255, 99, 132)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 2',
-                data: [5, 15, 10, 20, 15, 10, 25, 50, 50, 30, 40, 40],
-                fill: false,
-                borderColor: 'rgb(54, 162, 235)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 3',
-                data: [12, 18, 22, 30, 28, 26, 34, 50, 50, 40, 40, 30],
-                fill: false,
-                borderColor: 'rgb(255, 205, 86)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 4',
-                data: [30, 28, 35, 40, 38, 42, 45, 50, 60, 60, 30, 20],
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 5',
-                data: [30, 28, 35, 40, 38, 42, 45, 50, 60, 60, 30, 20],
-                fill: false,
-                borderColor: 'rgba(255, 0, 255, 1)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 6',
-                data: [10, 20, 30, 25, 40, 35, 50, 80, 50, 60, 60, 70],
-                fill: false,
-                borderColor: 'rgba(87, 90, 255, 1)',
-                tension: 0.1
-            },
-            {
-                label: 'Modulo 7',
-                data: [5, 15, 10, 20, 15, 10, 25, 50, 50, 30, 40, 40],
-                fill: false,
-                borderColor: 'rgba(255, 102, 0, 1)',
-                tension: 0.1
+            let template = "";
+
+            Object.entries(resp.data).forEach(([moduloKey, registros]) => {
+
+                // Sumar todos los total_camiones del modulo
+                const total_camiones = registros.reduce((suma, item) => {
+                    return suma + Number(item.total_camiones);
+                }, 0);
+
+                template += `
+                    <div class="card-info col" data-modulo="${moduloKey}">
+                        <div class="text-center p-2" id="modulo${moduloKey.replace('m', '')}">
+                            <h3>Módulo ${moduloKey.replace('m', '')}</h3>
+                            <p class="display-6" id="val_modulo1">${total_camiones}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $("#titulo_fecha2").html(`Total de registros por Módulo ${resp.fecha_hoy}`);
+
+            $("#total_por_modulo").html(template);
+        },
+        error: function (xhr, status, error) {
+            if (xhr.status === 401) {
+                console.error("Error: No estás autorizado (Token inválido)");
+            } else {
+                console.error("Error al obtener la distribucion del pv por modulo:", error);
             }
-        ]
+        }
+    });
+}
+
+export function grafica_pastel_modulos(resp) {
+    // Calcula total por modulo
+    const totales = [
+        resp.data.m1.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m2.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m3.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m4.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m5.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m6.reduce((a, b) => a + Number(b.total_camiones || 0), 0),
+        resp.data.m7.reduce((a, b) => a + Number(b.total_camiones || 0), 0)
+    ];
+
+    const data = {
+        labels: ['Módulo 1', 'Módulo 2', 'Módulo 3', 'Módulo 4', 'Módulo 5', 'Módulo 6', 'Módulo 7'],
+        datasets: [{
+            label: 'Total de camiones',
+            data: totales,
+            backgroundColor: [
+                '#439DF7',
+                '#F75243',
+                '#F79143',
+                '#d3b239',
+                '#2ba1a1',
+                '#914DFA',
+                '#A1A1A1'
+            ],
+            borderRadius: 0
+        }]
     };
 
     const config = {
-        type: 'line',
+        type: 'bar',
         data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.raw} camiones`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#fff' },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { color: '#fff' },
+                    grid: { color: 'rgba(255,255,255,.1)' }
+                }
+            }
+        }
     };
 
-    const ctx = document.getElementById('pastelChart2').getContext('2d');
-    new Chart(ctx, config);
+    const ctx = document.getElementById('barrasChart').getContext('2d');
+
+    // Evita duplicado
+    if (window.barrasChartInstance) {
+        window.barrasChartInstance.destroy();
+    }
+
+    window.barrasChartInstance = new Chart(ctx, config);
 }
+
+// MODAL DEL DETALLE DE LOS REGISTROS DE LOS MODULOS
+$(document).on("click", ".card-info", function() {
+    const moduloKey = $(this).data("modulo"); 
+    const registros = datosPVPorModulo[moduloKey];
+
+    $("#tituloModalModulo").text(`Detalle Módulo ${moduloKey.replace('m', '')}`);
+    if (!registros) return;
+
+    const categorias = {};
+
+    registros.forEach(item => {
+        let cat = "Otros";
+        const id = Number(item.motivo_id);
+
+        if (id === 1) cat = "En Servicio";
+        else if (id === 25 || id === 26) cat = "En Servicio MB";
+        else if (id === 15) cat = "Disponibles (Patio)";
+        else if (id === 12 || id === 23) cat = "Mantenimiento Correctivo";
+        else if (id === 24) cat = "Mantenimiento Preventivo";
+        else if (id === 9) cat = "Término de Jornada";
+
+        if (!categorias[cat]) categorias[cat] = [];
+        categorias[cat].push(item);
+    });
+
+    let templateDetalle = `<div class="row g-2">`; // g-2 para menos espacio entre cards
+
+    Object.entries(categorias).forEach(([nombreCategoria, items]) => {
+        const total = items.reduce((s, i) => s + Number(i.total_camiones), 0);
+
+        templateDetalle += `
+            <div class="col-12 col-md-6">
+                <div class="card-segmento p-2 h-100">
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary mb-2 pb-1">
+                        <span>${nombreCategoria}</span>
+                        <small>${total}</small>
+                    </div>
+                    <ul class="list-unstyled mb-0">`;
+
+        items.forEach(item => {
+            // VALIDACIÓN: Si ruta_modalidad es null, undefined o "", pone "Sin modalidad"
+            const nombreRuta = (item.ruta_modalidad && item.ruta_modalidad.trim() !== "") 
+                                ? item.ruta_modalidad 
+                                : "Sin modalidad";
+
+            templateDetalle += `
+                <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25 text-white">
+                    <span class="me-2" title="${nombreRuta}">${nombreRuta}</span>
+                    <span class="fw-bold">${item.total_camiones}</span>
+                </li>`;
+        });
+
+        templateDetalle += `
+                    </ul>
+                </div>
+            </div>`;
+    });
+
+    templateDetalle += `</div>`;
+    $("#contenedorDetallesModulo").html(templateDetalle);
+    $("#modalDetalleModulo").modal("show");
+});
+
+//Mover foco al cerrar el modal
+$('#modalDetalleModulo').on('hidden.bs.modal', function () {
+    if (triggerModalDetalle) {
+        triggerModalDetalle.focus();
+    }
+});

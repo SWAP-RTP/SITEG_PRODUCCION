@@ -2,7 +2,15 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 
+<<<<<<< HEAD
 require "../conf/conexion.php";
+=======
+$host = "10.10.30.28";
+$port = 5437;
+$dbname = "swap_2025";
+$user = "desarrollo";
+$password = "desarrollo";
+>>>>>>> 036273affb7b57255a76f9486b5e141569a07a61
 
 try {
     //CREAMOS LA CONEXION A LA BASE DE DATOS CON LAS CREDENCIALES DEFINIDAS ARRIBA
@@ -25,6 +33,7 @@ try {
             $payload = [
                 'iat' => time(),
                 'exp' => time() + 3600, // Token válido por 1 hora
+                // 'exp' => time() + 120,
                 'data' => [
                     'id' => $user_data['correo'],
                     'name' => $user_data['nombre']
@@ -54,4 +63,3 @@ try {
     http_response_code(500);
     echo "Error de conexión";
 }
-
