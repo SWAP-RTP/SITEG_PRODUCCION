@@ -11,12 +11,16 @@ window.mostrarPassword = function () {
   }
 };
 
-// EVITA QUE AL ESTAR LOGUEADO  MUESTRE EL LOGIN Y SE BLOQUEE SOLO EN LA PANTALLA DEL MENU 
-window.addEventListener('pageshow', function (event) {
-  if (document.cookie.includes('access_token')) {
-    const paginaActual = window.location.pathname.split('/').pop();
-    if (paginaActual === 'index' || paginaActual === '' || paginaActual === '/') {
-      window.location.replace('menu.html');
+// EVITA QUE AL ESTAR LOGUEADO  MUESTRE EL LOGIN Y SE BLOQUEE SOLO EN LA PANTALLA DEL MENU
+window.addEventListener("pageshow", function (event) {
+  if (document.cookie.includes("access_token")) {
+    const paginaActual = window.location.pathname.split("/").pop();
+    if (
+      paginaActual === "index" ||
+      paginaActual === "" ||
+      paginaActual === "/"
+    ) {
+      window.location.replace("menu.html");
     }
   }
 });
@@ -42,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
 
       loader.removeAttribute("hidden");
-      document.getElementById('card_login').style.opacity = '50';
+      document.getElementById("card_login").style.opacity = "50";
       const formData = new FormData(loginForm);
 
       try {
@@ -50,14 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           body: formData,
         });
-        const result = await response.text();
+        const result = await response.json();
 
-        if (response.ok && result.trim() === "success") {
+        if (response.ok && result.status === "success") {
           setTimeout(() => {
             window.location.href = "menu.html";
           }, 1500);
         } else {
-          loader.setAttribute('hidden', 'true');
+          loader.setAttribute("hidden", "true");
           if (toastBootstrap) toastBootstrap.show();
         }
       } catch (error) {
