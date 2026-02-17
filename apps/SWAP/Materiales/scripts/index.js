@@ -10,14 +10,30 @@ document.addEventListener("DOMContentLoaded", () => {
   $("tabla_registros").classList.add("d-none");
 
   const avisar = (txt, cls) => msg.innerHTML = `<div class="alert alert-${cls} mt-2">${txt}</div>`;
-  const limpiar = () => { msg.innerHTML = ""; $("codigo_material")?.focus(); $("tabla_registros").classList.add("d-none"); };
+  const limpiar = () => {
+    msg.innerHTML = "";
+    $("codigo_material")?.focus();
+    const tabla = $("tabla_registros");
+    tabla.classList.remove("show");
+    setTimeout(() => tabla.classList.add("d-none"), 600); // Espera la transición
+    $("titulo-consulta").style.display = 'none';
+  };
   const faltanCampos = d => camposObligatorios.filter(c => !d[c]?.trim());
 
   const renderTabla = data => {
     $("tabla_materiales").innerHTML = data.map(row =>
-      `<tr>${["codigo_material","descripcion_material","grupo_pertenece","unidad_entrada","existencia_minima","ubicacion_almacen","estado_material","id_credencial","nombre_persona","area_adscripcion","fecha_registro"].map(k=>`<td>${row[k]??""}</td>`).join("")}</tr>`
+      `<tr>${["codigo_material","descripcion_material","grupo_pertenece","unidad_entrada","cantidad_material","ubicacion_almacen","estado_material","id_credencial","nombre_persona","area_adscripcion","fecha_registro"].map(k=>`<td>${row[k]??""}</td>`).join("")}</tr>`
     ).join("");
-    $("tabla_registros").classList.toggle("d-none", !data.length);
+    const tabla = $("tabla_registros");
+    if (data.length) {
+      tabla.classList.remove("d-none");
+      setTimeout(() => tabla.classList.add("show"), 10); // Pequeño delay para activar transición
+      document.getElementById('titulo-consulta').style.display = 'block';
+    } else {
+      tabla.classList.remove("show");
+      setTimeout(() => tabla.classList.add("d-none"), 600); // Espera la transición
+      document.getElementById('titulo-consulta').style.display = 'none';
+    }
   };
 
   form.onsubmit = async e => {
@@ -43,10 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r.success && r.data.length) renderTabla(r.data);
       else { renderTabla([]); alert("No hay registros para mostrar."); }
     } catch { alert("Error en servidor"); }
-    // Mostrar la tabla de registros sólo al consultar
-    $("tabla_registros").classList.remove("d-none");
+    //  esta línea ya no es necesaria:
+    // $("tabla_registros").classList.remove("d-none");
   };
 
+
+
+// Autocompletar nombre y área al ingresar la credencial
   $("id_credencial").oninput = async function() {
     const credencial = this.value.trim();
     const nombreInput = $("nombre_registra");

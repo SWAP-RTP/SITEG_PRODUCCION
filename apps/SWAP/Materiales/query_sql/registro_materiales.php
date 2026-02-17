@@ -44,21 +44,29 @@ function RegistrarMateriales($conn) {
 
     $required = [
         'codigo_material', 'material', 'grupo_pertenece', 'unidad_entrada',
-        'existencia_minima', 'ubicacion_almacen', 'estado_material',
-        'nombre_registra', 'id_credencial', 'area_adscripcion'
+        'cantidad_material', 'ubicacion_almacen', 'estado_material',
+        'nombre_registra', 'id_credencial', 'area_adscripcion', 'fecha_registro'
     ];
     foreach ($required as $field) {
-        if (empty($input[$field])) return ["success" => false, "error" => "Campo obligatorio faltante: $field"];
+        if (empty($input[$field])) return ["success" => false, "error" => "¡Faltan campos obligatorios por llenar!."];
+    }
+
+    // Validar que la credencial exista en la base de datos
+    $credencial = $input['id_credencial'];
+    $sql_check = "SELECT 1 FROM usuarios WHERE trab_credencial = '$credencial' LIMIT 1";
+    $result_check = pg_query($conn, $sql_check);
+    if (!pg_fetch_assoc($result_check)) {
+        return ["success" => false, "error" => "La credencial ingresada no existe en la base de datos."];
     }
 
     $sql = "INSERT INTO catalogo_Materiales (
         codigo_material, descripcion_material, grupo_pertenece, unidad_entrada,
-        existencia_minima, ubicacion_almacen, estado_material, nombre_persona,
-        id_credencial, area_adscripcion
+        cantidad_material, ubicacion_almacen, estado_material, nombre_persona,
+        id_credencial, area_adscripcion, fecha_registro
     ) VALUES (
         '{$input['codigo_material']}', '{$input['material']}', '{$input['grupo_pertenece']}', '{$input['unidad_entrada']}',
-        '{$input['existencia_minima']}', '{$input['ubicacion_almacen']}', '{$input['estado_material']}', '{$input['nombre_registra']}',
-        '{$input['id_credencial']}', '{$input['area_adscripcion']}'
+        '{$input['cantidad_material']}', '{$input['ubicacion_almacen']}', '{$input['estado_material']}', '{$input['nombre_registra']}',
+        '{$input['id_credencial']}', '{$input['area_adscripcion']}','{$input['fecha_registro']}'
     )";
     $result = pg_query($conn, $sql);
     return ["success" => $result ? true : false];

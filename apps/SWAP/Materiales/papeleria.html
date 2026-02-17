@@ -52,7 +52,7 @@
                   <div class="col-12 col-md-4">
                     <label for="material" class="form-label mb-0">Descripción del Material:</label>
                     <input id="material" name="material" type="text" class="form-control form-control-sm rounded-pill"
-                      placeholder="Ej: ARILLO PARA ENGARGOLAR 3/4 COLOR NEGRO">
+                      placeholder="Ej: TONER PARA IMPRESORA">
                   </div>
                   <!-- campo 3: Grupo al que pertenece (select) -->
                   <div class="col-12 col-md-4">
@@ -79,15 +79,20 @@
                   </div>
                   <!-- campo 5: Existencia Mínima -->
                   <div class="col-12 col-md-4">
-                    <label for="existencia_minima" class="form-label mb-0">Existencia Mínima:</label>
-                    <input id="existencia_minima" name="existencia_minima" type="number" min="0"
+                    <label for="cantidad_material" class="form-label mb-0">Cantidad:</label>
+                    <input id="cantidad_material" name="cantidad_material" type="number" min="0"
                       class="form-control form-control-sm rounded-pill" placeholder="Ej:3">
                   </div>
                   <!-- campo 6: Ubicación en Almacén -->
                   <div class="col-12 col-md-4">
                     <label for="ubicacion_almacen" class="form-label mb-0">Ubicación en Almacén:</label>
-                    <input id="ubicacion_almacen" name="ubicacion_almacen" type="text"
-                      class="form-control form-control-sm rounded-pill" placeholder="Ej: Pasillo 3, Estante B">
+                    <select id="ubicacion_almacen" name="ubicacion_almacen" class="form-select form-select-sm rounded-pill">
+                      <option value="">Selecciona...</option>
+                      <option value="Almacén Central">Almacén Central</option>
+                      <option value="Recursos Humanos">Recursos Humanos</option>
+                      <option value="Informática">Informática</option>
+                      <option value="Mantenimiento">Mantenimiento</option>
+                    </select>
                   </div>
                   <!-- campo 7: Estado del Material (select) -->
                   <div class="col-12 col-md-4">
@@ -96,15 +101,17 @@
                       <option value="">Selecciona...</option>
                       <option value="Nuevo">Nuevo / Disponible</option>
                       <option value="Dañado">Dañado</option>
+                      <option value="Gastado">Gastado</option>
                       <option value="Mantenimiento">En mantenimiento</option>
                     </select>
                   </div>
 
-                  <!-- campo 8: ID de Credencial -->
+                  <!-- campo 8: ID de Credencial (Es el que vendrá de manera atomatizada en el index.js) -->
                   <div class="col-12 col-md-4">
                     <label for="id_credencial" class="form-label mb-0">Credencial:</label>
-                    <input id="id_credencial" name="id_credencial" type="text" pattern="\d*"
-                      class="form-control form-control-sm rounded-pill" placeholder="Ej:123" inputmode="numeric" autocomplete="off">
+                    <input id="id_credencial" name="id_credencial" type="text" pattern="[0-9]*" inputmode="numeric" maxlength="10"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej:123" autocomplete="off"
+                      oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                   </div>
                   <!-- campo 9: Nombre de la Persona (se usará como 'nombre_registra' para el JS) -->
                   <div class="col-12 col-md-4">
@@ -121,7 +128,7 @@
                   <div class="col-12 col-md-4">
                     <label for="fecha_registro" class="form-label mb-0">Fecha y hora de Registro:</label>
                     <input id="fecha_registro" name="fecha_registro" type="datetime-local"
-                      class="form-control form-control-sm rounded-pill" required>
+                      class="form-control form-control-sm rounded-pill">
                   </div>
                 </div>
               </div>
@@ -142,23 +149,28 @@
       </div>
     </div>
 
+    <!-- Título de la consulta -->
+    <div id="titulo-consulta" class="text-center w-100" style="display:none; margin-top:20px;">
+      <h2>Resultados de la consulta de materiales</h2>
+    </div>
+
     <!-- inicia Tabla para mostrar los registros de materiales -->
     <div class="row justify-content-center">
 
       <div class="col-10 col-md-10 col-lg-9 mx-auto">
         <div class="table-responsive mt-4">
-          <table id="tabla_registros" class="table table-striped table-hover align-middle shadow-sm">
+          <table id="tabla_registros" class="table table-striped table-hover align-middle shadow-sm fade-table">
             <thead class="table-success small encabezado-mini">
-              <th>Código del Material</th>
+              <th>Código</th>
               <th>Descripción</th>
               <th>Grupo</th>
               <th>Unidad de Entrada</th>
-              <th>Existencia Mínima</th>
+              <th>Cantidad</th>
               <th>Ubicación en Almacén</th>
               <th>Estado</th>
-              <th>ID de Credencial</th>
+              <th>Credencial</th>
               <th>Registrado por</th>
-              <th>Área de Adscripción</th>
+              <th>Área</th>
               <th>Fecha de Registro</th>
               </tr>
             </thead>
@@ -168,6 +180,8 @@
       </div>
     </div>
     <!-- termina Tabla para mostrar los registros de materiales -->
+
+    
   </main>
 
   <?php 
