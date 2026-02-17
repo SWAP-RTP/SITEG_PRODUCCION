@@ -88,7 +88,7 @@ Si necesitas enviar tus cambios a producción después de trabajar en tu rama:
   No incluyas `menu.js` o `logout.php` en el `.gitignore` si ya existen en el repositorio, ya que eso causaría que desaparezcan del servidor en el próximo despliegue.  
   El comando `git update-index --assume-unchanged` es la forma correcta de manejar esto.
 
-## Mapa de estructuracion de SITEG
+## Mapa de estructuracion de SITEG !!
 
 --- Esta sera la esctructura que se seguira para tener un mayor control en cuanto a la estructura del codigo.
 
