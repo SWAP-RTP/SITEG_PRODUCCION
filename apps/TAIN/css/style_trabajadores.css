@@ -1,7 +1,7 @@
 :root {
     /* Colores principales */
     --primary-bg: #132C46;
-    --card-bg: #132c46;
+    --card-bg: #0e1a2b;
     --shadow: 0 0 15px #0006;
     --shadow-hover: 0 15px 25px #0008;
 
@@ -68,6 +68,12 @@
     font-size: 13px;
 }
 
+.form-select {
+    background: var(--card-bg);
+    color: white;
+    border: 1px solid #3a4f65;
+}
+
 /* Estilos base para tarjetas */
 .card-number {
     background: var(--card-bg);
@@ -76,6 +82,7 @@
     text-align: center;
     cursor: pointer;
     box-shadow: var(--shadow);
+    transition: all 0.25s ease-in-out !important;
 }
 
 .card-number2 {
@@ -83,13 +90,6 @@
     border-radius: var(--radius);
     padding: var(--padding-sm);
     text-align: center;
-}
-
-.card-number {
-    opacity: 0;
-    transform: translateY(-5px) scale(1.05);
-    animation: fadeUp 0.5s ease-out 0.1s forwards;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 /* Iconos */
@@ -113,8 +113,8 @@
 
 /* Estados hover */
 .card-number:hover {
-    transform: translateY(-15px) !important;
-    box-shadow: var(--shadow-hover);
+    transform: translateY(-5px) scale(1.03) !important;
+    cursor: pointer;
 }
 
 /* Colores específicos de tarjetas */
@@ -205,24 +205,31 @@
 
 /* Módulos */
 .contenedor-modulos {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--gap);
-    padding: var(--padding-lg);
-    justify-items: center;
-    text-align: center;
-    box-sizing: border-box;
-    margin-bottom: var(--padding-lg);
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: stretch;
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    padding: 32px 24px;
+    background: var(--primary-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    min-height: 180px;
 }
 
 .contenedor-modulos .card-number {
-    width: 100%;
-    margin: 0;
-    box-sizing: border-box;
+    min-width: 0;
+    flex: 1 1 0;
     min-height: 120px;
+    padding: 24px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
-
 
 /* Animación */
 @keyframes fadeUp {
@@ -450,4 +457,12 @@
     .contenedor-modulos {
         grid-template-columns: repeat(4, 1fr);
     }
+}
+
+#grafModulos {
+    width: 100% !important;
+    height: 600px !important;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
 }

@@ -34,10 +34,10 @@ services:
       - internal-network
 
   # Nginx como puerta de entrada (Puerto 8086)
-  # SITEG ES LA IMAGEN DEL SISTEMA INSTEGRADO (DIRECCIONA EL TRAFICO)
+  # SINTEG ES LA IMAGEN DEL SISTEMA INSTEGRADO (DIRECCIONA EL TRAFICO)
   gateway:
     image: nginx:alpine
-    container_name: SITEG
+    container_name: SINTEG
     ports:
       - "8086:80"
     volumes:
