@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app_login:
@@ -8,6 +8,7 @@ services:
     container_name: app_login
     volumes:
       - ./apps/login:/var/www/html
+      - ./apps/common:/var/www/common
     networks:
       - internal-network
 
@@ -18,6 +19,7 @@ services:
     container_name: app_swap
     volumes:
       - ./apps/SWAP:/var/www/html
+      - ./apps/common:/var/www/common
     networks:
       - internal-network
 
