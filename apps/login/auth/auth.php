@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: application/json');
 require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 
@@ -30,8 +31,8 @@ try {
         ");
         $stmt->execute([$usuario_input]);
         $user_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         if ($user_rows && password_verify($pass_input, $user_rows[0]['contrasena'])) {
-            // Buscar la primera dirección no nula
             $direccion = null;
             foreach ($user_rows as $row) {
                 if (!empty($row['dir_nombre'])) {
@@ -44,7 +45,6 @@ try {
                 'name' => $user_rows[0]['nombre'],
                 'trab_credencial' => $user_rows[0]['trab_credencial'],
                 'modulo' => $user_rows[0]['modulo'],
-
             ];
 
             $permisos = [];
@@ -53,8 +53,6 @@ try {
                     $permisos[] = [
                         'permiso' => $row['cve_permiso'],
                         'modulo' => $row['modulo_sistem_descrip'],
-
-
                     ];
                 }
             }
@@ -71,10 +69,9 @@ try {
             setcookie("access_token", $jwt, [
                 'expires' => time() + 3600,
                 'path' => '/',
-                //'httponly' => true,
                 'samesite' => 'Lax'
             ]);
-            header('Content-Type: application/json');
+
             echo json_encode([
                 "status" => "success",
                 "token" => $jwt,
@@ -82,14 +79,28 @@ try {
                 "permisos" => $permisos
             ]);
             exit;
+        } else {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Credenciales inválidas"
+            ]);
+            exit;
         }
     } else {
-        http_response_code(401);
-        echo "Credenciales inválidas";
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Usuario y contraseña requeridos"
+        ]);
         exit;
     }
 
 } catch (PDOException $e) {
     http_response_code(500);
-    echo "Error de conexión";
+    echo json_encode([
+        "status" => "error",
+        "message" => "Error de conexión a la base de datos"
+    ]);
+    exit;
 }
