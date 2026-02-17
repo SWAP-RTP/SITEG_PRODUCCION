@@ -14,6 +14,11 @@
   <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
   <!-- CSS del Menu, encabezado, main y Titulos (template)-->
   <link rel="stylesheet" type="text/css" href="/app-swap/public/css/custom_rtp.css" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 
@@ -25,131 +30,151 @@
         include './components/menu.html'; 
     ?>
 
-  <!--INICIA MAIN-->
   <main>
-
-    <div class="row">
-
-      <div class="bg-white rounded-3 p-4 shadow-sm">
-        <div class="col-10 mx-auto" style="max-width:640px;">
-          <h1 class="bg-dark text-white rounded-3 py-2 px-5 mb-4 fw-bold text-center border border-3 border-light">
-            Registro
-            de materiales</h1>
-        </div>
-
-        <!--INICIA FORMULARIO-->
-        <form class="mt-12">
-          <div class="row g-3">
-
-            <div class="col-12 col-md-4">
-              <label for="codigo_material" class="form-label"><b>Código del Material:</b></label>
-              <input id="codigo_material" name="codigo_material" type="text" class="form-control"
-                placeholder="Ej: MAT-001">
-            </div>
-
-            <div class="col-12 col-md-8">
-              <label for="material" class="form-label"><b>Nombre del Material:</b></label>
-              <input id="material" name="material" type="text" class="form-control" placeholder="Nombre corto">
-            </div>
-
-            <div class="col-12">
-              <label for="descripcion_material" class="form-label"><b>Descripción Detallada:</b></label>
-              <textarea id="descripcion_material" name="descripcion_material" class="form-control" rows="2"
-                placeholder="Características específicas..."></textarea>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <label for="familia_material" class="form-label"><b>Categoría / Familia:</b></label>
-              <select id="familia_material" name="familia_material" class="form-select">
-                <option value="">Selecciona...</option>
-                <option value="papeleria">Papelería</option>
-                <option value="limpieza">Limpieza</option>
-                <option value="herramientas">Herramientas</option>
-              </select>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <label for="unidad_entrada" class="form-label"><b>Unidad de Medida:</b></label>
-              <select id="unidad_entrada" name="unidad_entrada" class="form-select">
-                <option value="">Selecciona...</option>
-                <option value="pieza">Pieza (Pz)</option>
-                <option value="caja">Caja</option>
-                <option value="paquete">Paquete</option>
-                <option value="litro">Litro</option>
-              </select>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <label for="cantidad" class="form-label"><b>Cantidad a Registrar:</b></label>
-              <div class="input-group">
-                <input id="cantidad" name="cantidad" type="number" min="1" class="form-control" placeholder="Ej: 10">
-                <span class="input-group-text">unidades</span>
-              </div>
-              <small class="text-muted">Ingrese el total de piezas que entran al almacén.</small>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <label for="ubicacion_almacen" class="form-label"><b>Ubicación en Almacén:</b></label>
-              <input id="ubicacion_almacen" name="ubicacion_almacen" type="text" class="form-control"
-                placeholder="Pasillo / Estante">
-            </div>
-
-            <div class="col-12 col-md-6">
-              <label for="estado_material" class="form-label"><b>Estado del Material:</b></label>
-              <select id="estado_material" name="estado_material" class="form-select">
-                <option value="nuevo">Nuevo / Disponible</option>
-                <option value="dañado">Dañado</option>
-                <option value="mantenimiento">En mantenimiento</option>
-              </select>
-            </div>
-
-            <hr class="my-4">
-            <div class="col-12 col-md-8">
-              <label for="nombre_registra" class="form-label"><b>Registrado por:</b></label>
-              <input id="nombre_registra" name="nombre_registra" type="text" class="form-control"
-                placeholder="Nombre completo de la persona">
-            </div>
-
-            <div class="col-12 col-md-4">
-              <label for="credencial" class="form-label"><b>Número de Credencial:</b></label>
-              <input id="credencial" name="credencial" type="text" class="form-control" placeholder="ID de empleado">
-            </div>
-
-            <div class="col-12 col-md-6">
-              <label for="area" class="form-label"><b>Área de Adscripción:</b></label>
-              <select id="area" name="area" class="form-select">
-                <option value="">Selecciona área...</option>
-                <option value="oficinas centrales">Oficinas centrales</option>
-                <option value="modulo 1">Módulo 4</option>
-              </select>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <label for="fecha_alta" class="form-label"><b>Fecha de Alta:</b></label>
-              <input id="fecha_alta" name="fecha_alta" type="date" class="form-control">
-            </div>
-
+    <div class="row justify-content-center">
+      <div class="col-10 col-md-10 col-lg-9">
+        <div class="card shadow mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center text-white"
+            style="background-color: #00332b;">
+            <h2 class="mb-0 fw-bold text-center w-100">Registro de Materiales</h2>
           </div>
-          <button type="button" class="btn btn-success btn-lg d-flex align-items-center gap-2">
-            <i class="fas fa-plus"></i>
-            Registrar Material
-          </button>
-          <span class="text-success small ms-1">Da clic para agregar un nuevo material al catálogo</span>
-        
-        </form>
-        <!--TERMINA FORMULARIO-->
+          <div class="card-body mt-3">
+            <form id="form-materiales" class="mt-3">
+              <div class="text-dark">
+                <div class="row align-items-center justify-content-center g-3">
+                  <!-- campo 1: Código del Material -->
+                  <div class="col-12 col-md-4">
+                    <label for="codigo_material" class="form-label mb-0">Código del Material:</label>
+                    <input id="codigo_material" name="codigo_material" type="text"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej: MAT-001">
+                  </div>
+                  <!-- campo 2: Descripción del Material (se usará como 'material' para el JS) -->
+                  <div class="col-12 col-md-4">
+                    <label for="material" class="form-label mb-0">Descripción del Material:</label>
+                    <input id="material" name="material" type="text" class="form-control form-control-sm rounded-pill"
+                      placeholder="Ej: ARILLO PARA ENGARGOLAR 3/4 COLOR NEGRO">
+                  </div>
+                  <!-- campo 3: Grupo al que pertenece (select) -->
+                  <div class="col-12 col-md-4">
+                    <label for="grupo_pertenece" class="form-label mb-0">Grupo al que pertenece:</label>
+                    <select id="grupo_pertenece" name="grupo_pertenece" class="form-select form-select-sm rounded-pill">
+                      <option value="">Selecciona...</option>
+                      <option value="Papelería">Papelería</option>
+                      <option value="Limpieza">Limpieza</option>
+                      <option value="Herramientas">Herramientas</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
+                  <!-- campo 4: Unidad de Entrada (select) -->
+                  <div class="col-12 col-md-4">
+                    <label for="unidad_entrada" class="form-label mb-0">Unidad de Entrada:</label>
+                    <select id="unidad_entrada" name="unidad_entrada" class="form-select form-select-sm rounded-pill">
+                      <option value="">Selecciona...</option>
+                      <option value="Caja">Caja</option>
+                      <option value="Paquete">Paquete</option>
+                      <option value="Pieza">Pieza</option>
+                      <option value="Litro">Litro</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
+                  <!-- campo 5: Existencia Mínima -->
+                  <div class="col-12 col-md-4">
+                    <label for="existencia_minima" class="form-label mb-0">Existencia Mínima:</label>
+                    <input id="existencia_minima" name="existencia_minima" type="number" min="0"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej: 10">
+                  </div>
+                  <!-- campo 6: Ubicación en Almacén -->
+                  <div class="col-12 col-md-4">
+                    <label for="ubicacion_almacen" class="form-label mb-0">Ubicación en Almacén:</label>
+                    <input id="ubicacion_almacen" name="ubicacion_almacen" type="text"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej: Pasillo 3, Estante B">
+                  </div>
+                  <!-- campo 7: Estado del Material (select) -->
+                  <div class="col-12 col-md-4">
+                    <label for="estado_material" class="form-label mb-0">Estado del Material:</label>
+                    <select id="estado_material" name="estado_material" class="form-select form-select-sm rounded-pill">
+                      <option value="">Selecciona...</option>
+                      <option value="Nuevo">Nuevo / Disponible</option>
+                      <option value="Dañado">Dañado</option>
+                      <option value="Mantenimiento">En mantenimiento</option>
+                    </select>
+                  </div>
 
+                  <!-- campo 8: ID de Credencial -->
+                  <div class="col-12 col-md-4">
+                    <label for="id_credencial" class="form-label mb-0">Credencial:</label>
+                    <input id="id_credencial" name="id_credencial" type="text"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej: 000123, A-456">
+                  </div>
+                  <!-- campo 9: Nombre de la Persona (se usará como 'nombre_registra' para el JS) -->
+                  <div class="col-12 col-md-4">
+                    <label for="nombre_registra" class="form-label mb-0">Nombre:</label>
+                    <input id="nombre_registra" name="nombre_registra" type="text"
+                      class="form-control form-control-sm rounded-pill" placeholder="Nombre completo">
+                  </div>
+                  <!-- campo 10: Área de Adscripción (select, se usará como 'area' para el JS) -->
+                  <div class="col-12 col-md-4">
+                    <label for="area" class="form-label mb-0">Área de Adscripción:</label>
+                    <select id="area" name="area" class="form-select form-select-sm rounded-pill">
+                      <option value="">Selecciona área...</option>
+                      <option value="Administración">Almacen Central/option>
+
+                      <option value="Módulo 4">Módulo 4</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
+                  <!-- campo 11: Fecha de Registro -->
+                  <div class="col-12 col-md-4">
+                    <label for="fecha_registro" class="form-label mb-0">Fecha y hora de Registro:</label>
+                    <input id="fecha_registro" name="fecha_registro" type="datetime-local"
+                      class="form-control form-control-sm rounded-pill" required>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-center mt-4">
+                <button id="btn_alta" type="submit" class="btn btn-success rounded-pill px-4 me-3">
+                  <i class="fa-regular fa-floppy-disk"></i> Guardar registro
+                </button>
+                <button id="btn_consulta" type="button" class="btn btn-primary rounded-pill px-4 me-3">
+                  <i class="fa-solid fa-table-list me-2"></i> Consultar registros
+                </button>
+                <button type="reset" class="btn btn-secondary rounded-pill px-4">
+                  <i class="fa-solid fa-broom"></i> Limpiar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- inicia Tabla para mostrar los registros de materiales -->
+    <div class="row justify-content-center">
+
+      <div class="col-10 col-md-10 col-lg-9 mx-auto">
+        <div class="table-responsive mt-4">
+          <table id="tabla_registros" class="table table-striped table-hover align-middle shadow-sm">
+            <thead class="table-success small encabezado-mini">
+              <th>Código del Material</th>
+              <th>Descripción</th>
+              <th>Grupo</th>
+              <th>Unidad de Entrada</th>
+              <th>Existencia Mínima</th>
+              <th>Ubicación en Almacén</th>
+              <th>Estado</th>
+              <th>ID de Credencial</th>
+              <th>Registrado por</th>
+              <th>Área de Adscripción</th>
+              <th>Fecha de Registro</th>
+              </tr>
+            </thead>
+            <tbody id="tabla_materiales"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
+    <!-- termina Tabla para mostrar los registros de materiales -->
   </main>
-  <!--TERMINA MAIN-->
-
-
-
-
-
-
 
   <?php 
         include './components/pie.html'; 
@@ -161,9 +186,11 @@
   <!-- js del menu lateral -->
   <script type="text/javascript" src="/app-swap/public/js/menu.js"></script>
 
-  <script type="text/javascript" src="scripts/entrada_materiales.js"></script>
+  <script type="module" src="scripts/index.js"></script>
 
-
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
 </body>
 
