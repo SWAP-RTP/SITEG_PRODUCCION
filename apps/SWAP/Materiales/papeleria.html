@@ -103,8 +103,8 @@
                   <!-- campo 8: ID de Credencial -->
                   <div class="col-12 col-md-4">
                     <label for="id_credencial" class="form-label mb-0">Credencial:</label>
-                    <input id="id_credencial" name="id_credencial" type="text"
-                      class="form-control form-control-sm rounded-pill" placeholder="Ej: 000123, A-456">
+                    <input id="id_credencial" name="id_credencial" type="text" pattern="\d*"
+                      class="form-control form-control-sm rounded-pill" placeholder="Ej:123" inputmode="numeric" autocomplete="off">
                   </div>
                   <!-- campo 9: Nombre de la Persona (se usará como 'nombre_registra' para el JS) -->
                   <div class="col-12 col-md-4">
@@ -115,13 +115,7 @@
                   <!-- campo 10: Área de Adscripción (select, se usará como 'area' para el JS) -->
                   <div class="col-12 col-md-4">
                     <label for="area" class="form-label mb-0">Área de Adscripción:</label>
-                    <select id="area" name="area" class="form-select form-select-sm rounded-pill">
-                      <option value="">Selecciona área...</option>
-                      <option value="Administración">Almacen Central/option>
-
-                      <option value="Módulo 4">Módulo 4</option>
-                      <option value="Otros">Otros</option>
-                    </select>
+                    <input id="area" name="area" type="text" class="form-control form-control-sm rounded-pill" value="Módulo 4" readonly>
                   </div>
                   <!-- campo 11: Fecha de Registro -->
                   <div class="col-12 col-md-4">

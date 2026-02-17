@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const credencial = this.value.trim();
     const nombreInput = $("nombre_registra");
     if (!credencial) return nombreInput.value = "";
-    const res = await fetch(`query_sql/registro_materiales.php?buscar_nombre=${encodeURIComponent(credencial)}`);
+    const res = await fetch(`query_sql/registro_materiales.php?buscar_persona=${encodeURIComponent(credencial)}`);
     const data = await res.json();
     nombreInput.value = data.nombre || "";
   };
