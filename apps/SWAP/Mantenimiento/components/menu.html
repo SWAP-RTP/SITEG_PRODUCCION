@@ -1,46 +1,17 @@
-<?
-session_start();
-
-
-// Verificar permisos del usuario actual
-$usuario_actual = $_SESSION['usr_id'];
-$modulos_usuario = $_SESSION['modulos'];
-
-// Función para verificar si el usuario tiene un permiso específico
-function tienePermiso($modulos, $modulo_nombre, $permiso_id) {
-    if (isset($modulos[$modulo_nombre]) && is_array($modulos[$modulo_nombre])) {
-        return in_array($permiso_id, $modulos[$modulo_nombre]);
-    }
-    return false;
-} 
-
-// Verificar permisos específicos para Mantenimiento
-$puede_altas = tienePermiso($modulos_usuario, 'Mantenimiento', 1);           // Altas = 1
-$puede_bajas = tienePermiso($modulos_usuario, 'Mantenimiento', 2);           // Bajas = 2
-$puede_actualizacion = tienePermiso($modulos_usuario, 'Mantenimiento', 3);   // Actualización = 3
-$puede_cambios = tienePermiso($modulos_usuario, 'Mantenimiento', 4);         // Cambios = 4
-$puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consultas = 8
-
-// Obtener el módulo actual de la sesión
- $modulo_actual = isset($_SESSION['modulo_o']) ? $_SESSION['modulo_o'] : null;
-?>
-
-
 <!-- INICIO BARRA LATERAL DE MENÚ -->
 <div class="flex-shrink-0 p-3" style="width: 350px; min-height: 100vh; background-color: #009688">
 
   <!-- INICIO LISTA DE OPCIONES  -->
   <ul class="list-unstyled ps-0">
     <!-- permiso dependiendo del modulo -->
-    <?php if ($modulo_actual != 1 && $puede_altas): ?>
+
     <li class="mb-1">
       <a id="correctivo-alta" href="/Mantenimiento/correctivo/orden_alta/index.html"
         class="btn btn-toggle align-items-center rounded collapsed w-100 text-light p-3""><i
           class=" fas fa-car-alt"></i>Alta de Orden</a>
     </li>
     <li class="border-top my-1"></li>
-    <?php endif; ?>
-    <?php if ($puede_consultas): ?>
+
     <li class="mb-1">
       <a id="mantenimiento-requisicon-fondo-revolvente"
         class="btn btn-toggle align-items-center rounded collapsed w-100 text-light p-3"
@@ -49,7 +20,7 @@ $puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consul
       </a>
     </li>
     <li class="border-top my-1"></li>
-    <?php endif; ?>
+
     <li class="mb-1">
       <a id="mantenimiento-fondo-revolvente"
         class="btn btn-toggle align-items-center rounded collapsed w-100 text-light p-3"
@@ -185,7 +156,7 @@ $puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consul
           </div>
         </li>
 
-        <?php if ($modulo_actual != 1 && $puede_altas): ?>
+
         <!--Mantenimiento Correctivo  -->
         <li class="border-top my-2"></li>
         <li class="mb-1">
@@ -270,9 +241,6 @@ $puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consul
             </ul>
           </div>
         </li>
-        <?php endif; ?>
-
-
 
         <!-- Llantas -->
         <li class="border-top my-2"></li>
@@ -301,8 +269,6 @@ $puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consul
               <i class="fas fa-ruler"></i>Profundidad de Huella
             </a>
           </li>
-
-
           <li class="pe-2">
             <a id="llantas-menu-item-reportes" href="/Mantenimiento/llantas/reportes.html"
               class="link-dark rounded w-100 d-flex align-items-center gap-2 text-light py-2">
@@ -312,13 +278,6 @@ $puede_consultas = tienePermiso($modulos_usuario, 'Mantenimiento', 8); // Consul
         </ul>
       </div>
     </li>
-
-
-
-
-
-
-
 
     <li class="border-top my-2">
     <li class="mb-1">
