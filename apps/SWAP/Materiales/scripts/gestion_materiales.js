@@ -1,5 +1,5 @@
 export const RegistrarMaterial = async (datos) => {
-    const res = await fetch('query_sql/registro_materiales.php', {
+    const res = await fetch('query_sql/gestion_materiales.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
@@ -8,8 +8,16 @@ export const RegistrarMaterial = async (datos) => {
     return await res.json();
 };
 
+
 export const ConsultarMateriales = async () => {
-    const res = await fetch('query_sql/registro_materiales.php?consulta=1');
+    const res = await fetch('query_sql/gestion_materiales.php?consulta=1');
+    if (!res.ok) throw new Error('Error en servidor');
+    return await res.json();
+};
+
+
+export const BuscarPersona = async (credencial) => {
+    const res = await fetch(`query_sql/gestion_materiales.php?buscar_persona=${encodeURIComponent(credencial)}`);
     if (!res.ok) throw new Error('Error en servidor');
     return await res.json();
 };
