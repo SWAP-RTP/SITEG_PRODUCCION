@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 $(document).ready(function() {
     // console.log('dasdasd')
     permiso_usuario();
@@ -732,6 +735,8 @@ document.getElementById("BtnBuscar").addEventListener("click", function(){
     }else{
         window.location.href = 'editar_trabajador.html?credencial=' + credencial_busqueda;
     }
+<<<<<<< HEAD
+=======
 =======
 $(document).ready(function() {
     // console.log('dasdasd')
@@ -1467,4 +1472,5 @@ document.getElementById("BtnBuscar").addEventListener("click", function(){
         window.location.href = 'editar_trabajador.html?credencial=' + credencial_busqueda;
     }
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 });

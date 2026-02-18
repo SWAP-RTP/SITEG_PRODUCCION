@@ -5,7 +5,6 @@ $dbname = "swap_2025";
 $user = "desarrollo";
 $password = "desarrollo";
 
-
 function conexion()
 {
     global $host, $port, $dbname, $user, $password;

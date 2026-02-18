@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 // Función principal que se ejecuta al cargar el documento
 $(document).ready(function() {
     permiso_usuario() ;
@@ -332,6 +335,8 @@ function obtensigid() {
                 $('#modal_carga_masiva').modal('hide')
             }
         })
+<<<<<<< HEAD
+=======
 =======
 // Función principal que se ejecuta al cargar el documento
 $(document).ready(function() {
@@ -667,4 +672,5 @@ function obtensigid() {
             }
         })
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
     });

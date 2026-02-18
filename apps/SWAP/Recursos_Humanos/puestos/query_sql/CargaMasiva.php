@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 <?php
 session_start();
 include ('/usr/local/apache/htdocs/conf/conexion.php');
@@ -106,6 +109,8 @@ try {
 $jsonstring = json_encode($json); 
 echo $jsonstring; 
 ?>
+<<<<<<< HEAD
+=======
 =======
 <?php
 session_start();
@@ -215,3 +220,4 @@ $jsonstring = json_encode($json);
 echo $jsonstring; 
 ?>
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef

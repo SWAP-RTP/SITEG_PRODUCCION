@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 $(document).ready(function () {
     $('#tabla_contenedor').hide();
     $('#animacion').hide(); //oculta la animacion
@@ -257,6 +260,8 @@ $(document).ready(function () {
 
 
 
+<<<<<<< HEAD
+=======
 =======
 $(document).ready(function () {
     $('#tabla_contenedor').hide();
@@ -517,4 +522,5 @@ $(document).ready(function () {
 
 
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 }); //Fin evento inicializador

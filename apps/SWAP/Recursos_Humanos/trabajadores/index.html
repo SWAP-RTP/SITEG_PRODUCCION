@@ -1,10 +1,13 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
 <?php
     session_start();
     $url = $_SESSION[rootApp];
     //include $url.'Mantenimiento/includes/valida_acceso.php';
 ?>
 
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 <!DOCTYPE html>
 <html lang="es">
 
@@ -16,6 +19,18 @@
 
     <!-- TÍTULO DE LA PÁGINA -->
     <title>Trabajador</title>
+<<<<<<< HEAD
+    <!-- BOOTSTRAP CSS -->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
+    <!-- CSS del Menu, encabezado, main y Titulos (template)-->
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/css/custom_rtp.css" />
+</head>
+
+<body>
+    <? include "../components/encabezado.html"; ?>
+    <? include "../components/menu.html"; ?>
+
+=======
 
 
     <? 
@@ -30,6 +45,7 @@
             include $url."Recursos_Humanos_New/encabezado.html";   
             include $url."Recursos_Humanos_New/menu.html";
         ?>
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
     <main>
 
         <h2 class='text-center'><u>Consulta de Trabajador</u></h2>
@@ -417,12 +433,17 @@
     </main>
 
     <!-- PIE -->
+<<<<<<< HEAD
+    <? include "../components/pie.html"; ?>
+
+=======
     <? 
         include $url."/Recursos_Humanos_New/pie.html"; 
         ?>
     <?php
             include $url."/Recursos_Humanos_New/includes/footer_datatables.html";   
         ?>
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 
     <script>
         $('#trabajador').addClass('show');
@@ -431,6 +452,16 @@
     </script>
 
     <script type="text/javascript" src="scripts/consulta_trabajador.js"></script>
+<<<<<<< HEAD
+    <!-- jquery -->
+    <script type="text/javascript" src="/app-swap/public/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+    <!-- BOOTSTRAP JS  -->
+    <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- js del menu lateral -->
+    <script type="text/javascript" src="/app-swap/public/js/menu.js"></script>
+</body>
+
+=======
 </body>
 
 =======
@@ -869,4 +900,5 @@
 </body>
 
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 </html>

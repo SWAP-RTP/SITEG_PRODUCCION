@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
 <?php
 session_start();  // Inicia la sesión para gestionar información del usuario
 include ('/usr/local/apache/htdocs/conf/conexion.php');  // Incluye el archivo de conexión a la base de datos
@@ -125,6 +128,8 @@ try {
 $jsonstring = json_encode($response);
 echo $jsonstring;
 ?>
+<<<<<<< HEAD
+=======
 =======
 <?php
 session_start();  // Inicia la sesión para gestionar información del usuario
@@ -253,3 +258,4 @@ $jsonstring = json_encode($response);
 echo $jsonstring;
 ?>
 >>>>>>> e40c811f0792c47020ea16882dd53dc56fd1a088
+>>>>>>> 390319036638cb11f96d0426c37d77bbec365fef
