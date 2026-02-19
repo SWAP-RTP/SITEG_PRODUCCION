@@ -22,7 +22,7 @@ try {
         "error"   => "Error interno del servidor."
     ]);
 }
-
+// REGISTRO DE MATERIALES
 function registrarMateriales($conexion) {
 
     $input = json_decode(file_get_contents('php://input'), true);
