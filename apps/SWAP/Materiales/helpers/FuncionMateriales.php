@@ -44,3 +44,4 @@ function insertarMaterial($host, $port, $dbname, $user, $password, $data)
     pg_close($conexion);
     return array("success" => true, "message" => "Material registrado correctamente");
 }
+

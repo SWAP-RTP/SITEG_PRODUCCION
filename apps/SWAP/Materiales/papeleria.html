@@ -107,12 +107,14 @@
                     </select>
                   </div>
 
-                  <!-- campo 8: ID de Credencial (Es el que vendrá de manera atomatizada en el index.js) -->
+                  <!-- campo 8: ID de Credencial -->
                   <div class="col-12 col-md-4">
                     <label for="id_credencial" class="form-label mb-0">Credencial:</label>
                     <input id="id_credencial" name="id_credencial" type="text" pattern="[0-9]*" inputmode="numeric"
                       maxlength="10" class="form-control form-control-sm rounded-pill" placeholder="Ej:123"
                       autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <!-- Agregar este UL para las sugerencias -->
+                    <ul id="lista-credenciales" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
                   </div>
                   <!-- campo 9: Nombre de la Persona (se usará como 'nombre_registra' para el JS) -->
                   <div class="col-12 col-md-4">

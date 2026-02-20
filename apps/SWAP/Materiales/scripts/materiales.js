@@ -1,4 +1,4 @@
-import { buscarCredencial} from '../../includes/utils/buscarCredencial.js';
+import { buscarCredencial } from './utils/credenciales.js';
 import { datosTabla, dataTable } from '../../includes/utils/dataTable_v2.js';
 
 // Configura el autocompletado de credencial
