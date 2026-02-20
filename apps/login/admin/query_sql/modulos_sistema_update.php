@@ -1,14 +1,11 @@
 <?php
-$host = "10.10.31.207";
-$port = 5435;
-$dbname = "sugo-pruebas";
-$user = "desarrollo";
-$password = "desarrollo1";
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../conf/conexion.php';
 
 // Recibir datos JSON
-$id = $_POST['id'] ?? null;
-$estatus = $_POST['estatus'] ?? null;
+header('Content-Type: application/json');
+$input = json_decode(file_get_contents('php://input'), true);
+$id = $input['id'] ?? null;
+$estatus = $input['estado'] ?? null; // Debe coincidir con el nombre enviado desde JS
 
 if (!$id || !isset($estatus)) {
     http_response_code(400);
@@ -27,7 +24,7 @@ function updateModulos_sistema($host, $port, $dbname, $user, $password, $id, $es
 
     pg_query($conexion, "BEGIN"); // Inicia transacción
 
-    $sql = "UPDATE sistemas_siteg SET estatus = $1 WHERE id = $2";
+    $sql = "UPDATE modulo_sistem SET estatus = $1 WHERE cve_modulo = $2";
     $result = pg_query_params($conexion, $sql, [$estatus, $id]);
 
     if ($result) {
@@ -41,4 +38,4 @@ function updateModulos_sistema($host, $port, $dbname, $user, $password, $id, $es
     pg_close($conexion);
 }
 
-echo json_encode(updateModulos_sistema($host, $port, $dbname, $user, $password, $id, $estatus));
+updateModulos_sistema($host, $port, $dbname, $user, $password, $id, $estatus);

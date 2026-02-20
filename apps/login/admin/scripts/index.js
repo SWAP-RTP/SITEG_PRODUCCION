@@ -33,7 +33,7 @@ function dataTable(datosTabla, id_tabla, columns) {
   });
 }
 
-//! ***************** Consumir dataTable ******************* */
+//! ***************** Consumir dataTable de usuarios ******************* */
 (async () => {
   const datos = await datosTabla("/admin/query_sql/usuarios.php");
   dataTable(datos, "#tabla_orden_alta", [
@@ -61,14 +61,14 @@ obtenerModulos("/admin/query_sql/catalogos_modulos.php");
 
 // ***************** Consumir modulos_sistema ******************* */
 
-//! ***************** Consumir dataTable ******************* */
+//! ***************** Consumir dataTable de modulos de sistema ******************* */
 (async () => {
   const modulos_sistema = await datosTabla(
     "/admin/query_sql/modulos_sistema.php",
   );
   dataTable(modulos_sistema, "#tabla_modulos_sistema", [
-    { data: "id", title: "id" },
-    { data: "sistema_nombre", title: "sistema_nombre" },
+    { data: "cve_modulo", title: "cve_modulo" },
+    { data: "modulo_sistem_descrip", title: "modulo_sistem_descrip" },
     {
       data: "estatus",
       title: "estatus",
@@ -85,26 +85,62 @@ obtenerModulos("/admin/query_sql/catalogos_modulos.php");
       render: function (data, type, row) {
         const esActivo = row.estatus === "t";
         return `
-    <button class="btn btn-${esActivo ? "warning" : "success"} btn-sm me-2 btn-toggle-estado" data-id="${row.id}" data-estado="${esActivo ? "f" : "t"}">
+    <button class="btn btn-${esActivo ? "warning" : "success"} btn-sm me-2 btn-toggle-estado" data-id="${row.cve_modulo}" data-estado="${esActivo ? "f" : "t"}">
       ${esActivo ? "Inactivar" : "Activar"}
     </button>
-    <button class="btn btn-danger btn-sm" id="delete-${row.id}"><i class="fa fa-trash"></i></button>
+    <button class="btn btn-danger btn-sm" id="delete-${row.cve_modulo}"><i class="fa fa-trash"></i></button>
   `;
       },
     },
   ]);
 })();
 
-document
-  .querySelector("#tabla_modulos_sistema")
-  .addEventListener("click", async (e) => {
-    // vericicamos si es el boton
-    const boton_estatus = e.target.closest(".btn-toggle-estado");
+// !***************** Agregar nuevo módulo al sistema ******************* */
 
-    if (boton_estatus) {
-      const id = boton_estatus.getAttribute("data-id");
-      const nuevo_estado = boton_estatus.getAttribute("data-estado");
+//! boton de activar o inactivar modulo del sistema
+document.addEventListener("click", async function (event) {
+  if (event.target.classList.contains("btn-toggle-estado")) {
+    const btn = event.target;
+    const id = btn.getAttribute("data-id");
+    const nuevoEstado = btn.getAttribute("data-estado");
 
-      console.log(`ID: ${id}, Nuevo Estatus: ${nuevo_estado}`);
+    try {
+      const response = await fetch(
+        `/admin/query_sql/modulos_sistema_update.php`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id, estado: nuevoEstado }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Encuentra la fila del botón
+        const fila = btn.closest("tr");
+        // Actualiza el badge de estatus
+        const estatusCell = fila.querySelector("td:nth-child(3)");
+        if (estatusCell) {
+          estatusCell.innerHTML =
+            nuevoEstado === "t"
+              ? '<span class="badge bg-success">Activo</span>'
+              : '<span class="badge bg-secondary">Inactivo</span>';
+        }
+        // Actualiza el botón de acción
+        btn.classList.toggle("btn-warning");
+        btn.classList.toggle("btn-success");
+        btn.setAttribute("data-estado", nuevoEstado === "t" ? "f" : "t");
+        btn.innerHTML = nuevoEstado === "t" ? "Inactivar" : "Activar";
+        alert("Estado actualizado correctamente");
+      } else {
+        alert("Error al actualizar el estado");
+      }
+    } catch (error) {
+      alert("Error en la petición");
+      console.error(error);
     }
-  });
+  }
+});
