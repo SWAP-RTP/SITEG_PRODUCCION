@@ -50,8 +50,8 @@
                   </div>
                   <!-- campo 2: Descripción del Material (se usará como 'material' para el JS) -->
                   <div class="col-12 col-md-4">
-                    <label for="descripcion_material" class="form-label mb-0">Descripción del Material:</label>
-                    <input id="descripcion_material" name="descripcion_material" type="text" class="form-control form-control-sm rounded-pill"
+                    <label for="material" class="form-label mb-0">Descripción del Material:</label>
+                    <input id="material" name="material" type="text" class="form-control form-control-sm rounded-pill"
                       placeholder="Ej: TONER PARA IMPRESORA">
                   </div>
                   <!-- campo 3: Grupo al que pertenece (select) -->
@@ -100,10 +100,10 @@
                     <label for="estado_material" class="form-label mb-0">Estado del Material:</label>
                     <select id="estado_material" name="estado_material" class="form-select form-select-sm rounded-pill">
                       <option value="">Selecciona...</option>
-                      <option value="Nuevo">NUEVO / DISPONIBLE</option>
-                      <option value="Dañado">DAÑADO</option>
-                      <option value="Gastado">GASTADO</option>
-                      <option value="Mantenimiento">EN MANTENIMIENTO</option>
+                      <option value="Nuevo">NUEVO</option>
+                      <option value="Dañado">Dañado</option>
+                      <option value="Gastado">Gastado</option>
+                      <option value="Mantenimiento">En mantenimiento</option>
                     </select>
                   </div>
 
@@ -153,7 +153,7 @@
 
     <!-- Título de la consulta -->
     <div id="titulo-consulta" class="text-center w-100" style="display:none; margin-top:20px;">
-      <h2>RESULTADOS DE LA CONSULTA</h2>
+      <h2>Resultados de la consulta de materiales</h2>
     </div>
 
     <!-- inicia Tabla para mostrar los registros de materiales -->
