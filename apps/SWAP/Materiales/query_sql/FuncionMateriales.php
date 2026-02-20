@@ -4,25 +4,9 @@ require_once __DIR__ . '/../helpers/usuarios.php';
 require_once __DIR__ . '/../helpers/validacion.php';
 header('Content-Type: application/json');
 
-try {
-    $conexion = conexion() ?: throw new Exception("Error de conexión.");
-
-    $res = match(true) {
-        isset($_GET['buscar_persona']) => buscarPersona($conexion, $_GET['buscar_persona']),
-        isset($_GET['consulta'])       => consultarMateriales($conexion),
-        default                        => registrarMateriales($conexion)
-    };
-
-    echo json_encode($res);
-
-} catch (Throwable $e) {
-    http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "error"   => "Error interno del servidor."
-    ]);
-}
-// REGISTRO DE MATERIALES
+//==========================================================================
+//******************REGISTRO DE MATERIALES**********************************
+//==========================================================================
 function registrarMateriales($conexion) {
 
     $input = json_decode(file_get_contents('php://input'), true);
@@ -31,7 +15,7 @@ function registrarMateriales($conexion) {
     }
 
     $required = [
-        'codigo_material','material','grupo_pertenece','unidad_entrada',
+        'codigo_material','descripcion_material','grupo_pertenece','unidad_entrada',
         'cantidad_material','ubicacion_almacen','estado_material',
         'nombre_registra','id_credencial','area_adscripcion','fecha_registro'
     ];
@@ -55,7 +39,7 @@ function registrarMateriales($conexion) {
 
     $params = [
         $input['codigo_material'],
-        $input['material'],
+        $input['descripcion_material'],
         $input['grupo_pertenece'],
         $input['unidad_entrada'],
         $input['cantidad_material'],
@@ -79,8 +63,9 @@ function registrarMateriales($conexion) {
     return ["success" => true];
 }
 
-
-// CONSULTA DE MATERIALES
+//==========================================================================
+//******************CONSULTA DE MATERIALES**********************************
+//==========================================================================
 function consultarMateriales($conexion) {
 
     $sql = "SELECT * FROM catalogo_materiales ORDER BY codigo_material DESC";
@@ -94,4 +79,26 @@ function consultarMateriales($conexion) {
         "success" => true,
         "data"    => pg_fetch_all($result) ?: []
     ];
+}
+
+//==========================================================================
+//***ATRAPA EL ERROR DE CONEXIÓN O CUALQUIER OTRO ERROR EN LA EJECUCIÓN***//
+//==========================================================================
+try {
+    $conexion = conexion() ?: throw new Exception("Error de conexión.");
+
+    $response = match(true) {
+        isset($_GET['buscar_persona']) => buscarPersona($conexion, $_GET['buscar_persona']),
+        isset($_GET['consulta'])       => consultarMateriales($conexion),
+        default                        => registrarMateriales($conexion)
+    };
+
+    echo json_encode($response);
+
+} catch (Throwable $evento) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "error"   => "Error interno del servidor."
+    ]);
 }
