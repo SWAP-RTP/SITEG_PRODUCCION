@@ -23,7 +23,7 @@ try {
                 mp.cve_permiso, 
                 msd.modulo_sistem_descrip,
                 ads.dir_nombre
-            FROM usuarios u 
+            FROM usuarios_siteg u 
             LEFT JOIN modulo_perm mp ON mp.trab_credencial = u.trab_credencial 
             LEFT JOIN modulo_sistem msd ON msd.cve_modulo = mp.cve_modulo 
                LEFT join adsc_direccion ads on msd.pertenencia = ads.dir_cve
