@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tabla = document.querySelector('#tabla-body-maestro');
     const inputBusqueda = document.querySelector('#busqueda-inventario');
-    const btnRefresh = document.querySelector('#btn-refresh'); // El botón del HTML
+    const btnRefresh = document.querySelector('#btn-refresh'); 
     const loader = document.querySelector('#loader-inventario');
 
     let inventarioLocal = [];
-
-   
 
     function cargarDatos() {
         loader.classList.remove('d-none');
@@ -47,13 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const stock = parseFloat(item.total);
             const min = parseFloat(item.minimo) || 1;
             
-            // Lógica de Barra (Meta = 3 veces el mínimo)
             const maxVisual = min * 3; 
             let porcentaje = (stock / maxVisual) * 100;
             if (porcentaje > 100) porcentaje = 100; 
             const porcentajeTexto = Math.round(porcentaje);
 
-            // --- LÓGICA DE FRASES ENTENDIBLES ---
             let colorBarra = 'bg-success';
             let textoEstado = '<i class="fa-solid fa-check-circle me-1"></i> Stock disponible';
             let badgeColor = 'bg-success-subtle text-success border-success';
@@ -68,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeColor = 'bg-warning-subtle text-warning border-warning';
             }
 
+            // --- COLUMNA EXISTENCIA LIMPIA (SIN UNIDAD) ---
             tabla.innerHTML += `
                 <tr>
                     <td class="fw-bold text-secondary small">${item.codigo}</td>
@@ -75,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="min-width: 220px;">
                         <div class="d-flex justify-content-between mb-1 small">
                             <span class="fw-bold ${stock <= min ? 'text-danger' : 'text-dark'}">
-                                ${stock} <small class="text-muted fw-normal">${item.unidad}</small>
+                                ${stock}
                             </span>
                         </div>
                         <div class="progress" style="height: 20px; background-color: #e9ecef; border-radius: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
@@ -101,14 +98,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarResumen(datos) {
         const totalArt = document.querySelector('#total-articulos');
         const totalCrit = document.querySelector('#total-critico');
+        const contenedorDetalle = document.querySelector('#contenedor-detalles-produccion');
+
         if(totalArt) totalArt.innerText = datos.length;
         if(totalCrit) {
             const criticos = datos.filter(i => parseFloat(i.total) <= (parseFloat(i.minimo) || 0)).length;
             totalCrit.innerText = criticos;
         }
+
+        if (contenedorDetalle) {
+            contenedorDetalle.innerHTML = ''; 
+            datos.forEach(item => {
+                const esCritico = parseFloat(item.total) <= parseFloat(item.minimo);
+                contenedorDetalle.innerHTML += `
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="p-3 border rounded shadow-sm bg-white text-center h-100">
+                            <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">${item.nombre}</div>
+                            <div class="h4 fw-bold mb-0 ${esCritico ? 'text-danger' : 'text-primary'}">${item.total}</div>
+                            <div class="text-muted small">${item.unidad}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
     }
 
-    // El botón Refresh ahora solo recarga localmente por seguridad
     btnRefresh.addEventListener('click', cargarDatos);
 
     inputBusqueda.addEventListener('input', (e) => {

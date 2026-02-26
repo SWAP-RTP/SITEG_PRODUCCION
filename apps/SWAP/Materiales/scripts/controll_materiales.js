@@ -1,5 +1,5 @@
 /* ============================================================
-    ARCHIVO: CONTROL_MATERIALES.JS (Sincronización Total)
+    ARCHIVO: CONTROL_MATERIALES.JS (Versión Final Blindada)
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "1000": "LUIS FERNANDO GÓMEZ",
     };
 
+    // Autocompletado de trabajadores
     inputCredencial.addEventListener('input', (e) => {
         const valor = e.target.value.trim();
         if (diccionarioEmpleados[valor]) {
@@ -55,15 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
         cargando.classList.add('d-none');
     });
 
+    // --- ACCIÓN: GUARDAR REGISTRO ---
     formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnGuardar = document.querySelector('#btn_alta');
         const formData = new FormData(formulario);
         const datos = Object.fromEntries(formData.entries());
 
-        // Validación estricta de unidad
-        if (!datos.codigo_material || !datos.descripcion_material || !datos.cantidad_inicial_material || !datos.unidad_medida_material) { 
-            mostrarToast('Error:Campos incompletos', 'bg-danger');
+        /* ------------------------------------------------------------
+           VALIDACIÓN BLINDADA: Incluye código, nombre, cantidad, 
+           unidad Y FECHA obligatoriamente.
+        ------------------------------------------------------------ */
+        if (!datos.codigo_material || !datos.descripcion_material || !datos.cantidad_inicial_material || !datos.unidad_medida_material || !datos.fecha_registro_material) { 
+            mostrarToast('Error: Debes llenar todos los campos.', 'bg-danger');
             return;
         }
 
@@ -72,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await esperar(800); 
 
-        // Limpiar registros viejos sin unidad
+        // Limpiar registros viejos corruptos (opcional, por mantenimiento)
         let historial = JSON.parse(localStorage.getItem('mis_recibos')) || [];
         historial = historial.filter(r => r.unidad && r.unidad !== 'undefined');
 
@@ -91,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('mis_recibos', JSON.stringify(historial));
 
         mostrarToast('¡Campos registrados exitosamente!', 'bg-success');
+        
+        // Reset de Interfaz
         formulario.reset();
         inputNombre.classList.remove('bg-success-subtle');
         inputNombre.readOnly = false;
@@ -98,9 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGuardar.disabled = false;
     });
 
+    // --- ACCIÓN: CONSULTA DE ACTIVIDAD ---
     document.querySelector('#btn_consulta').addEventListener('click', async () => {
         const historial = JSON.parse(localStorage.getItem('mis_recibos')) || [];
-        if (historial.length === 0) { mostrarToast('No hay registros.', 'bg-danger'); return; }
+        if (historial.length === 0) { mostrarToast('No hay registros para mostrar.', 'bg-danger'); return; }
+        
         cargando.classList.remove('d-none');
         await esperar(500);
         mostrarHistorialDetallado(historial);
@@ -109,18 +118,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function mostrarHistorialDetallado(datos) {
+        // 1. Limpiamos la tabla
         tabla.innerHTML = '';
+
+  
+        // CÓDIGO | DESCRIPCIÓN | RESPONSABLE | CANTIDAD | FECHA | ESTADO
         [...datos].reverse().slice(0, 10).forEach(reg => {
-            // Solo el número, sin la palabra 'undefined' ni la unidad
             tabla.innerHTML += `<tr>
-                <td class="small text-muted">${reg.fecha}</td>
-                <td class="fw-bold">${reg.codigo}</td>
-                <td>${reg.nombre}</td>
+                <td class="fw-bold text-dark">${reg.codigo}</td>
+                <td class="small">${reg.nombre}</td>
+                <td class="small text-muted">${reg.quien}</td>
                 <td class="text-success fw-bold">+ ${reg.cuanto}</td>
-                <td>${reg.quien}</td>
-                <td><span class="badge bg-success-subtle text-success">OK</span></td>
+                <td class="small text-secondary">${reg.fecha}</td>
+                <td>
+                    <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.7rem;">
+                        <i class="fa-solid fa-check me-1"></i>REGISTRADO
+                    </span>
+                </td>
             </tr>`;
         });
+
+        // 3. Mostramos el contenedor de la tabla
         reporte.classList.remove('d-none');
     }
 });
