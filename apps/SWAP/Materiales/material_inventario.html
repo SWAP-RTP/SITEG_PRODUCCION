@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consulta inventario</title>
+
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
+
+    <style>
+        /* Estilos Modern Form (Redondeados 2rem) */
+        .card.modern-form {
+            border-radius: 2rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            border: none;
+        }
+
+        .card-header.modern-form-header {
+            border-radius: 2rem 2rem 0 0;
+            padding: 1.5rem;
+        }
+
+        .card-body.modern-form-body {
+            border-radius: 0 0 2rem 2rem;
+            padding: 2rem;
+        }
+
+        /* Estilo de la tabla */
+        .table-container {
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+
+        .badge-stock {
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Animación de carga */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 2rem;
+        }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/app-swap/includes/css/custom_rtp.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light">
+    <?php include './components/encabezado.html'; ?>
+    <?php include './components/menu.html'; ?>
+
+
+    <main class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-11">
+
+                <div class="card modern-form position-relative">
+                    <div id="loader-inventario" class="loading-overlay d-none">
+                        <div class="spinner-border text-success" role="status"></div>
+                    </div>
+
+                    <div class="card-header d-flex justify-content-between align-items-center text-white modern-form-header"
+                        style="background-color: #00332b;">
+                        <h2 class="mb-0 fw-bold text-center w-100">
+                            <i class="me-2"></i>Consulta de Inventario
+                        </h2>
+                    </div>
+
+                    <div class="card-body modern-form-body bg-white">
+
+                        <div class="row mb-4 g-3 align-items-end">
+
+                            <div class="col-md-12 text-end">
+                                <button id="btn-refresh" class="btn btn-success rounded-pill px-4 shadow-sm">
+                                    <i class="fa-solid fa-arrows-rotate me-1"></i> Sincronizar Stock
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container shadow-sm">
+                            <table class="table table-hover mb-0">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr class="text-center text-muted small">
+                                        <th class="py-3">CÓDIGO</th>
+                                        <th class="py-3 text-start">DESCRIPCIÓN DEL MATERIAL</th>
+                                        <th class="py-3">EXISTENCIA</th>
+                                        <th class="py-3">MÍNIMO</th>
+                                        <th class="py-3">UBICACIÓN</th>
+                                        <th class="py-3">ESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-body-maestro" class="text-center align-middle">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-3">
+                            <div class="p-3 border rounded-4 bg-light flex-fill text-center">
+                                <div class="small text-muted">Total Productos</div>
+                                <div class="h4 fw-bold mb-0" id="total-articulos">0</div>
+                            </div>
+                            <div class="p-3 border rounded-4 bg-light flex-fill text-center">
+                                <div class="small text-muted text-danger">Stock Crítico</div>
+                                <div class="h4 fw-bold mb-0 text-danger" id="total-critico">0</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+ <?php include './components/pie.html'; ?>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="../includes/utils/menu.js"></script>
+  <script type="text/javascript" src="scripts/control_inventario.js"></script>
+
+</body>
+
+</html>

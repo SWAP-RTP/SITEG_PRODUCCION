@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrada de materiales</title>
+
+  <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
+
+  <style>
+    /* Estilos personalizados para los Toasts */
+    .toast-success-big {
+      min-width: 420px;
+      font-size: 1.3rem;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem !important;
+      /* Bordes cuadrados o ligeramente redondeados */
+    }
+
+    /* Modern rounded form style */
+    .card.modern-form {
+      border-radius: 2rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      border: none;
+    }
+
+    .card-header.modern-form-header {
+      border-radius: 2rem 2rem 0 0;
+    }
+
+    .card-body.modern-form-body {
+      border-radius: 0 0 2rem 2rem;
+    }
+
+    /* Inputs y selects redondeados */
+    .modern-form input.form-control,
+    .modern-form select.form-select,
+    .modern-form .input-group-text {
+      border-radius: 1.5rem !important;
+    }
+
+    .toast-custom-pos {
+      position: fixed !important;
+      top: 120px !important;
+      right: 60px !important;
+      z-index: 9999;
+    }
+
+    @media (max-width: 900px) {
+      .toast-custom-pos {
+        right: 10px !important;
+        top: 80px !important;
+      }
+    }
+
+    /* Estilo para las filas de la tabla */
+    .table thead th {
+      vertical-align: middle;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <link rel="stylesheet" type="text/css" href="/app-swap/includes/css/custom_rtp.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+</head>
+
+<body>
+
+  <?php include './components/encabezado.html'; ?>
+  <?php include './components/menu.html'; ?>
+
+  <main>
+    <div class="row justify-content-center">
+      <div class="col-10 col-md-10 col-lg-9">
+        <div class="card shadow mt-4 modern-form">
+          <div class="card-header d-flex justify-content-between align-items-center text-white modern-form-header"
+            style="background-color: #00332b;">
+            <h2 class="mb-0 fw-bold text-center w-100">Registro de Materiales</h2>
+          </div>
+
+          <div class="card-body mt-3 modern-form-body">
+            <form id="form-materiales" class="mt-3">
+              <div class="text-dark">
+                <div class="row g-3">
+                  <div class="col-12 col-md-4">
+                    <label for="codigo_material" class="form-label mb-0 fw-bold">Código del Material:</label>
+                    <input id="codigo_material" name="codigo_material" type="text" class="form-control form-control-sm"
+                      placeholder="Ej: PAPE-101">
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="descripcion_material" class="form-label mb-0 fw-bold">Descripción:</label>
+                    <input id="descripcion_material" name="descripcion_material" type="text"
+                      class="form-control form-control-sm" placeholder="Ej: HOJAS BLANCAS CARTA">
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="grupo_pertenece" class="form-label mb-0 fw-bold">Grupo / Categoría:</label>
+                    <select id="grupo_pertenece" name="categoria_material" class="form-select form-select-sm">
+                      <option value="" selected disabled>Seleccione categoría...</option>
+                      <option value="Papelería">PAPELERÍA</option>
+                      <option value="Limpieza">LIMPIEZA</option>
+                      <option value="Equipo">EQUIPO / CÓMPUTO</option>
+                      <option value="Consumibles">CONSUMIBLES</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="cantidad_inicial" class="form-label mb-0 fw-bold">Cantidad Inicial (Entrada):</label>
+                    <input id="cantidad_inicial" name="cantidad_inicial_material" type="number"
+                      class="form-control form-control-sm" placeholder="0" min="1">
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="stock_minimo" class="form-label mb-0 fw-bold">Alerta Stock Mínimo:</label>
+                    <input id="stock_minimo" name="stock_minimo_material" type="number"
+                      class="form-control form-control-sm" placeholder="Ej: 5" min="1">
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label for="unidad_medida" class="form-label mb-0 fw-bold">Unidad de Medida:</label>
+                    <select id="unidad_medida" name="unidad_medida_material" class="form-select form-select-sm">
+                      <option value="" selected disabled>Seleccione unidad...</option>
+                      <option value="Pieza">Pieza (H87)</option>
+                      <option value="Litro">Litro (LTR)</option>
+                      <option value="Kilogramo">Kilogramo (KGM)</option>
+                      <option value="Paquete">Paquete (XPK)</option>
+                      <option value="Caja">Caja (XBX)</option>
+                      <option value="Metro">Metro (MTR)</option>
+                      <option value="Par">Par (PR)</option>
+                      <option value="Kit">Kit (XKI)</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="ubicacion_almacen" class="form-label mb-0 fw-bold">Ubicación Física (Estante):</label>
+                    <select id="ubicacion_almacen" name="ubicacion_almacen_material" class="form-select form-select-sm">
+                      <option value="" selected disabled>Seleccione ubicación...</option>
+                      <option value="ALMACEN">ALMACEN</option>
+                      <option value="RECURSOS HUMANOS">RECURSOS HUMANOS</option>
+                      <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                      <option value="INFORMATICA">INFORMÁTICA</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="id_credencial" class="form-label mb-0 fw-bold">Credencial Responsable:</label>
+                    <input id="id_credencial" name="id_credencial" type="text" class="form-control form-control-sm"
+                      placeholder="ID RTP">
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="nombre_trabajador" class="form-label mb-0 fw-bold">Nombre de quien recibe:</label>
+                    <input id="nombre_trabajador" name="nombre_trabajador_material" type="text"
+                      class="form-control form-control-sm" placeholder="Nombre completo">
+                  </div>
+
+                  <div class="col-12 col-md-4">
+                    <label for="area_adscripcion_material" class="form-label mb-0 fw-bold">Área de Adscripción:</label>
+                    <input id="area_adscripcion_material" name="area_adscripcion_material" type="text"
+                      class="form-control form-control-sm bg-warning-subtle fw-bold" value="MÓDULO 04" readonly>
+                  </div>
+
+                  <div class="col-12 col-md-4 offset-md-4">
+                    <label for="fecha_registro" class="form-label mb-0 fw-bold">Fecha y Hora de Registro:</label>
+                    <input id="fecha_registro" name="fecha_registro_material" type="datetime-local"
+                      class="form-control form-control-sm">
+                  </div>
+                </div>
+              </div>
+
+              <div id="mensaje-carga" class="text-center d-none mt-3">
+                <div class="spinner-border text-success" role="status"></div>
+                <p class="mt-2 text-success fw-bold">Procesando información en el sistema...</p>
+              </div>
+
+              <div class="d-flex justify-content-center mt-4">
+                <button id="btn_alta" type="submit" class="btn btn-success rounded-pill px-4 me-2">
+                  <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
+                </button>
+                <button id="btn_consulta" type="button" class="btn btn-primary rounded-pill px-4 me-2">
+                  <i class="fa-solid fa-magnifying-glass me-1"></i> Consultar registro
+                </button>
+                <button type="reset" class="btn btn-secondary rounded-pill px-4">
+                  <i class="fa-solid fa-broom me-1"></i> Limpiar
+                </button>
+              </div>
+            </form>
+
+            <div id="contenedor-reporte" class="mt-5 d-none">
+              <h1 class="text-center text-primary mb-4 fw-bold">
+                <i class="fa-solid "></i> Consulta de reportes
+              </h1>
+              <div class="table-responsive">
+                <table class="table table-hover table-bordered shadow-sm">
+                  <thead class="table-dark text-center">
+                    <tr>
+                      <th style="width: 15%;">Fecha</th>
+                      <th style="width: 15%;">Código</th>
+                      <th style="width: 30%;">Descripción / Material</th>
+                      <th style="width: 10%;">Cantidad</th>
+                      <th style="width: 20%;">Responsable</th>
+                      <th style="width: 10%;">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabla-existencias" class="text-center align-middle">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <?php include './components/pie.html'; ?>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="../includes/utils/menu.js"></script>
+  <script type="text/javascript" src="scripts/controll_materiales.js"></script>
+</body>
+
+</html>
