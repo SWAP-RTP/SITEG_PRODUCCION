@@ -1,5 +1,6 @@
 /* ============================================================
-    ARCHIVO: CONTROL_MATERIALES.JS (Versión Final Blindada)
+    ARCHIVO: DOMINIO DE CONTROL DE MATERIALES
+    DESCRIPCIÓN: Controla el registro y consulta conectando a PostgreSQL.
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,25 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputCredencial = document.querySelector('#id_credencial');
     const inputNombre = document.querySelector('#nombre_trabajador');
 
-    const esperar = (ms) => new Promise(res => setTimeout(res, ms));
-
-    const diccionarioEmpleados = {
-        "1020": "JUAN PÉREZ GARCÍA",
-        "2030": "MARÍA ELENA LÓPEZ",
-        "3040": "RICARDO RAMÍREZ SOTO",
-        "4050": "BEATRIZ ADRIANA DÍAZ",
-        "8080": "SOLIS SALAZAR LUIS ENRIQUE",
-        "1000": "LUIS FERNANDO GÓMEZ",
-    };
-
-    // Autocompletado de trabajadores
-    inputCredencial.addEventListener('input', (e) => {
+    // --- ACCIÓN: BUSCAR TRABAJADOR REAL EN BD ---
+    inputCredencial.addEventListener('input', async (e) => {
         const valor = e.target.value.trim();
-        if (diccionarioEmpleados[valor]) {
-            inputNombre.value = diccionarioEmpleados[valor];
-            inputNombre.classList.add('bg-success-subtle'); 
-            inputNombre.readOnly = true; 
+        
+        if (valor.length >= 3) {
+            try {
+                const resp = await fetch(`query_sql/buscar_trabajador.php?credencial=${valor}`);
+                const data = await resp.json();
+
+                if (data.status === 'success') {
+                    inputNombre.value = data.nombre; 
+                    inputNombre.classList.add('bg-success-subtle');
+                    inputNombre.readOnly = true;
+                } else {
+                    inputNombre.classList.remove('bg-success-subtle');
+                    inputNombre.readOnly = false;
+                }
+            } catch (error) {
+                console.error("Error consultando trabajador:", error);
+            }
         } else {
+            inputNombre.value = "";
             inputNombre.classList.remove('bg-success-subtle');
             inputNombre.readOnly = false;
         }
@@ -56,89 +60,54 @@ document.addEventListener('DOMContentLoaded', () => {
         cargando.classList.add('d-none');
     });
 
-    // --- ACCIÓN: GUARDAR REGISTRO ---
+    // --- ACCIÓN: GUARDAR REGISTRO REAL EN BD ---
     formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnGuardar = document.querySelector('#btn_alta');
+        
+        // Recolectamos TODOS los datos del formulario usando los "name" de los inputs
         const formData = new FormData(formulario);
         const datos = Object.fromEntries(formData.entries());
 
-        /* ------------------------------------------------------------
-           VALIDACIÓN BLINDADA: Incluye código, nombre, cantidad, 
-           unidad Y FECHA obligatoriamente.
-        ------------------------------------------------------------ */
-        if (!datos.codigo_material || !datos.descripcion_material || !datos.cantidad_inicial_material || !datos.unidad_medida_material || !datos.fecha_registro_material) { 
-            mostrarToast('Error: Debes llenar todos los campos.', 'bg-danger');
+        // Validación preventiva antes de enviar
+        if (!datos.codigo_material || !datos.cantidad_inicial_material || !datos.id_credencial) { 
+            mostrarToast('Error: Faltan campos clave (Código, Cantidad o Credencial).', 'bg-danger');
             return;
         }
 
         cargando.classList.remove('d-none');
         btnGuardar.disabled = true;
 
-        await esperar(800); 
+        try {
+            const response = await fetch('query_sql/insertar_material.php', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
 
-        // Limpiar registros viejos corruptos (opcional, por mantenimiento)
-        let historial = JSON.parse(localStorage.getItem('mis_recibos')) || [];
-        historial = historial.filter(r => r.unidad && r.unidad !== 'undefined');
+            // Verificamos si la respuesta es JSON válido
+            const textoRespuesta = await response.text();
+            let resultado;
+            try {
+                resultado = JSON.parse(textoRespuesta);
+            } catch (e) {
+                throw new Error("La respuesta del servidor no es un JSON válido: " + textoRespuesta);
+            }
 
-        const nuevoRegistro = {
-            fecha: (datos.fecha_registro_material || "").replace('T', ' '),
-            codigo: datos.codigo_material.toUpperCase().trim(),
-            nombre: datos.descripcion_material.toUpperCase().trim(),
-            cuanto: parseFloat(datos.cantidad_inicial_material),
-            unidad: datos.unidad_medida_material,
-            quien: datos.nombre_trabajador_material || 'N/A',
-            ubicacion: datos.ubicacion_almacen_material || 'ALMACEN',
-            minimo: parseFloat(datos.stock_minimo_material) || 5
-        };
-
-        historial.push(nuevoRegistro);
-        localStorage.setItem('mis_recibos', JSON.stringify(historial));
-
-        mostrarToast('¡Campos registrados exitosamente!', 'bg-success');
-        
-        // Reset de Interfaz
-        formulario.reset();
-        inputNombre.classList.remove('bg-success-subtle');
-        inputNombre.readOnly = false;
-        cargando.classList.add('d-none');
-        btnGuardar.disabled = false;
+            if (resultado.status === 'success') {
+                mostrarToast(resultado.message, 'bg-success');
+                formulario.reset();
+                inputNombre.classList.remove('bg-success-subtle');
+                inputNombre.readOnly = false;
+            } else {
+                mostrarToast('Error: ' + resultado.message, 'bg-danger');
+            }
+        } catch (error) {
+            console.error("Error en inserción:", error);
+            mostrarToast('Error crítico: ' + error.message, 'bg-danger');
+        } finally {
+            cargando.classList.add('d-none');
+            btnGuardar.disabled = false;
+        }
     });
-
-    // --- ACCIÓN: CONSULTA DE ACTIVIDAD ---
-    document.querySelector('#btn_consulta').addEventListener('click', async () => {
-        const historial = JSON.parse(localStorage.getItem('mis_recibos')) || [];
-        if (historial.length === 0) { mostrarToast('No hay registros para mostrar.', 'bg-danger'); return; }
-        
-        cargando.classList.remove('d-none');
-        await esperar(500);
-        mostrarHistorialDetallado(historial);
-        cargando.classList.add('d-none');
-        reporte.scrollIntoView({ behavior: 'smooth' });
-    });
-
-    function mostrarHistorialDetallado(datos) {
-        // 1. Limpiamos la tabla
-        tabla.innerHTML = '';
-
-  
-        // CÓDIGO | DESCRIPCIÓN | RESPONSABLE | CANTIDAD | FECHA | ESTADO
-        [...datos].reverse().slice(0, 10).forEach(reg => {
-            tabla.innerHTML += `<tr>
-                <td class="fw-bold text-dark">${reg.codigo}</td>
-                <td class="small">${reg.nombre}</td>
-                <td class="small text-muted">${reg.quien}</td>
-                <td class="text-success fw-bold">+ ${reg.cuanto}</td>
-                <td class="small text-secondary">${reg.fecha}</td>
-                <td>
-                    <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.7rem;">
-                        <i class="fa-solid fa-check me-1"></i>REGISTRADO
-                    </span>
-                </td>
-            </tr>`;
-        });
-
-        // 3. Mostramos el contenedor de la tabla
-        reporte.classList.remove('d-none');
-    }
 });
