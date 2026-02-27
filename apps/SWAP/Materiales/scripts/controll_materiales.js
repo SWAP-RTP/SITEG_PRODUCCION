@@ -1,79 +1,54 @@
-/* ============================================================
-    ARCHIVO: DOMINIO DE CONTROL DE MATERIALES
-    DESCRIPCIÓN: Controla el registro y consulta conectando a PostgreSQL.
-   ============================================================ */
-
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Referencias al DOM
     const formulario = document.querySelector('#form-materiales');
     const btnLimpiar = document.querySelector('button[type="reset"]'); 
-    const reporte    = document.querySelector('#contenedor-reporte');
-    const tabla      = document.querySelector('#tabla-existencias');
+    const reporte    = document.querySelector('#contenedor-reporte'); // El div de la consulta
+    const tablaBody  = document.querySelector('#tabla-existencias');
     const cargando   = document.querySelector('#mensaje-carga');
-
     const inputCredencial = document.querySelector('#id_credencial');
-    const inputNombre = document.querySelector('#nombre_trabajador');
+    const inputNombre     = document.querySelector('#nombre_trabajador');
+    const btnConsulta     = document.querySelector('#btn_consulta');
 
-    // --- ACCIÓN: BUSCAR TRABAJADOR REAL EN BD ---
-    inputCredencial.addEventListener('input', async (e) => {
-        const valor = e.target.value.trim();
-        
-        if (valor.length >= 3) {
-            try {
-                const resp = await fetch(`query_sql/buscar_trabajador.php?credencial=${valor}`);
-                const data = await resp.json();
+    // --- FUNCIÓN: CARGAR REGISTROS ---
+    const cargarRegistros = async (mostrarTabla = false) => {
+        try {
+            const resp = await fetch('query_sql/obtener_registros.php');
+            const resultado = await resp.json();
 
-                if (data.status === 'success') {
-                    inputNombre.value = data.nombre; 
-                    inputNombre.classList.add('bg-success-subtle');
-                    inputNombre.readOnly = true;
-                } else {
-                    inputNombre.classList.remove('bg-success-subtle');
-                    inputNombre.readOnly = false;
+            if (resultado.status === 'success') {
+                // Solo mostramos el contenedor si se solicita explícitamente (al guardar o consultar)
+                if (mostrarTabla && resultado.data.length > 0) {
+                    reporte.classList.remove('d-none');
                 }
-            } catch (error) {
-                console.error("Error consultando trabajador:", error);
+
+                tablaBody.innerHTML = ''; 
+                resultado.data.forEach(reg => {
+                    const fila = document.createElement('tr');
+                    // Usamos fecha_formateada enviada desde el PHP para evitar el "Invalid Date"
+                    fila.innerHTML = `
+                        <td><span class="badge bg-dark">${reg.codigo_material}</span></td>
+                        <td class="text-start">${reg.descripcion_material}</td>
+                        <td class="text-start"><i class="fa-solid fa-user me-2 text-primary"></i>${reg.nombre_recibio}</td>
+                        <td class="fw-bold">${reg.cantidad_salida_material}</td>
+                        <td>${reg.fecha_formateada || reg.fecha_registro_material}</td>
+                        <td><span class="badge bg-success">Registrado</span></td>
+                    `;
+                    tablaBody.appendChild(fila);
+                });
             }
-        } else {
-            inputNombre.value = "";
-            inputNombre.classList.remove('bg-success-subtle');
-            inputNombre.readOnly = false;
+        } catch (error) {
+            console.error("Error en la carga:", error);
         }
-    });
+    };
 
-    function mostrarToast(mensaje, color = 'bg-success') {
-        let toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white ${color} border-0 toast-custom-pos toast-success-big shadow-lg`;
-        toast.setAttribute('role', 'alert');
-        const icono = color === 'bg-success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-        toast.innerHTML = `<div class="d-flex"><div class="toast-body"><i class="fa-solid ${icono} me-2"></i> ${mensaje}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-        document.body.appendChild(toast);
-        let bsToast = new bootstrap.Toast(toast, { delay: 3000 });
-        bsToast.show();
-        toast.addEventListener('hidden.bs.toast', () => toast.remove());
-    }
+    
 
-    btnLimpiar.addEventListener('click', () => {
-        reporte.classList.add('d-none');
-        tabla.innerHTML = '';
-        inputNombre.classList.remove('bg-success-subtle');
-        inputNombre.readOnly = false;
-        cargando.classList.add('d-none');
-    });
-
-    // --- ACCIÓN: GUARDAR REGISTRO REAL EN BD ---
+    // --- ACCIÓN: GUARDAR REGISTRO ---
     formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnGuardar = document.querySelector('#btn_alta');
-        
-        // Recolectamos TODOS los datos del formulario usando los "name" de los inputs
         const formData = new FormData(formulario);
         const datos = Object.fromEntries(formData.entries());
-
-        // Validación preventiva antes de enviar
-        if (!datos.codigo_material || !datos.cantidad_inicial_material || !datos.id_credencial) { 
-            mostrarToast('Error: Faltan campos clave (Código, Cantidad o Credencial).', 'bg-danger');
-            return;
-        }
 
         cargando.classList.remove('d-none');
         btnGuardar.disabled = true;
@@ -85,29 +60,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(datos)
             });
 
-            // Verificamos si la respuesta es JSON válido
-            const textoRespuesta = await response.text();
-            let resultado;
-            try {
-                resultado = JSON.parse(textoRespuesta);
-            } catch (e) {
-                throw new Error("La respuesta del servidor no es un JSON válido: " + textoRespuesta);
-            }
+            const resultado = await response.json();
 
             if (resultado.status === 'success') {
                 mostrarToast(resultado.message, 'bg-success');
                 formulario.reset();
                 inputNombre.classList.remove('bg-success-subtle');
                 inputNombre.readOnly = false;
+               
+                // Cargamos y le decimos que SÍ muestre la tabla (true)
+                cargarRegistros(true); 
             } else {
                 mostrarToast('Error: ' + resultado.message, 'bg-danger');
             }
         } catch (error) {
-            console.error("Error en inserción:", error);
-            mostrarToast('Error crítico: ' + error.message, 'bg-danger');
+            mostrarToast('Error de conexión', 'bg-danger');
         } finally {
             cargando.classList.add('d-none');
             btnGuardar.disabled = false;
         }
     });
+
+    // --- ACCIÓN: BOTÓN CONSULTA ---
+    btnConsulta.addEventListener('click', () => {
+        // Al hacer clic manual, también queremos ver los registros recientes, así que llamamos a la función con true para mostrar la tabla
+        cargarRegistros(true);
+        mostrarToast('Mostrando registros recientes', 'bg-primary');
+    });
+
+    // --- ACCIÓN: LIMPIAR (Vuelve a ocultar todo) ---
+    btnLimpiar.addEventListener('click', () => {
+        reporte.classList.add('d-none');
+        inputNombre.classList.remove('bg-success-subtle');
+        inputNombre.readOnly = false;
+    });
+
+    // --- BUSCADOR DE TRABAJADOR (Mantenemos tu automatización) ---
+    inputCredencial.addEventListener('input', async (e) => {
+        const valor = e.target.value.trim();
+        if (valor.length >= 3) {
+            try {
+                const resp = await fetch(`query_sql/buscar_trabajador.php?credencial=${valor}`);
+                const data = await resp.json();
+                if (data.status === 'success') {
+                    inputNombre.value = data.nombre; 
+                    inputNombre.classList.add('bg-success-subtle');
+                    inputNombre.readOnly = true;
+                }
+            } catch (error) { console.error(error); }
+        }
+    });
+
+    function mostrarToast(mensaje, color) {
+        let toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white ${color} border-0 toast-custom-pos shadow-lg`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `<div class="d-flex"><div class="toast-body">${mensaje}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+        document.body.appendChild(toast);
+        new bootstrap.Toast(toast, { delay: 3000 }).show();
+    }
 });

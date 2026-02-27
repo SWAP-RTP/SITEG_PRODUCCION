@@ -1,3 +1,8 @@
+/* ============================================================
+    ARCHIVO: CONSULTA DE INVENTARIO MAESTRO
+    DESCRIPCIÓN: Gestiona la visualización del stock real desde PostgreSQL.
+   ============================================================ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const tabla = document.querySelector('#tabla-body-maestro');
     const inputBusqueda = document.querySelector('#busqueda-inventario');
@@ -6,48 +11,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let inventarioLocal = [];
 
-    function cargarDatos() {
-        loader.classList.remove('d-none');
-        setTimeout(() => {
-            const registros = JSON.parse(localStorage.getItem('mis_recibos')) || [];
-            const inventarioMap = {};
+    // --- IMPLEMENTACIÓN: CARGA REAL DESDE LA BASE DE DATOS ---
+    async function cargarDatos() {
+        if(loader) loader.classList.remove('d-none');
+        
+        try {
+            // Llamamos a tu nuevo archivo PHP
+            const response = await fetch('query_sql/inventario_materiales.php');
+            const resultado = await response.json();
 
-            registros.forEach(reg => {
-                const codigo = reg.codigo;
-                if (!inventarioMap[codigo]) {
-                    inventarioMap[codigo] = {
-                        codigo: codigo,
-                        nombre: reg.nombre,
-                        total: 0,
-                        minimo: parseFloat(reg.minimo) || 5,
-                        unidad: reg.unidad || 'Pza',
-                        ubicacion: reg.ubicacion || 'ALMACÉN'
-                    };
-                }
-                inventarioMap[codigo].total += parseFloat(reg.cuanto);
-            });
-
-            inventarioLocal = Object.values(inventarioMap);
-            renderizar(inventarioLocal);
-            actualizarResumen(inventarioLocal);
-            loader.classList.add('d-none');
-        }, 500);
+            if (resultado.status === 'success') {
+                // Guardamos los datos que vienen de PostgreSQL
+                inventarioLocal = resultado.data;
+                
+                // Pintamos la tabla y los cuadros de resumen
+                renderizar(inventarioLocal);
+                actualizarResumen(inventarioLocal);
+            } else {
+                console.error("Error del servidor:", resultado.message);
+                tabla.innerHTML = `<tr><td colspan="6" class="py-5 text-danger">Error: ${resultado.message}</td></tr>`;
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            tabla.innerHTML = '<tr><td colspan="6" class="py-5 text-danger">Error crítico de conexión al servidor.</td></tr>';
+        } finally {
+            if(loader) loader.classList.add('d-none');
+        }
     }
 
     function renderizar(datos) {
         tabla.innerHTML = '';
-        if (datos.length === 0) {
-            tabla.innerHTML = '<tr><td colspan="6" class="py-5 text-muted">No hay materiales registrados.</td></tr>';
+        if (!datos || datos.length === 0) {
+            tabla.innerHTML = '<tr><td colspan="6" class="py-5 text-muted">No hay materiales registrados en el inventario.</td></tr>';
             return;
         }
 
         datos.forEach(item => {
-            const stock = parseFloat(item.total);
+            const stock = parseFloat(item.total) || 0;
             const min = parseFloat(item.minimo) || 1;
             
+            // Lógica de barras de progreso
             const maxVisual = min * 3; 
             let porcentaje = (stock / maxVisual) * 100;
             if (porcentaje > 100) porcentaje = 100; 
+            if (porcentaje < 0) porcentaje = 0;
             const porcentajeTexto = Math.round(porcentaje);
 
             let colorBarra = 'bg-success';
@@ -64,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeColor = 'bg-warning-subtle text-warning border-warning';
             }
 
-            // --- COLUMNA EXISTENCIA LIMPIA (SIN UNIDAD) ---
             tabla.innerHTML += `
                 <tr>
                     <td class="fw-bold text-secondary small">${item.codigo}</td>
@@ -72,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="min-width: 220px;">
                         <div class="d-flex justify-content-between mb-1 small">
                             <span class="fw-bold ${stock <= min ? 'text-danger' : 'text-dark'}">
-                                ${stock}
+                                ${stock} ${item.unidad || ''}
                             </span>
                         </div>
                         <div class="progress" style="height: 20px; background-color: #e9ecef; border-radius: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
@@ -102,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(totalArt) totalArt.innerText = datos.length;
         if(totalCrit) {
-            const criticos = datos.filter(i => parseFloat(i.total) <= (parseFloat(i.minimo) || 0)).length;
+            const criticos = datos.filter(i => parseFloat(i.total) <= parseFloat(i.minimo)).length;
             totalCrit.innerText = criticos;
         }
 
@@ -115,25 +121,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="p-3 border rounded shadow-sm bg-white text-center h-100">
                             <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">${item.nombre}</div>
                             <div class="h4 fw-bold mb-0 ${esCritico ? 'text-danger' : 'text-primary'}">${item.total}</div>
-                            <div class="text-muted small">${item.unidad}</div>
+                            <div class="text-muted small">${item.unidad || 'Pza'}</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
     }
 
-    btnRefresh.addEventListener('click', cargarDatos);
+    // Eventos
+    if(btnRefresh) btnRefresh.addEventListener('click', cargarDatos);
 
-    inputBusqueda.addEventListener('input', (e) => {
-        const busqueda = e.target.value.toLowerCase().trim();
-        if (busqueda === "") { renderizar(inventarioLocal); return; }
-        const filtrados = inventarioLocal.filter(item => 
-            item.nombre.toLowerCase().includes(busqueda) || 
-            item.codigo.toLowerCase().includes(busqueda)
-        );
-        renderizar(filtrados);
-    });
+    if(inputBusqueda) {
+        inputBusqueda.addEventListener('input', (e) => {
+            const busqueda = e.target.value.toLowerCase().trim();
+            if (busqueda === "") { renderizar(inventarioLocal); return; }
+            const filtrados = inventarioLocal.filter(item => 
+                item.nombre.toLowerCase().includes(busqueda) || 
+                item.codigo.toLowerCase().includes(busqueda)
+            );
+            renderizar(filtrados);
+        });
+    }
 
+    // Carga inicial
     cargarDatos();
 });
