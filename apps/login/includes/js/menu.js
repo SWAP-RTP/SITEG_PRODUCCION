@@ -1,12 +1,12 @@
 function acceso() {
   const swapButton = document.getElementById("swap");
   const tainButton = document.getElementById("tain");
-  // const sugoButton = document.getElementById('sugo');
+  const sugoButton = document.getElementById("sugo");
 
   // Función de manejo genérica
   const handleButtonClick = (appPath) => {
     // Redirige al puerto EXTERNO (8086), que es el proxy Nginx
-    const appUrl = "http://10.10.30.28:8086/" + appPath + "/";
+    const appUrl = "http://localhost:8086/" + appPath + "/";
     window.open(appUrl, "_blank");
   };
 
@@ -26,13 +26,13 @@ function acceso() {
     console.error("No se encontró el botón con ID 'tain'.");
   }
 
-  // if (sugoButton) {
-  //     sugoButton.addEventListener('click', function() {
-  //         handleButtonClick('app-sugo');
-  //     });
-  // } else {
-  //     console.error("No se encontró el botón con ID 'sugo'.");
-  // }
+  if (sugoButton) {
+    sugoButton.addEventListener("click", function () {
+      handleButtonClick("app-sugo");
+    });
+  } else {
+    console.error("No se encontró el botón con ID 'sugo'.");
+  }
 }
 
 function animacion_cards() {
