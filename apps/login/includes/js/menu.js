@@ -1,7 +1,7 @@
 function acceso() {
   const swapButton = document.getElementById("swap");
   const tainButton = document.getElementById("tain");
-  // const sugoButton = document.getElementById('sugo');
+  const sugoButton = document.getElementById("sugo");
 
   // Función de manejo genérica
   const handleButtonClick = (appPath) => {
@@ -26,13 +26,13 @@ function acceso() {
     console.error("No se encontró el botón con ID 'tain'.");
   }
 
-  // if (sugoButton) {
-  //     sugoButton.addEventListener('click', function() {
-  //         handleButtonClick('app-sugo');
-  //     });
-  // } else {
-  //     console.error("No se encontró el botón con ID 'sugo'.");
-  // }
+  if (sugoButton) {
+    sugoButton.addEventListener("click", function () {
+      handleButtonClick("sugo-front");
+    });
+  } else {
+    console.error("No se encontró el botón con ID 'sugo'.");
+  }
 }
 
 function animacion_cards() {
