@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../../config/conexion.php'; 
 header('Content-Type: application/json');
+
+
 $db = conexion();
 
 if (!$db) {
@@ -36,10 +38,11 @@ try {
     }
 
     // --- 2. INSERTAR REGISTRO (HISTORIAL) ---
-    pg_query_params($db, "INSERT INTO registro_material (codigo_material, cantidad_salida_material, id_credencial) VALUES ($1, $2, $3)", [
+    pg_query_params($db, "INSERT INTO registro_material (codigo_material, cantidad_salida_material, id_credencial, fecha_registro_material) VALUES ($1, $2, $3, $4)", [
         $codigo, 
         $data['cantidad_inicial_material'], 
-        $data['id_credencial']
+        $data['id_credencial'],
+        $data['fecha_registro_material']
     ]);
 
     // --- 3. MANEJO DEL INVENTARIO ---

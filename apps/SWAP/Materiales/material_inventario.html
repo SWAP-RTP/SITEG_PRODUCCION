@@ -10,8 +10,6 @@
     <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/app-swap/Materiales/css/estilo_catalogo_materiales.css" />
 
-  
-
     <link rel="stylesheet" type="text/css" href="/app-swap/includes/css/custom_rtp.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
@@ -44,7 +42,9 @@
                                     <span class="input-group-text bg-white border-end-0 rounded-pill-start">
                                         <i class="fa-solid fa-magnifying-glass text-muted"></i>
                                     </span>
-                                    <input type="text" id="busqueda-inventario" class="form-control border-start-0 rounded-pill-end shadow-sm" placeholder="Buscar por código o nombre...">
+                                    <input type="text" id="busqueda-inventario"
+                                        class="form-control border-start-0 rounded-pill-end shadow-sm"
+                                        placeholder="Buscar por código o nombre...">
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
@@ -56,27 +56,36 @@
 
                         <div class="table-container shadow-sm mb-4">
                             <table class="table table-hover mb-0">
-                                <thead style="background-color: #f8f9fa;">
-                                    <tr class="text-center text-muted small">
-                                        <th class="py-3">CÓDIGO</th>
-                                        <th class="py-3 text-start">DESCRIPCIÓN DEL MATERIAL</th>
-                                        <th class="py-3">EXISTENCIA</th>
-                                        <th class="py-3">MÍNIMO</th>
-                                        <th class="py-3">UBICACIÓN</th>
-                                        <th class="py-3">ESTADO</th>
-                                    </tr>
-                                </thead>
+                               <thead class="encabezado-tabla sticky-top">
+    <tr class="text-center align-middle">
+        <th style="width: 10%;" class="py-2">CÓDIGO</th>
+        <th style="width: 8%;" class="py-2">EXIST.</th>
+        <th style="width: 8%;" class="py-2">MÍN.</th>
+        <th style="width: 15%;" class="py-2">UBICACIÓN</th>
+        <th style="width: 12%;" class="py-2">ESTADO</th>
+        <th style="width: 47%;" class="py-2 text-start">DESCRIPCIÓN DEL MATERIAL</th>
+    </tr>
+</thead>
                                 <tbody id="tabla-body-maestro" class="text-center align-middle">
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="border-top pt-4 mb-2">
-                            <h6 class="text-muted fw-bold mb-3"><i class="fa-solid fa-chart-pie me-2"></i>Resumen por artículo</h6>
-                            <div id="contenedor-detalles-produccion" class="row g-3">
+                        <div class="row">
+                            <div class="col-12 col-md-8">
+                                <div class="table-container shadow-sm mb-4">
                                 </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="border-top pt-4 mb-2">
+                                    <h6 class="text-muted fw-bold mb-3">
+                                        <i class="fa-solid fa-chart-pie me-2"></i>Resumen por artículo
+                                    </h6>
+                                    <div id="contenedor-detalles-produccion" class="row g-3">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
                         <div class="mt-4 d-flex gap-3">
                             <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
                                 <div class="small text-muted">Variedad de Productos</div>
@@ -84,7 +93,7 @@
                             </div>
                             <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
                                 <div class="small text-muted text-danger fw-bold">Alertas Stock Crítico</div>
-                                <div class="h4 fw-bold mb-0 text-danger" id="total-critico">0</div>
+                                <div class="h4 fw-bold mb-0" id="total-criticos">0</div>
                             </div>
                         </div>
 
@@ -92,131 +101,20 @@
                 </div>
             </div>
         </div>
+        <div class="container py-4">
+
+
+
+        </div>
     </main>
+
     <?php include './components/pie.html'; ?>
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const tabla = document.querySelector('#tabla-body-maestro');
-        const inputBusqueda = document.querySelector('#busqueda-inventario');
-        const btnRefresh = document.querySelector('#btn-refresh'); 
-        const loader = document.querySelector('#loader-inventario');
+    <script type="text/javascript" src="/app-swap/Materiales/scripts/control_inventario.js"></script>
 
-        let inventarioLocal = [];
 
-        function cargarDatos() {
-            loader.classList.remove('d-none');
-            setTimeout(() => {
-                const registros = JSON.parse(localStorage.getItem('mis_recibos')) || [];
-                const inventarioMap = {};
-
-                registros.forEach(reg => {
-                    const codigo = reg.codigo;
-                    if (!inventarioMap[codigo]) {
-                        inventarioMap[codigo] = {
-                            codigo: codigo,
-                            nombre: reg.nombre,
-                            total: 0,
-                            minimo: parseFloat(reg.minimo) || 5,
-                            ubicacion: reg.ubicacion || 'ALMACÉN'
-                        };
-                    }
-                    inventarioMap[codigo].total += parseFloat(reg.cuanto);
-                });
-
-                inventarioLocal = Object.values(inventarioMap);
-                renderizar(inventarioLocal);
-                actualizarResumen(inventarioLocal);
-                loader.classList.add('d-none');
-            }, 500);
-        }
-
-        function renderizar(datos) {
-            tabla.innerHTML = '';
-            if (datos.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="6" class="py-5 text-muted">No hay materiales.</td></tr>';
-                return;
-            }
-
-            datos.forEach(item => {
-                const stock = parseFloat(item.total);
-                const min = parseFloat(item.minimo) || 1;
-                const maxVisual = min * 3; 
-                let porcentaje = Math.min((stock / maxVisual) * 100, 100);
-                const porcentajeTexto = Math.round(porcentaje);
-
-                let colorBarra = 'bg-success';
-                let textoEstado = 'Stock disponible';
-                let badgeColor = 'bg-success-subtle text-success border-success';
-
-                if (stock <= min) {
-                    colorBarra = 'bg-danger';
-                    textoEstado = '¡Surtir ya!';
-                    badgeColor = 'bg-danger text-white';
-                } else if (stock <= min * 1.5) {
-                    colorBarra = 'bg-warning text-dark';
-                    textoEstado = 'Bajo stock';
-                    badgeColor = 'bg-warning-subtle text-warning border-warning';
-                }
-
-                tabla.innerHTML += `
-                    <tr>
-                        <td class="fw-bold text-secondary small">${item.codigo}</td>
-                        <td class="text-start"><div class="fw-bold text-dark">${item.nombre}</div></td>
-                        <td style="min-width: 180px;">
-                            <div class="d-flex justify-content-between mb-1 small">
-                                <span class="fw-bold ${stock <= min ? 'text-danger' : 'text-dark'}">${stock}</span>
-                            </div>
-                            <div class="progress" style="height: 18px; background-color: #e9ecef; border-radius: 10px;">
-                                <div class="progress-bar progress-bar-striped ${colorBarra}" 
-                                     style="width: ${porcentaje}%; font-size: 0.75rem;">
-                                     ${porcentajeTexto >= 20 ? porcentajeTexto + '%' : ''}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-muted small">${min}</td>
-                        <td><span class="badge bg-light text-dark border">${item.ubicacion}</span></td>
-                        <td><span class="badge-stock ${badgeColor}">${textoEstado}</span></td>
-                    </tr>`;
-            });
-        }
-
-        function actualizarResumen(datos) {
-            document.querySelector('#total-articulos').innerText = datos.length;
-            const criticos = datos.filter(i => parseFloat(i.total) <= parseFloat(i.minimo)).length;
-            document.querySelector('#total-critico').innerText = criticos;
-
-            const contenedor = document.querySelector('#contenedor-detalles-produccion');
-            contenedor.innerHTML = ''; 
-            datos.forEach(item => {
-                const esCritico = parseFloat(item.total) <= parseFloat(item.minimo);
-                contenedor.innerHTML += `
-                    <div class="col-6 col-md-3">
-                        <div class="p-3 border rounded shadow-sm bg-white text-center">
-                            <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">${item.nombre}</div>
-                            <div class="h4 fw-bold mb-0 ${esCritico ? 'text-danger' : 'text-primary'}">${item.total}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        if(inputBusqueda) {
-            inputBusqueda.addEventListener('input', (e) => {
-                const b = e.target.value.toLowerCase().trim();
-                const filtrados = inventarioLocal.filter(i => 
-                    i.nombre.toLowerCase().includes(b) || i.codigo.toLowerCase().includes(b)
-                );
-                renderizar(filtrados);
-            });
-        }
-
-        btnRefresh.addEventListener('click', cargarDatos);
-        cargarDatos();
-    });
-    </script>
 </body>
+
 </html>

@@ -50,3 +50,73 @@
 .rounded-pill-end { 
     border-radius: 0 50px 50px 0 !important; 
 }
+
+/*encabezado de  tabla de consulta de inventario*/
+.encabezado-tabla {
+    background-color: #00332b !important;
+}
+.encabezado-tabla th {
+    color: #fff !important;
+    background-color: #00332b !important;
+}
+
+/* Ejemplo de estilos para el toast */
+.toast {
+    min-width: 300px;
+    font-size: 1.1rem;
+    padding: 16px 24px;
+    border-radius: 8px;
+    position: fixed;
+    top: 32px;
+    right: 32px;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.toast-success {
+    background: #28a745;
+    color: #fff;
+}
+
+.toast-error {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* Toast grande y visible */
+.toast {
+    min-width: 500px;
+    max-width: 700px;
+    font-size: 1.5rem;
+    padding: 2rem 3rem;
+    border-radius: 1.5rem !important;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.22);
+}
+.toast-container {
+    top: 70px !important;  
+    right: 40px !important;
+    left: auto !important;
+    z-index: 9999 !important;
+}
+/* 1. Forzar scroll y altura máxima en la tabla de inventario */
+#tabla-body-maestro {
+    display: block;
+    max-height: 350px !important; /* Altura fija para que no crezca */
+    overflow-y: auto !important;
+}
+
+/* 2. Compactar las tarjetas de resumen */
+#contenedor-detalles-produccion .card {
+    transform: scale(0.9); /* Las hace 10% más pequeñas */
+    margin: -5px !important; /* Elimina espacios sobrantes */
+}
+
+#contenedor-detalles-produccion .h6 {
+    font-size: 0.9rem !important; /* Números más pequeños */
+}
+
+/* 3. Reducir rellenos generales de la tabla */
+.table td, .table th {
+    padding: 4px 8px !important; /* Celdas mucho más delgadas */
+    font-size: 0.8rem !important;
+}
