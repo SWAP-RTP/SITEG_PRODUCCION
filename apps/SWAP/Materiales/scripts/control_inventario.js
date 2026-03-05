@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabla = document.querySelector('#tabla-body-maestro');
     const loader = document.querySelector('#loader-inventario');
     const buscador = document.getElementById('busqueda-inventario');
+    const btnRefresh = document.getElementById('btn-refresh');
     let inventarioLocal = [];
 
     // --- FORZAR DISEÑO COMPACTO VÍA JS ---
@@ -61,16 +62,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
+
     function actualizarResumen(datos) {
         const contenedor = document.querySelector('#contenedor-detalles-produccion');
         if (!contenedor) return;
 
-        // Cambiamos a col-md-2 para que quepan 6 tarjetas por fila
+        // Tarjetas de resumen por artículo
         contenedor.innerHTML = datos.map(item => {
             const stock = parseFloat(item.total) || 0;
             const min = parseFloat(item.minimo) || 1;
             const color = stock <= min ? 'danger' : (stock <= min * 1.5 ? 'warning' : 'success');
-
             return `
                 <div class="col-4 col-md-2 mb-2 px-1">
                     <div class="card h-100 border-0 border-top border-3 border-${color} shadow-sm">
@@ -84,6 +85,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
         }).join('');
+
+        // Actualizar variedad de productos
+        const totalArticulos = document.getElementById('total-articulos');
+        if (totalArticulos) {
+            totalArticulos.textContent = datos.length;
+        }
+
+        // Actualizar alertas de stock crítico
+        const totalCriticos = document.getElementById('total-criticos');
+        if (totalCriticos) {
+            const criticos = datos.filter(item => (parseFloat(item.total) || 0) <= (parseFloat(item.minimo) || 1)).length;
+            totalCriticos.textContent = criticos;
+        }
     }
 
     // Buscador
@@ -94,6 +108,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 i.nombre.toUpperCase().includes(texto) || i.codigo.toUpperCase().includes(texto)
             );
             renderizar(filtrados);
+        });
+    }
+
+    // Evento para el botón de sincronizar stock
+    if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+            // Feedback visual: deshabilitar mientras carga
+            btnRefresh.disabled = true;
+            btnRefresh.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sincronizando...';
+            cargarDatos().finally(() => {
+                btnRefresh.disabled = false;
+                btnRefresh.innerHTML = '<i class="fa-solid fa-arrows-rotate me-1"></i> Sincronizar Stock';
+            });
         });
     }
 

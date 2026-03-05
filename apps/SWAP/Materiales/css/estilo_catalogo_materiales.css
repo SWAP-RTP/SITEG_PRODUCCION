@@ -98,25 +98,23 @@
     left: auto !important;
     z-index: 9999 !important;
 }
-/* 1. Forzar scroll y altura máxima en la tabla de inventario */
-#tabla-body-maestro {
-    display: block;
-    max-height: 350px !important; /* Altura fija para que no crezca */
-    overflow-y: auto !important;
-}
-
-/* 2. Compactar las tarjetas de resumen */
-#contenedor-detalles-produccion .card {
-    transform: scale(0.9); /* Las hace 10% más pequeñas */
-    margin: -5px !important; /* Elimina espacios sobrantes */
-}
-
-#contenedor-detalles-produccion .h6 {
-    font-size: 0.9rem !important; /* Números más pequeños */
-}
-
-/* 3. Reducir rellenos generales de la tabla */
-.table td, .table th {
-    padding: 4px 8px !important; /* Celdas mucho más delgadas */
-    font-size: 0.8rem !important;
-}
+/* Estilos críticos para asegurar la alineación */
+        .encabezado-tabla {
+            background-color: #00332b !important;
+            color: white !important;
+        }
+        .table-fixed {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .text-truncate-custom {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Scroll interno para el resumen lateral */
+        #contenedor-detalles-produccion {
+            max-height: 500px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }

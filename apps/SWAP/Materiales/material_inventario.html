@@ -54,46 +54,58 @@
                             </div>
                         </div>
 
-                        <div class="table-container shadow-sm mb-4">
-                            <table class="table table-hover mb-0">
-                                <thead class="encabezado-tabla sticky-top">
-                                    <tr class="text-center align-middle">
-                                        <th style="width: 10%;" class="py-2">CÓDIGO</th>
-                                        <th style="width: 8%;" class="py-2">EXIST.</th>
-                                        <th style="width: 8%;" class="py-2">MÍN.</th>
-                                        <th style="width: 15%;" class="py-2">UBICACIÓN</th>
-                                        <th style="width: 12%;" class="py-2">ESTADO</th>
-                                        <th style="width: 47%;" class="py-2 text-start">DESCRIPCIÓN DEL MATERIAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-body-maestro" class="text-center align-middle">
-                                </tbody>
-                            </table>
-                        </div>
 
-                        <div class="row">
+                        <div class="row g-4">
+                            <!-- Card Listado -->
                             <div class="col-12 col-md-8">
-                                <div class="table-container shadow-sm mb-4">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="border-top pt-4 mb-2">
-                                    <h6 class="text-muted fw-bold mb-3">
-                                        <i class="fa-solid fa-chart-pie me-2"></i>Resumen por artículo
-                                    </h6>
-                                    <div id="contenedor-detalles-produccion" class="row g-3">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header bg-white border-bottom-0">
+                                        <h5 class="mb-0 fw-bold text-success">
+                                            <i class="fa-solid fa-list me-2"></i>Listado de Inventario
+                                        </h5>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-container">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="encabezado-tabla sticky-top">
+                                                    <tr class="text-center align-middle">
+                                                        <th style="width: 10%;" class="py-2">CÓDIGO</th>
+                                                        <th style="width: 8%;" class="py-2">EXIST.</th>
+                                                        <th style="width: 8%;" class="py-2">MÍN.</th>
+                                                        <th style="width: 15%;" class="py-2">UBICACIÓN</th>
+                                                        <th style="width: 12%;" class="py-2">ESTADO</th>
+                                                        <th style="width: 47%;" class="py-2 text-start">DESCRIPCIÓN DEL MATERIAL</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tabla-body-maestro" class="text-center align-middle">
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="mt-4 d-flex gap-3">
-                            <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
-                                <div class="small text-muted">Variedad de Productos</div>
-                                <div class="h4 fw-bold mb-0" id="total-articulos">0</div>
-                            </div>
-                            <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
-                                <div class="small text-muted text-danger fw-bold">Alertas Stock Crítico</div>
-                                <div class="h4 fw-bold mb-0" id="total-criticos">0</div>
+                            <!-- Card Resumen -->
+                            <div class="col-12 col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header bg-white border-bottom-0">
+                                        <h5 class="mb-0 fw-bold text-primary">
+                                            <i class="fa-solid fa-chart-pie me-2"></i>Resumen por artículo
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="contenedor-detalles-produccion" class="row g-3 mb-3"></div>
+                                        <div class="mt-4 d-flex gap-3">
+                                            <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
+                                                <div class="small text-muted">Variedad de Productos</div>
+                                                <div class="h4 fw-bold mb-0" id="total-articulos">0</div>
+                                            </div>
+                                            <div class="p-3 border rounded-4 bg-light flex-fill text-center shadow-sm">
+                                                <div class="small text-muted text-danger fw-bold">Alertas Stock Crítico</div>
+                                                <div class="h4 fw-bold mb-0" id="total-criticos">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
