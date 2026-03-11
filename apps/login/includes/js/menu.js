@@ -1,7 +1,7 @@
 function acceso() {
   const swapButton = document.getElementById("swap");
   const tainButton = document.getElementById("tain");
-  // const sugoButton = document.getElementById('sugo');
+  const sugoButton = document.getElementById("sugo");
 
   // Función de manejo genérica
   const handleButtonClick = (appPath) => {
@@ -26,13 +26,25 @@ function acceso() {
     console.error("No se encontró el botón con ID 'tain'.");
   }
 
-  // if (sugoButton) {
-  //     sugoButton.addEventListener('click', function() {
-  //         handleButtonClick('app-sugo');
-  //     });
-  // } else {
-  //     console.error("No se encontró el botón con ID 'sugo'.");
-  // }
+  if (sugoButton) {
+    sugoButton.addEventListener("click", function () {
+      // Obtiene el token de la cookie
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("access_token="))
+        ?.split("=")[1];
+
+      // Construye la URL con el token como query param
+      const url = token
+        ? `http://localhost:5173/?token=${token}`
+        : "http://localhost:5173/";
+
+      console.log("Abriendo SUGO con URL:", url); // Para debug
+      window.open(url, "_blank");
+    });
+  } else {
+    console.error("No se encontró el botón con ID 'sugo'.");
+  }
 }
 
 function animacion_cards() {

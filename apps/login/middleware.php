@@ -66,4 +66,5 @@ function validarAcceso()
         header("Location: /login.html?error=sesion_invalida");
         exit;
     }
+
 }
