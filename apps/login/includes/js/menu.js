@@ -28,7 +28,19 @@ function acceso() {
 
   if (sugoButton) {
     sugoButton.addEventListener("click", function () {
-      handleButtonClick("sugo-front");
+      // Obtiene el token de la cookie
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("access_token="))
+        ?.split("=")[1];
+
+      // Construye la URL con el token como query param
+      const url = token
+        ? `http://localhost:5173/?token=${token}`
+        : "http://localhost:5173/";
+
+      console.log("Abriendo SUGO con URL:", url); // Para debug
+      window.open(url, "_blank");
     });
   } else {
     console.error("No se encontró el botón con ID 'sugo'.");

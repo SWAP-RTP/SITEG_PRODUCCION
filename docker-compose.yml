@@ -33,28 +33,6 @@ services:
     networks:
       - internal-network
 
-  sugo_frontend:
-    build:
-      context: ./apps/SUGO_/frontend
-      dockerfile: dockerFile
-    container_name: sugo_frontend
-    networks:
-      - internal-network
-
-  sugo_frontend_dev:
-    build:
-      context: ./apps/SUGO_/frontend
-      dockerfile: dockerFile
-    container_name: sugo_frontend_dev
-    command: npm run dev -- --host 0.0.0.0 --port 5173
-    volumes:
-      - ./apps/SUGO_/frontend:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
-    networks:
-      - internal-network
-
   # Nginx como puerta de entrada (Puerto 8086)
   # SINTEG ES LA IMAGEN DEL SISTEMA INSTEGRADO (DIRECCIONA EL TRAFICO)
   gateway:
