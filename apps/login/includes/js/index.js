@@ -24,29 +24,47 @@ window.addEventListener("pageshow", function (event) {
     }
   }
 });
-
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const loader = document.querySelector(".contenedor_carga");
 
-  // toast de bootstrap
-  const toastTrigger = document.getElementById("btn_toast");
+  // Elementos del Toast
   const toastLiveExample = document.getElementById("myToast");
-  let toastBootstrap = null;
+  const toastBody = document.querySelector("#myToast .toast-body");
+  const toastHeader = document.querySelector("#myToast .toast-header");
+  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
 
-  if (toastTrigger) {
-    toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-    toastTrigger.addEventListener("click", () => {
-      toastBootstrap.show();
-    });
+  // --- FUNCIÓN PARA REUTILIZAR EL TOAST ---
+  const mostrarAlerta = (mensaje, tipo = 'error') => {
+    toastBody.textContent = mensaje;
+    // Cambiamos el color según el tipo
+    if (tipo === 'warning') {
+      toastHeader.className = "toast-header bg-warning text-dark";
+    } else {
+      toastHeader.className = "toast-header bg-danger text-white";
+    }
+    toastBootstrap.show();
+  };
+
+  // --- 3. VALIDAR ERRORES DE URL (SESIÓN DUPLICADA/INVALIDA) ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const errorType = urlParams.get("error");
+
+  if (errorType === "sesion_duplicada") {
+    mostrarAlerta("Tu sesión se cerró porque ingresaste en otro dispositivo.");
+    // Limpia la URL para que no se repita el mensaje al recargar
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (errorType === "sesion_invalida") {
+    mostrarAlerta("La sesión ha expirado. Por favor, ingresa de nuevo.");
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 
+  // --- 4. MANEJO DEL LOGIN ---
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       loader.removeAttribute("hidden");
-      document.getElementById("card_login").style.opacity = "50";
+
       const formData = new FormData(loginForm);
 
       try {
@@ -62,11 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
           }, 1500);
         } else {
           loader.setAttribute("hidden", "true");
-          if (toastBootstrap) toastBootstrap.show();
+          // Reutilizamos el toast para error de credenciales
+          mostrarAlerta(result.message || "Usuario o contraseña incorrectos");
         }
       } catch (error) {
+        loader.setAttribute("hidden", "true");
         console.error("Error:", error);
-        if (toastBootstrap) toastBootstrap.show();
+        mostrarAlerta("Error de conexión con el servidor.");
       }
     });
   }
