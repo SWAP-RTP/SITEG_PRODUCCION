@@ -10,43 +10,9 @@
     <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/app-swap/includes/css/custom_rtp.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="/app-swap/Materiales/css/estilo_catalogo_materiales.css" />
+    <link rel="stylesheet" href="css/tu-archivo-estilos.css">
 
-    <style>
-        .card.modern-form {
-            border-radius: 2rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            border: none;
-            overflow: hidden;
-        }
-
-        .card-header.modern-form-header {
-            border-radius: 2rem 2rem 0 0;
-            background-color: #00332b; /* Verde RTP */
-        }
-
-        .modern-form .form-control,
-        .modern-form .form-select,
-        .modern-form .input-group-text {
-            border-radius: 1.5rem !important;
-        }
-
-        .btn-search-modern {
-            border-radius: 0 1.5rem 1.5rem 0 !important;
-        }
-
-        .label-bold {
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
-
-        .section-divider {
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            color: #00332b;
-            font-weight: bold;
-        }
-    </style>
 </head>
 
 <body>
@@ -60,82 +26,83 @@
         <div class="row justify-content-center">
             <div class="col-12 col-lg-10">
                 <div class="card modern-form shadow">
-                    <div class="card-header modern-form-header text-white p-4">
-                        <h2 class="mb-0 fw-bold text-center">
-                            <i class="bi bi-box-arrow-up me-2"></i>VALE DE SALIDA DE MATERIAL
+                    <div class="card-header modern-form-header text-white p-4 text-center">
+                        <h2 class="mb-0 fw-bold">
+                            <i class="bi bi-box-arrow-up me-2"></i>SALIDA DE MATERIALES
                         </h2>
-                        <p class="text-center mb-0 opacity-75 small">Módulo 4 - Control de Materiales y Papelería</p>
                     </div>
 
                     <div class="card-body modern-form-body p-5">
-                        <form id="form-salida-material" action="procesar_salida.php" method="POST" class="row g-4">
-                            
-                            <div class="col-12 section-divider">
-                                <i class="bi bi-person-badge me-2"></i>DATOS DEL SOLICITANTE
-                            </div>
+                        <form id="form-salida-material" action="procesar_salida.php" method="POST" class="row g-4"
+                            novalidate>
 
                             <div class="col-md-4">
                                 <label for="id_credencial" class="form-label label-bold">No. de Credencial</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-card-text"></i></span>
-                                    <input type="text" class="form-control" id="id_credencial" name="id_credencial" 
-                                           placeholder="ID RTP" required>
-                                </div>
+                                <input type="text" class="form-control" id="id_credencial" name="id_credencial"
+                                    placeholder="ID RTP" required>
                             </div>
 
                             <div class="col-md-8">
-                                <label for="nombre_trabajador" class="form-label label-bold text-secondary">Nombre del Trabajador</label>
-                                <input type="text" class="form-control bg-light" id="nombre_trabajador" 
-                                       readonly placeholder="Validación automática mediante ID">
+                                <label for="nombre_trabajador" class="form-label label-bold">Nombre del
+                                    Trabajador</label>
+                                <input type="text" class="form-control" id="nombre_trabajador" name="nombre_trabajador"
+                                    placeholder="Nombre completo" required>
                             </div>
 
-                            <div class="col-12 section-divider mt-5">
-                                <i class="bi bi-cart-check me-2"></i>DETALLES DEL MATERIAL
-                            </div>
-
-                            <div class="col-md-5">
+                            <div class="col-md-4">
                                 <label for="codigo_material" class="form-label label-bold">Código del Material</label>
+                                <input type="text" class="form-control" id="codigo_material" name="codigo_material"
+                                    placeholder="Ej. HER-001" required>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label for="descripcion" class="form-label label-bold">Descripción del Material</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-barcode"></i></span>
-                                    <input type="text" class="form-control" id="codigo_material" name="codigo_material" 
-                                           placeholder="HER-001" required>
-                                    <button class="btn btn-primary btn-search-modern" type="button" id="btn-buscar-material">
-                                        <i class="bi bi-search"></i>
+                                    <input type="text" class="form-control" id="descripcion" name="descripcion"
+                                        required>
+                                    <button class="btn btn-primary btn-search-modern px-4" type="button"
+                                        id="btn-buscar-material">
+                                        <i class="bi bi-search"></i> Buscar
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="col-md-7">
-                                <label for="desc_material" class="form-label label-bold text-secondary">Descripción</label>
-                                <input type="text" class="form-control bg-light" id="desc_material" 
-                                       readonly placeholder="Descripción del material">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-2">
+                                    <label for="cantidad" class="form-label label-bold">Cantidad</label>
+                                    <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"
+                                        required>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label for="unidad" class="form-label label-bold">Unidad</label>
+                                    <input type="text" class="form-control" id="unidad" name="unidad" required>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="estado_entrega" class="form-label label-bold">Estado del
+                                        Material</label>
+                                    <select class="form-select" id="estado_entrega" name="estado_entrega" required>
+                                        <option value="" selected disabled>Selecciona un estado...</option>
+                                        <option value="Nuevo">Nuevo</option>
+                                        <option value="Usado">Usado</option>
+                                        <option value="Rehabilitado">Malo</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="fecha" class="form-label label-bold">Fecha y Hora de Salida</label>
+                                    <input type="datetime-local" class="form-control" id="fecha" name="fecha" required>
+                                </div>
                             </div>
 
-                            <div class="col-md-4">
-                                <label for="cantidad" class="form-label label-bold">Cantidad a Entregar</label>
-                                <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" required>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="unidad" class="form-label label-bold text-secondary">Unidad</label>
-                                <input type="text" class="form-control bg-light text-center" id="unidad" readonly placeholder="PZ/PAQ">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="estado_entrega" class="form-label label-bold">Estado del Material</label>
-                                <select class="form-select" name="estado_entrega" required>
-                                    <option value="Nuevo" selected>Nuevo</option>
-                                    <option value="Usado">Usado</option>
-                                    <option value="Rehabilitado">Rehabilitado</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12 d-flex justify-content-center gap-3 mt-5">
+                            <div class="col-12 d-flex justify-content-center gap-3 mt-4">
                                 <button type="submit" class="btn btn-success px-5 py-2 rounded-pill fw-bold">
-                                    <i class="bi bi-printer me-2"></i>Generar Vale de Salida
+                                    <i class="bi bi-printer me-2"></i>Guardar Salida
                                 </button>
-                                <button type="reset" class="btn btn-outline-danger px-5 py-2 rounded-pill" id="btn-cancelar">
-                                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                                <button type="reset" class="btn btn-outline-danger px-5 py-2 rounded-pill"
+                                    id="btn-limpiar-salida">
+                                    <i class="bi bi-trash me-2"></i>Limpiar
                                 </button>
                             </div>
                         </form>
@@ -151,7 +118,7 @@
     <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="../includes/utils/menu.js"></script>
-    <script type="text/javascript" src="scripts/control_registro_materiales.js"></script>
+    <script type="text/javascript" src="scripts/salida_material.js"></script>
 </body>
 
 </html>

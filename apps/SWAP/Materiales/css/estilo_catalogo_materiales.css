@@ -1,120 +1,67 @@
-/* Estilos para el Inventario Moderno */
+
+/* Card y Encabezado */
 .card.modern-form {
     border-radius: 2rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     border: none;
+    overflow: hidden;
 }
 
 .card-header.modern-form-header {
-    border-radius: 2rem 2rem 0 0;
+    border-radius: 2rem 2rem 0 0 !important;
+    background-color: #00332b !important; /* Verde RTP */
     padding: 1.5rem;
 }
 
 .card-body.modern-form-body {
-    border-radius: 0 0 2rem 2rem;
-    padding: 2rem;
+    padding: 2.5rem;
 }
 
-.table-container {
-    border-radius: 1.5rem;
-    overflow: hidden;
-    border: 1px solid #dee2e6;
+/* Tipografía y Etiquetas */
+.label-bold {
+    font-weight: 600;
+    margin-left: 0.5rem;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
 }
 
-.badge-stock {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-    border-radius: 1.5rem;
-    text-transform: uppercase;
-    font-weight: bold;
-}
-
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    border-radius: 2rem;
-}
-
-.rounded-pill-start { 
-    border-radius: 50px 0 0 50px !important; 
-}
-
-.rounded-pill-end { 
-    border-radius: 0 50px 50px 0 !important; 
-}
-
-/*encabezado de  tabla de consulta de inventario*/
-.encabezado-tabla {
-    background-color: #00332b !important;
-}
-.encabezado-tabla th {
-    color: #fff !important;
-    background-color: #00332b !important;
-}
-
-/* Ejemplo de estilos para el toast */
-.toast {
-    min-width: 300px;
-    font-size: 1.1rem;
-    padding: 16px 24px;
-    border-radius: 8px;
-    position: fixed;
-    top: 32px;
-    right: 32px;
-    z-index: 9999;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.toast-success {
-    background: #28a745;
-    color: #fff;
-}
-
-.toast-error {
-    background: #dc3545;
-    color: #fff;
-}
-
-/* Toast grande y visible */
-.toast {
-    min-width: 500px;
-    max-width: 700px;
-    font-size: 1.5rem;
-    padding: 2rem 3rem;
+/* --- REGLA MAESTRA PARA BOTONES PEGADOS --- */
+/* Esto quita los redondeados internos donde se juntan el input y el botón */
+.modern-form .input-group {
     border-radius: 1.5rem !important;
-    box-shadow: 0 6px 32px rgba(0,0,0,0.22);
+    overflow: hidden;
 }
-.toast-container {
-    top: 70px !important;  
-    right: 40px !important;
-    left: auto !important;
-    z-index: 9999 !important;
+
+.modern-form .input-group .form-control {
+    border-radius: 1.5rem 0 0 1.5rem !important;
+    border-right: none !important;
 }
-/* Estilos críticos para asegurar la alineación */
-        .encabezado-tabla {
-            background-color: #00332b !important;
-            color: white !important;
-        }
-        .table-fixed {
-            table-layout: fixed;
-            width: 100%;
-        }
-        .text-truncate-custom {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        /* Scroll interno para el resumen lateral */
-        #contenedor-detalles-produccion {
-            max-height: 500px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
+
+.modern-form .btn-search-modern {
+    border-radius: 0 1.5rem 1.5rem 0 !important;
+    border-left: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+/* Estilo para inputs que van SOLOS (Cantidad, Fecha, etc.) */
+.modern-form .form-control:not(.input-group .form-control),
+.modern-form .form-select {
+    border-radius: 1.5rem !important;
+    padding-left: 1.2rem;
+}
+
+/* Botones de acción inferiores */
+.rounded-pill-custom {
+    border-radius: 50px !important;
+    padding: 0.6rem 2.5rem;
+}
+
+.section-divider {
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    color: #00332b;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
