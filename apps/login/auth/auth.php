@@ -23,7 +23,7 @@ try {
                 mp.cve_permiso, 
                 msd.modulo_sistem_descrip,
                 ads.dir_nombre
-            FROM usuarios u 
+            FROM usuarios_siteg u 
             LEFT JOIN modulo_perm mp ON mp.trab_credencial = u.trab_credencial 
             LEFT JOIN modulo_sistem msd ON msd.cve_modulo = mp.cve_modulo 
                LEFT join adsc_direccion ads on msd.pertenencia = ads.dir_cve
@@ -33,6 +33,13 @@ try {
         $user_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($user_rows && password_verify($pass_input, $user_rows[0]['contrasena'])) {
+
+            //Generamos un identificador de sesion único para el usuario
+            $session_id = bin2hex(random_bytes(16));
+            //Guardamos el identificador de la sesion el la bd para futuras validaciones
+            $updateStmt = $pdo->prepare("UPDATE usuarios SET session_id = ? WHERE correo = ?");
+            $updateStmt->execute([$session_id, $user_rows[0]['correo']]);
+
             $direccion = null;
             foreach ($user_rows as $row) {
                 if (!empty($row['dir_nombre'])) {
@@ -61,6 +68,7 @@ try {
             $payload = [
                 'iat' => time(),
                 'exp' => time() + 3600,
+                'session_id' => $session_id,
                 'data' => $user_info,
                 'permisos' => $permisos
             ];
@@ -96,11 +104,11 @@ try {
         exit;
     }
 
-} catch (PDOException $e) {
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Error de conexión a la base de datos"
+        "message" => $e->getMessage()
     ]);
     exit;
 }
