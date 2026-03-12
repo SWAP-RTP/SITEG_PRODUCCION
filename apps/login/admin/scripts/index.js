@@ -1,4 +1,4 @@
-import { obtenerModulos } from "../../includes/utils/modulos_select.js";
+// import { obtenerModulos } from "../../includes/utils/modulos_select.js";
 
 async function datosTabla(url) {
   try {
@@ -57,7 +57,7 @@ function dataTable(datosTabla, id_tabla, columns) {
 })();
 
 // ***************** Consumir obtenerModulos ******************* */
-obtenerModulos("/admin/query_sql/catalogos_modulos.php");
+// obtenerModulos("/admin/query_sql/catalogos_modulos.php");
 
 // ***************** Consumir modulos_sistema ******************* */
 
@@ -85,8 +85,8 @@ obtenerModulos("/admin/query_sql/catalogos_modulos.php");
       render: function (data, type, row) {
         const esActivo = row.estatus === "t";
         return `
-    <button class="btn btn-${esActivo ? "warning" : "success"} btn-sm me-2 btn-toggle-estado" data-id="${row.cve_modulo}" data-estado="${esActivo ? "f" : "t"}">
-      ${esActivo ? "Inactivar" : "Activar"}
+    <button class="btn btn-${esActivo ? "danger" : "success"} btn-sm me-2 btn-toggle-estado" data-id="${row.cve_modulo}" data-estado="${row.estatus}">
+    ${esActivo ? "Inactivar" : "Activar"}
     </button>
     <button class="btn btn-danger btn-sm" id="delete-${row.cve_modulo}"><i class="fa fa-trash"></i></button>
   `;
@@ -99,22 +99,40 @@ obtenerModulos("/admin/query_sql/catalogos_modulos.php");
 
 //! boton de activar o inactivar modulo del sistema
 document.addEventListener("click", async function (event) {
+  //ELEMENTOS DEL TOAST
+  const toastLiveExample = document.getElementById("myToast");
+  const toastBody = document.querySelector("#myToast .toast-body");
+  const toastHeader = document.querySelector("#myToast .toast-header");
+  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+
+  // Alerta TOAST
+  const mostrarAlerta = (mensaje, estado) => {
+    toastHeader.className = "toast-header text-white";
+    toastLiveExample.className = "toast align-items-center border-0";
+
+    if (estado === "activo") {
+      toastHeader.classList.add("bg-success");
+      toastLiveExample.classList.add("bg-success", "text-white");
+    } else if (estado === "inactivo") {
+      toastHeader.classList.add("bg-danger");
+      toastLiveExample.classList.add("bg-danger", "text-white");
+    }
+    toastBody.textContent = mensaje;
+    toastBootstrap.show();
+  }
+
   if (event.target.classList.contains("btn-toggle-estado")) {
     const btn = event.target;
     const id = btn.getAttribute("data-id");
-    const nuevoEstado = btn.getAttribute("data-estado");
+    const estadoActual = btn.getAttribute("data-estado");
+    const nuevoEstado = estadoActual === "t" ? "f" : "t";
 
     try {
-      const response = await fetch(
-        `/admin/query_sql/modulos_sistema_update.php`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id, estado: nuevoEstado }),
-        },
-      );
+      const response = await fetch(`/admin/query_sql/modulos_sistema_update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", },
+        body: JSON.stringify({ id, estado: nuevoEstado }),
+      });
 
       const result = await response.json();
 
@@ -124,19 +142,23 @@ document.addEventListener("click", async function (event) {
         // Actualiza el badge de estatus
         const estatusCell = fila.querySelector("td:nth-child(3)");
         if (estatusCell) {
-          estatusCell.innerHTML =
-            nuevoEstado === "t"
-              ? '<span class="badge bg-success">Activo</span>'
-              : '<span class="badge bg-secondary">Inactivo</span>';
+          estatusCell.innerHTML = nuevoEstado === "t"
+            ? '<span class="badge bg-success">Activo</span>'
+            : '<span class="badge bg-secondary">Inactivo</span>';
         }
         // Actualiza el botón de acción
-        btn.classList.toggle("btn-warning");
-        btn.classList.toggle("btn-success");
-        btn.setAttribute("data-estado", nuevoEstado === "t" ? "f" : "t");
+        btn.setAttribute("data-estado", nuevoEstado);
         btn.innerHTML = nuevoEstado === "t" ? "Inactivar" : "Activar";
-        alert("Estado actualizado correctamente");
+
+        if (nuevoEstado === "t") {
+          btn.classList.replace("btn-success", "btn-danger");
+          mostrarAlerta("Modulo Activado", "activo");
+        } else {
+          btn.classList.replace("btn-danger", "btn-success");
+          mostrarAlerta("Modulo Inactivado", "inactivo");
+        }
       } else {
-        alert("Error al actualizar el estado");
+        mostrarAlerta("Error al actualizar el estado");
       }
     } catch (error) {
       alert("Error en la petición");

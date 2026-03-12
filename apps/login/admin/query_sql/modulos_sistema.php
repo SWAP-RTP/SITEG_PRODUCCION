@@ -1,32 +1,23 @@
 <?php
 require_once __DIR__ . '/../../conf/conexion.php';
-function getModulos_sistema($host, $port, $dbname, $user, $password)
+function getModulos_sistema()
 {
-    $conexion = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
-    if (!$conexion) {
+    try {
+        $conexion = Database::conectar();
+        if (!$conexion) {
+            throw new Exception("Error al conectar con la DB");
+        }
+        $sqlmodulosSistema = "SELECT * FROM modulo_sistem";
+        $resultadoModulosSistema = pg_query($conexion, $sqlmodulosSistema);
+        if (!$resultadoModulosSistema) {
+            throw new Exception("Error al ejecutar la consulta: " . pg_last_error($conexion));
+        }
+        $modulosSistema = pg_fetch_all($resultadoModulosSistema);
+        return $modulosSistema ?: [];//SI NO HAY DATOS RETORNA UN ARRAY VACIO
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["error" => "Error de conexión a la base de datos"]);
-        exit;
+        return ["error" => $e->getMessage()];
     }
-    $sql = "SELECT * FROM modulo_sistem";
-    $resultado = @pg_query($conexion, $sql);
-
-
-    if (!$resultado) {
-        http_response_code(500);
-        echo json_encode(["error" => "Error en la consulta SQL"]);
-        exit;
-    }
-
-
-    $json = [];
-    while ($row = pg_fetch_assoc($resultado)) {
-        $json[] = $row;
-    }
-
-    pg_close($conexion);
-
-    return $json;
-
 }
-echo json_encode(getModulos_sistema($host, $port, $dbname, $user, $password));
+//Devuelve solo un array de los modulos
+echo json_encode(getModulos_sistema());
