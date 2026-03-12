@@ -29,9 +29,23 @@ $user = validarAcceso();
 <body>
     <!-- ! Componente header -->
     <?php include '../includes/components/header.html'; ?>
-
-
     <main class="container-fluid p-0">
+        <!-- toast alerta -->
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080; margin-top: 50px;">
+            <div id="myToast" class="toast  text-white border-0 shadow" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header  text-white border-0">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i>
+                    <strong class="me-auto">SINTEG</strong>
+                    <small>Ahora mismo</small>
+                    <button type="button" class="btn-close btn-close-white ms-2 mb-1" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+
+                </div>
+            </div>
+        </div>
+        <!-- fin toast -->
         <div>
             <div>
                 <h3 class="text-white text-center titulo">Administrador del Sistema</h3>

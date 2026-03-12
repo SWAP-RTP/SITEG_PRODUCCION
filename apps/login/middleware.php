@@ -42,12 +42,21 @@ function validarAcceso()
         $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
         //VALIDACION DE SESION UNICA 
         //1. Conectamos a la DB 
-        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
-        $pdo = new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $db = Database::conectar();
+        if (!$db) {
+            throw new Exception("Error de conexion a la base de datos");
+        }
+
         //2. Consultamos el session_id actual guardado en la tabla 
-        $stmt = $pdo->prepare("SELECT session_id FROM usuarios WHERE correo = ?");
-        $stmt->execute([$decoded->data->id]);
-        $session_en_db = $stmt->fetchColumn();
+        $query = "SELECT session_id FROM usuarios WHERE correo = $1";
+        $result = pg_query_params($db, $query, array($decoded->data->id));
+
+        if (!$result) {
+            throw new Exception("Error en la consulta");
+        }
+
+        $fila = pg_fetch_assoc($result);
+        $session_en_db = $fila['session_id'] ?? null;
         //3.Comparamos el ID del token contra el de la base de datos
         //Si no coinciden, significa que el usuario inició sesión en otro dispositivo o navegador, invalidando la sesión actual
         if ($decoded->session_id !== $session_en_db) {
