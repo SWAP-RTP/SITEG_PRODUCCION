@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/../../conf/conexion.php';
+require_once "../../conf/conexion.php";
 
-function getSistemas_sinteg($host, $port, $dbname, $user, $password){
-    $conexion = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+function getSistemas_sinteg()
+{
+    $conexion = Database::conectar();
     if (!$conexion) {
         http_response_code(500);
         echo json_encode(["error" => "Error de conexión a la base de datos"]);
@@ -18,14 +19,8 @@ function getSistemas_sinteg($host, $port, $dbname, $user, $password){
         exit;
     }
 
-    $json = [];
-    while ($row = pg_fetch_assoc($resultado)) {
-        $json[] = $row;
-    }
-
-    pg_close($conexion);
-
-    return $json;
+    $sistemas = pg_fetch_all($resultado);
+    return $sistemas ?: [];
 
 }
-echo json_encode(getSistemas_sinteg($host, $port, $dbname, $user, $password));
+echo json_encode(getSistemas_sinteg());
