@@ -1,3 +1,47 @@
+// AUTENTICACION
+function auth(){
+    const loginForm = document.getElementById("loginForm");
+
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(loginForm);
+
+        const notyf = new Notyf({
+            duration: 4000,
+            position: { x: 'right', y: 'top' },
+        });
+
+        $.ajax({
+            url: "auth/auth.php",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function (res) {
+
+                if (res.status === "success") {
+                    notyf.success("Bienvenido(a) " + (res.usuario.name || ""));
+
+                    $(".contenedor_carga").removeAttr('hidden');
+                    $("#card_login").attr('hidden');
+
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1500);
+                }else{
+                    notyf.error(res.message);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText); // para ver qué respondió el servidor
+                notyf.error("Error al conectar con el servidor");
+            }
+        });
+    });
+}
+
 // 1. Función global para el ojo de la contraseña
 window.mostrarPassword = function () {
   const passInput = document.getElementById("ingresaPassword");
@@ -26,48 +70,5 @@ window.addEventListener("pageshow", function (event) {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("loginForm");
-  const loader = document.querySelector(".contenedor_carga");
-
-  // toast de bootstrap
-  const toastTrigger = document.getElementById("btn_toast");
-  const toastLiveExample = document.getElementById("myToast");
-  let toastBootstrap = null;
-
-  if (toastTrigger) {
-    toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-    toastTrigger.addEventListener("click", () => {
-      toastBootstrap.show();
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      loader.removeAttribute("hidden");
-      document.getElementById("card_login").style.opacity = "50";
-      const formData = new FormData(loginForm);
-
-      try {
-        const response = await fetch("auth/auth.php", {
-          method: "POST",
-          body: formData,
-        });
-        const result = await response.json();
-
-        if (response.ok && result.status === "success") {
-          setTimeout(() => {
-            window.location.href = "menu.html";
-          }, 1500);
-        } else {
-          loader.setAttribute("hidden", "true");
-          if (toastBootstrap) toastBootstrap.show();
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        if (toastBootstrap) toastBootstrap.show();
-      }
-    });
-  }
+  auth();
 });

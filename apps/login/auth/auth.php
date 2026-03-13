@@ -80,10 +80,9 @@ try {
             ]);
             exit;
         } else {
-            http_response_code(401);
             echo json_encode([
                 "status" => "error",
-                "message" => "Credenciales inválidas"
+                "message" => "Credencial inválida, vuelva a intentar"
             ]);
             exit;
         }

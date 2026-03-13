@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/../../conf/conexion.php';
-function getModulos_sistema($host, $port, $dbname, $user, $password)
-{
+
+function getSistemas_sinteg($host, $port, $dbname, $user, $password){
     $conexion = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
     if (!$conexion) {
         http_response_code(500);
         echo json_encode(["error" => "Error de conexión a la base de datos"]);
         exit;
     }
-    $sql = "SELECT * FROM modulo_sistem";
+    $sql = "SELECT id, acronimo, sistema_imagen FROM sistemas_sinteg WHERE estatus = TRUE";
     $resultado = @pg_query($conexion, $sql);
 
 
@@ -17,7 +17,6 @@ function getModulos_sistema($host, $port, $dbname, $user, $password)
         echo json_encode(["error" => "Error en la consulta SQL"]);
         exit;
     }
-
 
     $json = [];
     while ($row = pg_fetch_assoc($resultado)) {
@@ -29,4 +28,4 @@ function getModulos_sistema($host, $port, $dbname, $user, $password)
     return $json;
 
 }
-echo json_encode(getModulos_sistema($host, $port, $dbname, $user, $password));
+echo json_encode(getSistemas_sinteg($host, $port, $dbname, $user, $password));
