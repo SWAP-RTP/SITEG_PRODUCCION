@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once __DIR__ . '/../../conf/conexion.php';
+require_once "../../conf/conexion.php";
 
 // Recibir datos JSON
 $input = json_decode(file_get_contents('php://input'), true);
