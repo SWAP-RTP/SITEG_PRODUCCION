@@ -1,83 +1,114 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const formulario = document.getElementById('form-salida-material');
+    const btnAgregar = document.getElementById('btn-agregar-lista');
+    const tablaCuerpo = document.querySelector('#tabla-previa tbody');
+    const inputCredencial = document.getElementById('id_credencial');
+    const inputNombreTrab = document.getElementById('nombre_trabajador');
+    
+    // Inputs del material
+    const inputCodMat = document.getElementById('codigo_material');
+    const inputDescMat = document.getElementById('descripcion');
+    const inputCantMat = document.getElementById('cantidad');
+    const inputEstadoMat = document.getElementById('id_estado_material');
+    const inputUnidadMat = document.getElementById('unidad');
 
-    formulario.addEventListener('submit', function (e) {
-        e.preventDefault();
+    let listaSalida = []; // Array que guarda los materiales
 
-        // Captura de valores
-        const credencial = document.getElementById('id_credencial').value.trim();
-        const nombre = document.getElementById('nombre_trabajador').value.trim();
-        const codigo = document.getElementById('codigo_material').value.trim();
-        const descripcion = document.getElementById('descripcion').value.trim();
-        const cantidad = document.getElementById('cantidad').value.trim();
-        const unidad = document.getElementById('unidad').value.trim();
-        const estado = document.getElementById('estado_entrega').value.trim();
-        const fecha = document.getElementById('fecha').value.trim();
+    // 1. Agregar material a la tabla de previsualización
+    btnAgregar.addEventListener('click', () => {
+        const codigo = inputCodMat.value.trim();
+        const desc = inputDescMat.value.trim();
+        const cant = parseInt(inputCantMat.value);
+        const estadoVal = inputEstadoMat.value;
+        const estadoTexto = inputEstadoMat.options[inputEstadoMat.selectedIndex].text;
 
-
-
-   //condiciones de los campos
-        if (credencial === "") {
-            Swal.fire({icon: 'warning',title: 'Credencial Requerida',confirmButtonColor: '#00332b'
+        // Validaciones básicas de línea
+        if (codigo === "" || isNaN(cant) || cant <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Datos incompletos',
+                text: 'Asegúrese de seleccionar un material y una cantidad válida.',
+                confirmButtonColor: '#00332b'
             });
             return;
         }
 
-        if (credencial.length < 3) {
-            Swal.fire({icon: 'warning',title: 'ID Inválido',confirmButtonColor: '#00332b'
+        // Agregar al objeto global
+        const nuevoItem = {
+            codigo: codigo,
+            descripcion: desc,
+            cantidad: cant,
+            estado_id: estadoVal,
+            estado_txt: estadoTexto
+        };
+
+        listaSalida.push(nuevoItem);
+        renderizarTabla();
+        limpiarSeccionMaterial();
+    });
+
+    // 2. Función para dibujar la tabla
+    function renderizarTabla() {
+        if (listaSalida.length === 0) {
+            tablaCuerpo.innerHTML = '<tr class="text-center text-muted"><td colspan="5">No hay materiales en la lista.</td></tr>';
+            return;
+        }
+
+        tablaCuerpo.innerHTML = '';
+        listaSalida.forEach((item, index) => {
+            const fila = `
+                <tr>
+                    <td>${item.codigo}</td>
+                    <td>${item.descripcion}</td>
+                    <td class="text-center">${item.cantidad}</td>
+                    <td class="text-center">${item.estado_txt}</td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-danger btn-sm" onclick="quitarItem(${index})">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tablaCuerpo.innerHTML += fila;
+        });
+    }
+
+    // 3. Función para limpiar solo los campos del material
+    function limpiarSeccionMaterial() {
+        inputCodMat.value = '';
+        inputDescMat.value = '';
+        inputCantMat.value = '';
+        inputUnidadMat.value = '';
+        inputCodMat.focus();
+    }
+
+    // 4. Eliminar item (Se hace global para el botón de la tabla)
+    window.quitarItem = (index) => {
+        listaSalida.splice(index, 1);
+        renderizarTabla();
+    };
+
+    // 5. Botón Finalizar (Simulación de envío masivo)
+    document.querySelector('.btn-success.px-4').addEventListener('click', () => {
+        if (inputCredencial.value === "" || listaSalida.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atención',
+                text: 'Debe ingresar la credencial y al menos un material en la lista.',
+                confirmButtonColor: '#00332b'
             });
             return;
         }
 
-
-        if (nombre === "") {
-            Swal.fire({icon: 'warning',title: 'Falta nombre del trabajador',confirmButtonColor: '#00332b'
-            });
-            return;
-        }
-
-
-        if (codigo === "") {
-            Swal.fire({icon: 'warning',title: 'Falta código del material',confirmButtonColor: '#00332b'
-            });
-            return;
-        }
-
-
-        if (descripcion === "") {
-            Swal.fire({icon: 'warning',title: 'Falta descripción del material',confirmButtonColor: '#00332b'
-            });
-            return;
-        }
-
-
-        if (cantidad === "" || cantidad <= 0) {
-            Swal.fire({icon: 'warning',title: 'No se ingresó la cantidad',confirmButtonColor: '#00332b'
-            });
-            return;
-        }
-
-        if (unidad === "") {
-            Swal.fire({icon: 'warning',title: 'No se ha ingresado la unidad de medida',confirmButtonColor: '#00332b'
-
-            });
-            return;
-        }
-        if (estado === "" || estado === null) {
-            Swal.fire({icon: 'warning',title: 'Falta el Estado',confirmButtonColor: '#00332b'
-            });
-            estado.focus(); 
-            return; 
-        }
-
-        if (fecha === "") {
-            Swal.fire({icon: 'warning',title: 'Fecha Requerida',text: 'Indica la fecha y hora de la entrega.',confirmButtonColor: '#00332b'
-            });
-            return;
-        }
+        Swal.fire({
+            icon: 'info',
+            title: 'Procesando Salida',
+            text: `Se registrarán ${listaSalida.length} artículos para el trabajador.`,
+            confirmButtonColor: '#00332b'
+        });
         
-        Swal.fire({icon: 'success',title: 'Salida Validada',text: '¡Toda la información es correcta!',showConfirmButton: false,
-            timer: 2000
+        console.log("Datos para PHP:", {
+            trabajador: inputCredencial.value,
+            materiales: listaSalida
         });
     });
 });

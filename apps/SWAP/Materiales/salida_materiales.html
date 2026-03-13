@@ -21,96 +21,105 @@
 
     <?php include './components/encabezado.html'; ?>
     <?php include './components/menu.html'; ?>
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card modern-form shadow mb-4">
+                <div class="card-header modern-form-header text-white p-4 text-center">
+                    <h2 class="mb-0 fw-bold">
+                        <i class="bi bi-box-arrow-up me-2"></i>SALIDA DE MATERIALES
+                    </h2>
+                </div>
 
-    <main class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
-                <div class="card modern-form shadow">
-                    <div class="card-header modern-form-header text-white p-4 text-center">
-                        <h2 class="mb-0 fw-bold">
-                            <i class="bi bi-box-arrow-up me-2"></i>SALIDA DE MATERIALES
-                        </h2>
+                <div class="card-body modern-form-body p-5">
+                    <form id="form-salida-material" class="row g-4" onsubmit="return false;">
+                        
+                        <div class="col-md-4">
+                            <label class="form-label label-bold">No. de Credencial</label>
+                            <input type="text" class="form-control" id="id_credencial" placeholder="ID RTP">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label label-bold">Trabajador</label>
+                            <input type="text" class="form-control bg-light" id="nombre_trabajador" readonly>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="col-md-3">
+                            <label class="form-label label-bold">Código</label>
+                            <input type="text" class="form-control" id="codigo_material">
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label label-bold">Descripción</label>
+                            <input type="text" class="form-control bg-light" id="descripcion" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label label-bold">Acción</label>
+                            <button class="btn btn-primary w-100" type="button" id="btn-buscar">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label label-bold">Cantidad</label>
+                            <input type="number" class="form-control" id="cantidad" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label label-bold">Estado</label>
+                            <select class="form-select" id="id_estado_material">
+                                <option value="N">Nuevo</option>
+                                <option value="U">Usado</option>
+                                <option value="M">Malo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="button" class="btn btn-info text-white w-100 fw-bold" id="btn-agregar-lista">
+                                <i class="bi bi-plus-circle me-2"></i>AGREGAR A LA LISTA
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-header bg-secondary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Materiales listos para entregar</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="tabla-previa">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-center text-muted">
+                                    <td colspan="5" class="py-4">No hay materiales agregados a la lista todavía.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="card-body modern-form-body p-5">
-                        <form id="form-salida-material" action="procesar_salida.php" method="POST" class="row g-4"
-                            novalidate>
-
-                            <div class="col-md-4">
-                                <label for="id_credencial" class="form-label label-bold">No. de Credencial</label>
-                                <input type="text" class="form-control" id="id_credencial" name="id_credencial"
-                                    placeholder="ID RTP" required>
-                            </div>
-
-                            <div class="col-md-8">
-                                <label for="nombre_trabajador" class="form-label label-bold">Nombre del
-                                    Trabajador</label>
-                                <input type="text" class="form-control" id="nombre_trabajador" name="nombre_trabajador"
-                                    placeholder="Nombre completo" required>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="codigo_material" class="form-label label-bold">Código del Material</label>
-                                <input type="text" class="form-control" id="codigo_material" name="codigo_material"
-                                    placeholder="Ej. HER-001" required>
-                            </div>
-
-                            <div class="col-md-8">
-                                <label for="descripcion" class="form-label label-bold">Descripción del Material</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion"
-                                        required>
-                                    <button class="btn btn-primary btn-search-modern px-4" type="button"
-                                        id="btn-buscar-material">
-                                        <i class="bi bi-search"></i> Buscar
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-2">
-                                    <label for="cantidad" class="form-label label-bold">Cantidad</label>
-                                    <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"
-                                        required>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label for="unidad" class="form-label label-bold">Unidad</label>
-                                    <input type="text" class="form-control" id="unidad" name="unidad" required>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="estado_entrega" class="form-label label-bold">Estado del
-                                        Material</label>
-                                    <select class="form-select" id="estado_entrega" name="estado_entrega" required>
-                                        <option value="" selected disabled>Selecciona un estado...</option>
-                                        <option value="Nuevo">Nuevo</option>
-                                        <option value="Usado">Usado</option>
-                                        <option value="Rehabilitado">Malo</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="fecha" class="form-label label-bold">Fecha y Hora de Salida</label>
-                                    <input type="datetime-local" class="form-control" id="fecha" name="fecha" required>
-                                </div>
-                            </div>
-
-                            <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-                                <button type="submit" class="btn btn-success px-5 py-2 rounded-pill fw-bold">
-                                    <i class="bi bi-printer me-2"></i>Guardar Salida
-                                </button>
-                                <button type="reset" class="btn btn-outline-danger px-5 py-2 rounded-pill"
-                                    id="btn-limpiar-salida">
-                                    <i class="bi bi-trash me-2"></i>Limpiar
-                                </button>
-                            </div>
-                        </form>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center bg-white py-3">
+                    <span class="text-muted small italic">Asegúrese de que el stock sea suficiente antes de finalizar.</span>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-danger" onclick="location.reload()">Cancelar Todo</button>
+                        <button class="btn btn-success fw-bold px-4">
+                            <i class="bi bi-check2-all me-2"></i>FINALIZAR SALIDA Y REGISTRAR
+                        </button>
                     </div>
                 </div>
             </div>
+
         </div>
-    </main>
+    </div>
+</main>
 
     <?php include './components/pie.html'; ?>
 

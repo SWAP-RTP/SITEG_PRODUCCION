@@ -1,128 +1,168 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const formulario = document.getElementById('form-entrada-material');
-    const Codigo = document.getElementById('codigo_material');
-    const Descripcion = document.getElementById('descripcion');
-    const btnBuscar = document.getElementById('btn-buscar');
 
-    // 1. Mayúsculas
-    [Codigo, Descripcion].forEach(input => {
-        input.addEventListener('input', function () {
-            const start = this.selectionStart;
-            this.value = this.value.toUpperCase();
-            this.setSelectionRange(start, start);
-        });
-    });
+    // --- REFERENCIAS AL DOM ---
+    const inputCodigo = document.getElementById('codigo_material');
+    const inputDesc = document.getElementById('descripcion');
+    // Ahora 'inputUnidad' referenciará al <select>
+    const inputUnidad = document.getElementById('unidad');
+    const inputUbi = document.getElementById('ubicacion');
+    const inputCant = document.getElementById('cantidad_material');
+    const inputObs = document.getElementById('observaciones');
+    const inputFecha = document.getElementById('fecha');
 
-    // --- NUEVO: FETCH DE BÚSQUEDA (GET) ---
-    const realizarBusqueda = () => {
-        const codigoIngresado = Codigo.value.trim();
+    const estadoAviso = document.getElementById('estado-material');
+    const btnGuardar = document.getElementById('btn-guardar-entrada');
 
-        fetch(`query_sql/procesar_entrada.php?buscar_codigo=${codigoIngresado}`)
-            .then(res => {
-                if (!res.ok) throw new Error('Error en el servidor');
-                return res.text(); // Primero lo leemos como texto plano
-            })
-            .then(text => {
-                try {
-                    const response = JSON.parse(text);
-                    if (response.status === 'found') {
-                        Descripcion.value = response.data.descripcion_material;
-                        document.getElementById('unidad').value = response.data.nomenclatura_material;
-                        document.getElementById('ubicacion').value = response.data.ubicacion_fisica_material;
+    let esMaterialNuevo = false;
 
-                        Descripcion.readOnly = true;
-                        Descripcion.classList.add('bg-light');
-                    } else {
-                        // Si no se encuentra, desbloqueamos para registro nuevo
-                        Descripcion.readOnly = false;
-                        Descripcion.classList.remove('bg-light');
-                    }
-                } catch (err) {
-                    console.error("El servidor devolvió algo que no es JSON:", text);
-                }
-            })
-            .catch(err => console.error("Error en la petición:", err));
+    // --- 1. CARGAR UNIDADES DESDE LA BASE DE DATOS ---
+    const cargarUnidades = async () => {
+        try {
+            const response = await fetch('query_sql/get_unidades.php');
+            const unidades = await response.json();
 
+            // Limpiar opciones previas
+            inputUnidad.innerHTML = '<option value="">Seleccione unidad...</option>';
+
+            unidades.forEach(uni => {
+                const option = document.createElement('option');
+                option.value = uni.nomenclatura_material;
+                option.textContent = `${uni.nomenclatura_material} - ${uni.descripcion_unidad || ''}`;
+                inputUnidad.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error cargando unidades:", error);
+        }
     };
 
-    Codigo.addEventListener('input', realizarBusqueda);
-    btnBuscar.addEventListener('click', realizarBusqueda);
+    // Ejecutar carga de unidades al iniciar
+    cargarUnidades();
 
-    // --- ENVÍO AL PHP ---
-    formulario.addEventListener('submit', function (e) {
-        e.preventDefault();
+    // --- BUSCAR MATERIAL ---
+  // --- BUSCAR MATERIAL ---
+    const buscarMaterial = async (codigo) => {
+        // Limpiamos espacios y convertimos a MAYÚSCULAS para evitar errores de duplicados
+        const codigoLimpio = codigo.trim().toUpperCase();
+        if (!codigoLimpio) return;
 
-        // Obtenemos los ELEMENTOS (Tus variables originales para guiarte)
-        const elCodigo = document.getElementById('codigo_material');
-        const elDesc = document.getElementById('descripcion');
-        const elCant = document.getElementById('cantidad_material');
-        const elUnidad = document.getElementById('unidad');
-        const elUbic = document.getElementById('ubicacion');
-        const elFecha = document.getElementById('fecha');
+        try {
+            const response = await fetch(`query_sql/buscar_material.php?codigo=${encodeURIComponent(codigoLimpio)}`);
+            
+            if (!response.ok) throw new Error("El archivo PHP no respondió correctamente");
 
-        if (elCodigo.value.trim() === "") {
-            Swal.fire({ icon: 'warning', title: 'Ingrese código', confirmButtonColor: '#00332b' });
-            elCodigo.focus();
+            // Obtenemos la respuesta como texto primero para ver si hay errores de PHP mezclados
+            const text = await response.text();
+            
+            // Si ves esto en la consola, sabrás exactamente qué devolvió el servidor
+            console.log("Respuesta servidor para " + codigoLimpio + ":", text);
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+               
+                throw new Error("La respuesta del servidor no es un JSON válido. Revisa la consola.");
+            }
+
+            if (data && !data.error) {
+                inputDesc.value = data.descripcion_material;
+                inputUnidad.value = data.nomenclatura_material;
+                inputUbi.value = data.ubicacion_fisica_material || 'Sin ubicación';
+
+                estadoAviso.innerHTML = `<span class="text-success">✔ Registrado (Stock: ${data.stock_actual})</span>`;
+                esMaterialNuevo = false;
+                toggleCampos(true); 
+            } else {
+                limpiarCamposParaNuevo();
+                estadoAviso.innerHTML = `<span class="text-warning">⚠ Material Nuevo: Ingrese descripción y unidad</span>`;
+                esMaterialNuevo = true;
+                toggleCampos(false); 
+            }
+        } catch (error) {
+            console.error("Detalle del error:", error);
+            estadoAviso.innerHTML = `<span class="text-danger">${error.message}</span>`;
+        }
+    };
+
+    // --- GUARDAR ENTRADA ---
+    const guardarEntrada = async () => {
+        if (!inputCodigo.value || !inputCant.value || inputCant.value <= 0 || !inputUnidad.value) {
+            estadoAviso.innerHTML = `<span class="text-danger">Complete todos los campos, incluyendo la unidad</span>`;
             return;
         }
 
-        if (elDesc.value.trim() === "") {
-            Swal.fire({ icon: 'warning', title: 'Ingrese descripción', confirmButtonColor: '#00332b' });
-            elDesc.focus();
-            return;
-        }
+        try {
+            const formData = new FormData();
+            formData.append('codigo_material', inputCodigo.value.trim());
+            formData.append('descripcion', inputDesc.value.trim());
+            formData.append('unidad', inputUnidad.value); 
+            formData.append('ubicacion', inputUbi.value.trim());
+            formData.append('cantidad_material', inputCant.value);
+            formData.append('es_nuevo', esMaterialNuevo);
 
-        if (elCant.value.trim() === "" || parseFloat(elCant.value) <= 0) {
-            Swal.fire({ icon: 'warning', title: 'Ingrese una cantidad válida', confirmButtonColor: '#00332b' });
-            elCant.focus();
-            return;
-        }
-
-        if (elUnidad.value.trim() === "") {
-            Swal.fire({ icon: 'warning', title: 'Ingrese Unidad de Medida', confirmButtonColor: '#00332b' });
-            elUnidad.focus();
-            return;
-        }
-
-        if (elUbic.value.trim() === "") {
-            Swal.fire({ icon: 'warning', title: 'Ubicación Vacía', confirmButtonColor: '#00332b' });
-            elUbic.focus();
-            return;
-        }
-
-        if (elFecha.value.trim() === "") {
-            Swal.fire({ icon: 'warning', title: 'Fecha Requerida', confirmButtonColor: '#00332b' });
-            elFecha.focus();
-            return;
-        }
-
-        // --- FETCH DE ENVÍO (POST) ---
-      
-        const datos = new FormData(formulario);
-
-        fetch('query_sql/procesar_entrada.php', {
-            method: 'POST',
-            body: datos
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Registrado!',
-                        text: data.message,
-                        confirmButtonColor: '#00332b'
-                    }).then(() => {
-                        formulario.reset();
-                        elDesc.readOnly = false;
-                        elDesc.classList.remove('bg-light');
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
-                }
-            })
-            .catch(error => {
-                Swal.fire({ icon: 'error', title: 'Error de conexión' });
+            const response = await fetch(`query_sql/guardar_material.php`, {
+                method: 'POST',
+                body: formData
             });
+
+            const text = await response.text();
+            const data = JSON.parse(text);
+
+            if (data && data.success) {
+                estadoAviso.innerHTML = `<span class="text-success">✔ Entrada guardada correctamente</span>`;
+                limpiarFormulario();
+            } else {
+                estadoAviso.innerHTML = `<span class="text-danger">Error: ${data.error || "No se pudo guardar"}</span>`;
+            }
+        } catch (error) {
+            console.error("Error en la solicitud:", error);
+            estadoAviso.innerHTML = `<span class="text-danger">Error crítico al conectar con el servidor</span>`;
+        }
+    };
+
+    // --- FUNCIONES AUXILIARES ---
+
+    function toggleCampos(bloquear) {
+        inputDesc.readOnly = bloquear;
+        inputUnidad.disabled = bloquear;
+        inputUbi.readOnly = bloquear;
+    }
+
+    function limpiarCamposParaNuevo() {
+        inputDesc.value = '';
+        inputUnidad.value = ''; // Resetea el select
+        inputUbi.value = '';
+    }
+
+    function limpiarFormulario() {
+        inputCodigo.value = '';
+        inputDesc.value = '';
+        inputUnidad.value = '';
+        inputUnidad.disabled = false; // Habilitar de nuevo para el siguiente registro
+        inputUbi.value = '';
+        inputCant.value = '';
+        inputObs.value = '';
+        esMaterialNuevo = false;
+    }
+
+    // --- EVENTOS ---
+    inputCodigo.addEventListener('input', (e) => {
+        // Forzamos mayúsculas mientras el usuario escribe
+        const valor = e.target.value.toUpperCase();
+        e.target.value = valor;
+        
+        if (valor.trim().length >= 3) {
+            buscarMaterial(valor);
+        }
     });
+
+    btnGuardar.addEventListener('click', guardarEntrada);
+
+    // CARGA DESDE URL 
+    const urlParams = new URLSearchParams(window.location.search);
+    const codigoUrl = urlParams.get('codigo');
+    if (codigoUrl) {
+        inputCodigo.value = codigoUrl.toUpperCase();
+        buscarMaterial(codigoUrl);
+    }
 });
