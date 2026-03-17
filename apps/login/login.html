@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +8,8 @@
   <!-- TÍTULO DE LA PÁGINA -->
   <title>SINTEG</title>
   <!-- Fuente -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet" type="text/css" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet"
+    type="text/css" />
   <!-- BOOTSTRAP CSS -->
   <link href="./lib/Bootstrap-5-5.3.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
   <!-- FONTAWESOME -->
@@ -23,7 +25,6 @@
 <body>
   <!-- Main Container ----------------------------------------------------------------->
   <main class="d-flex flex-column justify-content-center align-items-center">
-
     <div class="contenedor_carga" hidden>
       <div class="loader"></div>
       <div class="loading-text">Cargando..</div>
@@ -31,52 +32,54 @@
 
     <!--LOGIN ------------------------------------>
     <div id="card_login">
-        <div class="panel izquierdo">
-            <div class="text-center mb-3">
-              <h3 class="mt-3">Bienvenidos al</h3>
-              <h3 class="mt-3">Sistema Integrado (SINTEG)</h3>
-            </div>
-          
-            <form action="auth/auth.php" method="POST" id="loginForm">
-              <section class="mb-3 mt-5">
-                <label for="ingresaUsuario" class="form-label fw-bold">
-                  <i class="fas fa-user"></i> Usuario
-                </label>
-                <input id="ingresaUsuario" name="ingresaUsuario" type="text" class="form-control form-control-lg fs-6 text-center"/>
-              </section>
+      <div class="panel izquierdo">
+        <div class="text-center mb-3">
+          <h3 class="mt-3">Bienvenidos al</h3>
+          <h3 class="mt-3">Sistema Integrado (SINTEG)</h3>
+        </div>
 
-              <section class="mb-3">
-                <label for="ingresaPassword" class="form-label fw-bold">
-                  <i class="fas fa-unlock-alt"></i> Contraseña
-                </label>
-                <div class="input-group">
-                  <input id="ingresaPassword" name="ingresaPassword" type="password"
-                    class="form-control form-control-lg fs-6 text-center" />
-                  <button id="showPasswordBtn" class="btn btn-outline-secondary" type="button"
-                    onclick="mostrarPassword();">
-                    <i id="eyeIcon" class="fas fa-eye"></i>
-                  </button>
-                </div>
-              </section>
+        <form action="auth/auth.php" method="POST" id="loginForm">
+          <section class="mb-3 mt-5">
+            <label for="ingresaUsuario" class="form-label fw-bold">
+              <i class="fas fa-user"></i> Usuario
+            </label>
+            <input id="ingresaUsuario" name="ingresaUsuario" type="text"
+              class="form-control form-control-lg fs-6 text-center" />
+          </section>
 
-              <button class="btn btn-lg btn-sistema metal-shine w-100 fs-6 mt-4" id="btn_toast" type="submit">
-                <i class="fa-solid fa-right-to-bracket"></i> Entrar
+          <section class="mb-3">
+            <label for="ingresaPassword" class="form-label fw-bold">
+              <i class="fas fa-unlock-alt"></i> Contraseña
+            </label>
+            <div class="input-group">
+              <input id="ingresaPassword" name="ingresaPassword" type="password"
+                class="form-control form-control-lg fs-6 text-center" />
+              <button id="showPasswordBtn" class="btn btn-outline-secondary" type="button" onclick="mostrarPassword();">
+                <i id="eyeIcon" class="fas fa-eye"></i>
               </button>
+            </div>
+          </section>
 
-              <div class="text-center mt-5">
-                <a href="https://www.rtp.cdmx.gob.mx/">MÁS SOBRE RTP</a>
-              </div>
+          <button class="btn btn-lg btn-sistema metal-shine w-100 fs-6 mt-4" id="btn_toast" type="submit">
+            <i class="fa-solid fa-right-to-bracket"></i> Entrar
+          </button>
 
-              <div class="text-center mt-3">
-                <label>Copyright © <?php echo date('Y'); ?>.- Derechos reservados</label>
-              </div>
-            </form>
-        </div>
+          <div class="text-center mt-5">
+            <a href="https://www.rtp.cdmx.gob.mx/">MÁS SOBRE RTP</a>
+          </div>
 
-        <div class="panel derecho">
-            <!-- aqui solo se ocupa el ancho del contenedor para que se vea la imagen de fondo -->
+          <div class="text-center mt-3">
+            <label>Copyright ©
+              <?php echo date('Y'); ?>.- Derechos reservados
+            </label>
+          </div>
+        </form>
+      </div>
 
-        </div>
+      <div class="panel derecho">
+        <!-- aqui solo se ocupa el ancho del contenedor para que se vea la imagen de fondo -->
+
+      </div>
     </div>
   </main>
   <!-- Scripts JS de Bootstrap  --------------------------------------->
@@ -90,6 +93,7 @@
   <!-- Script Notyf -->
   <script src="./lib/Notyf/notyf.min.js"></script>
   <!-- Scripts de Login----------------->
-  <script src="./includes/js/index.js"></script>
+  <script type="module" src="./includes/js/index.js"></script>
 </body>
+
 </html>
