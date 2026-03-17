@@ -73,7 +73,7 @@ window.addEventListener("pageshow", function (event) {
 const urlParams = new URLSearchParams(window.location.search);
 const errorType = urlParams.get("error");
 const sesionCerrada = urlParams.get("message")
-if (errorType, sesionCerrada) {
+if (errorType || sesionCerrada) {
   if (errorType === "sesion_duplicada") {
     notyf.error("Acceso detectado en un nuevo equipo, hemos cerrado tu sesion.");
   } else if (errorType === "sesion_invalida") {
