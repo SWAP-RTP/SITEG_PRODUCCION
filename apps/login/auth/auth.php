@@ -83,7 +83,7 @@ try {
         } else {
             echo json_encode([
                 "status" => "error",
-                "message" => "Credencial inválida, vuelva a intentar"
+                "message" => "Usuario o Contraseña incorrectos"
             ]);
             exit;
         }

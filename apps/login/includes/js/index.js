@@ -1,45 +1,45 @@
+import { notyf } from "./notyf.js";
 // AUTENTICACION
-function auth(){
-    const loginForm = document.getElementById("loginForm");
+function auth() {
+  const loginForm = document.getElementById("loginForm");
 
-    loginForm.addEventListener("submit", function (e) {
-        e.preventDefault();
+  loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-        const formData = new FormData(loginForm);
+    const formData = new FormData(loginForm);
+    if (!formData.get('ingresaUsuario') || !formData.get('ingresaPassword')) {
+      notyf.error("Usuario y Contraseña son requeridos")
+      return
+    }
 
-        const notyf = new Notyf({
-            duration: 4000,
-            position: { x: 'right', y: 'top' },
-        });
+    $.ajax({
+      url: "auth/auth.php",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      dataType: "json",
+      success: function (res) {
 
-        $.ajax({
-            url: "auth/auth.php",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            dataType: "json",
-            success: function (res) {
+        if (res.status === "success") {
+          notyf.success("Bienvenido(a) " + (res.usuario.name || ""));
 
-                if (res.status === "success") {
-                    notyf.success("Bienvenido(a) " + (res.usuario.name || ""));
+          $(".contenedor_carga").removeAttr('hidden');
+          $("#card_login").attr('hidden');
 
-                    $(".contenedor_carga").removeAttr('hidden');
-                    $("#card_login").attr('hidden');
-
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1500);
-                }else{
-                    notyf.error(res.message);
-                }
-            },
-            error: function (xhr) {
-                console.log(xhr.responseText); // para ver qué respondió el servidor
-                notyf.error("Error al conectar con el servidor");
-            }
-        });
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1500);
+        } else {
+          notyf.error(res.message);
+        }
+      },
+      error: function (xhr) {
+        console.log(xhr.responseText); // para ver qué respondió el servidor
+        notyf.error(xhr.message,);
+      }
     });
+  });
 }
 
 // 1. Función global para el ojo de la contraseña
@@ -69,6 +69,23 @@ window.addEventListener("pageshow", function (event) {
   }
 });
 
+//Alertas para indicarle al usuario que su sesion caduco o que alguien ingreso con su usuario en otro lado
+const urlParams = new URLSearchParams(window.location.search);
+const errorType = urlParams.get("error");
+const sesionCerrada = urlParams.get("message")
+if (errorType || sesionCerrada) {
+  if (errorType === "sesion_duplicada") {
+    notyf.error("Acceso detectado en un nuevo equipo, hemos cerrado tu sesion.");
+  } else if (errorType === "sesion_invalida") {
+    notyf.error("La sesión ha expirado. Por favor, ingresa de nuevo.");
+  } else if (sesionCerrada === "sesion_cerrada") {
+    notyf.error("Sesion cerrada correctamente");
+  }
+  // Limpia la URL para que no se repita el mensaje al recargar
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   auth();
 });
+
