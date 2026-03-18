@@ -3,17 +3,83 @@ document.addEventListener('DOMContentLoaded', () => {
     const tablaCuerpo = document.querySelector('#tabla-previa tbody');
     const inputCredencial = document.getElementById('id_credencial');
     const inputNombreTrab = document.getElementById('nombre_trabajador');
-    
-    // Inputs del material
     const inputCodMat = document.getElementById('codigo_material');
     const inputDescMat = document.getElementById('descripcion');
     const inputCantMat = document.getElementById('cantidad');
     const inputEstadoMat = document.getElementById('id_estado_material');
+    // El campo unidad es opcional, si no existe puedes eliminarlo
     const inputUnidadMat = document.getElementById('unidad');
 
-    let listaSalida = []; // Array que guarda los materiales
+    let listaSalida = [];
 
-    // 1. Agregar material a la tabla de previsualización
+    // Autocompletar nombre de trabajador
+    inputCredencial.addEventListener('input', () => {
+        const credencial = inputCredencial.value.trim();
+        // Cambia el número según la longitud de tus credenciales
+        if (credencial.length < 3) {
+            inputNombreTrab.value = "";
+            return;
+        }
+        fetch('query_sql/buscar_trabajador.php?credencial=' + encodeURIComponent(credencial))
+            .then(res => res.json())
+            .then(data => {
+                if (data.nombre) {
+                    inputNombreTrab.value = data.nombre;
+                } else {
+                    inputNombreTrab.value = "";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Trabajador no encontrado',
+                        text: 'No existe la credencial ingresada.',
+                        confirmButtonColor: '#00332b'
+                    });
+                }
+            })
+            .catch(() => {
+                inputNombreTrab.value = "";
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo consultar el trabajador.',
+                    confirmButtonColor: '#00332b'
+                });
+            });
+    });
+
+    // Autocompletar descripción de material
+    inputCodMat.addEventListener('change', () => {
+        const codigo = inputCodMat.value.trim();
+        if (codigo === "") {
+            inputDescMat.value = "";
+            return;
+        }
+        fetch('query_sql/buscar_material.php?codigo=' + encodeURIComponent(codigo))
+            .then(res => res.json())
+            .then(data => {
+                if (data.descripcion_material) {
+                    inputDescMat.value = data.descripcion_material;
+                } else {
+                    inputDescMat.value = "";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Material no encontrado',
+                        text: 'No existe el código ingresado.',
+                        confirmButtonColor: '#00332b'
+                    });
+                }
+            })
+            .catch(() => {
+                inputDescMat.value = "";
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo consultar el material.',
+                    confirmButtonColor: '#00332b'
+                });
+            });
+    });
+
+    // Agregar material a la lista
     btnAgregar.addEventListener('click', () => {
         const codigo = inputCodMat.value.trim();
         const desc = inputDescMat.value.trim();
@@ -21,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const estadoVal = inputEstadoMat.value;
         const estadoTexto = inputEstadoMat.options[inputEstadoMat.selectedIndex].text;
 
-        // Validaciones básicas de línea
         if (codigo === "" || isNaN(cant) || cant <= 0) {
             Swal.fire({
                 icon: 'error',
@@ -32,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Agregar al objeto global
         const nuevoItem = {
             codigo: codigo,
             descripcion: desc,
@@ -46,13 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
         limpiarSeccionMaterial();
     });
 
-    // 2. Función para dibujar la tabla
+    // Renderizar tabla
     function renderizarTabla() {
         if (listaSalida.length === 0) {
             tablaCuerpo.innerHTML = '<tr class="text-center text-muted"><td colspan="5">No hay materiales en la lista.</td></tr>';
             return;
         }
-
         tablaCuerpo.innerHTML = '';
         listaSalida.forEach((item, index) => {
             const fila = `
@@ -72,22 +135,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Función para limpiar solo los campos del material
+    // Limpiar campos
     function limpiarSeccionMaterial() {
         inputCodMat.value = '';
         inputDescMat.value = '';
         inputCantMat.value = '';
-        inputUnidadMat.value = '';
+        if (inputUnidadMat) inputUnidadMat.value = '';
         inputCodMat.focus();
     }
 
-    // 4. Eliminar item (Se hace global para el botón de la tabla)
+    // Eliminar item
     window.quitarItem = (index) => {
         listaSalida.splice(index, 1);
         renderizarTabla();
     };
 
-    // 5. Botón Finalizar (Simulación de envío masivo)
+    // Finalizar salida y enviar al backend
     document.querySelector('.btn-success.px-4').addEventListener('click', () => {
         if (inputCredencial.value === "" || listaSalida.length === 0) {
             Swal.fire({
@@ -105,10 +168,29 @@ document.addEventListener('DOMContentLoaded', () => {
             text: `Se registrarán ${listaSalida.length} artículos para el trabajador.`,
             confirmButtonColor: '#00332b'
         });
-        
-        console.log("Datos para PHP:", {
-            trabajador: inputCredencial.value,
-            materiales: listaSalida
+
+        fetch('query_sql/registrar_salida.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                trabajador: inputCredencial.value,
+                materiales: listaSalida
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Salida registrada', data.mensaje, 'success');
+                listaSalida = [];
+                renderizarTabla();
+                inputCredencial.value = '';
+                inputNombreTrab.value = '';
+            } else {
+                Swal.fire('Error', data.mensaje, 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Error', 'No se pudo registrar la salida.', 'error');
         });
     });
 });
