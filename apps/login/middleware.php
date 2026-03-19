@@ -48,7 +48,12 @@ function validarAcceso()
         }
 
         //2. Consultamos el session_id actual guardado en la tabla 
-        $query = "SELECT session_id FROM usuarios WHERE correo = $1";
+
+        if (is_numeric($decoded->data->id)) {
+            $query = "SELECT session_id FROM usuarios WHERE id = $1";
+        } else {
+            $query = "SELECT session_id FROM usuarios WHERE correo = $1";
+        }
         $result = pg_query_params($db, $query, array($decoded->data->id));
 
         if (!$result) {

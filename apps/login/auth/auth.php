@@ -16,6 +16,7 @@ try {
 
     if (!empty($usuario_input) && !empty($pass_input)) {
         $sql = "SELECT 
+                u.id, 
                 u.trab_credencial, 
                 u.nombre, 
                 u.correo, 
@@ -25,9 +26,10 @@ try {
                 msd.modulo_sistem_descrip,
                 ads.dir_nombre
             FROM usuarios u 
-            LEFT JOIN modulo_perm mp ON mp.trab_credencial = u.trab_credencial 
+            -- Agregamos la validación para ignorar credenciales vacías o nulas
+            LEFT JOIN modulo_perm mp ON mp.trab_credencial = u.trab_credencial AND u.trab_credencial != '' AND u.trab_credencial IS NOT NULL
             LEFT JOIN modulo_sistem msd ON msd.cve_modulo = mp.cve_modulo 
-               LEFT join adsc_direccion ads on msd.pertenencia = ads.dir_cve
+            LEFT JOIN adsc_direccion ads ON msd.pertenencia = ads.dir_cve
             WHERE u.correo = $1
         ";
         $result = pg_query_params($db, $sql, array($usuario_input));
@@ -37,11 +39,11 @@ try {
             //Generamos un identificador de sesion único para el usuario
             $session_id = bin2hex(random_bytes(16));
             //Guardamos el identificador de la sesion el la bd para futuras validaciones
-            $updateSql = "UPDATE usuarios SET session_id = $1 WHERE correo = $2";
-            pg_query_params($db, $updateSql, array($session_id, $user_rows[0]['correo']));
+            $updateSql = "UPDATE usuarios SET session_id = $1 WHERE id = $2";
+            pg_query_params($db, $updateSql, array($session_id, $user_rows[0]['id']));
 
             $user_info = [
-                'id' => $user_rows[0]['correo'],
+                'id' => $user_rows[0]['id'],
                 'name' => $user_rows[0]['nombre'],
                 'trab_credencial' => $user_rows[0]['trab_credencial'],
                 'modulo' => $user_rows[0]['modulo'],
@@ -63,7 +65,7 @@ try {
                 'exp' => time() + 3600,
                 'session_id' => $session_id,
                 'data' => $user_info,
-                'permisos' => $permisos
+                // 'permisos' => $permisos
             ];
 
             $jwt = JWT::encode($payload, $key, 'HS256');
