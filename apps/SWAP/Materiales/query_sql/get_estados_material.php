@@ -2,15 +2,11 @@
 header('Content-Type: application/json');
 require '/var/www/login_shared/conf/conexion.php';
 $conexion = Database::conectar();
-
-
-$sql = "SELECT id_unidad, descripcion_unidad FROM unidades_materiales ORDER BY descripcion_unidad ASC";
+$sql = "SELECT id_estado_material, descripcion_estado_material FROM estados_materiales ORDER BY descripcion_estado_material";
 $res = pg_query($conexion, $sql);
-
-$unidades = [];
+$estados = [];
 while ($row = pg_fetch_assoc($res)) {
-    $unidades[] = $row;
+    $estados[] = $row;
 }
-
 pg_close($conexion);
-echo json_encode($unidades);
+echo json_encode($estados);

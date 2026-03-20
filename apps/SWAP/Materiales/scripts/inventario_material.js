@@ -52,4 +52,32 @@ document.addEventListener('DOMContentLoaded', () => {
            
         });
     });
-});
+        });
+        const btnConsultar = document.getElementById('btnConsultarInventario');
+        btnConsultar.addEventListener('click', () => {
+            fetch('query_sql/buscar_material.php?codigo=' + document.getElementById('codigo_material').value.trim())
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('tablaInventario').querySelector('tbody');
+                tbody.innerHTML = '';
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                if (Array.isArray(data)) {
+                    data.forEach(m => {
+                        const alerta = m.stock_actual <= m.stock_minimo_material ? 'table-danger' : '';
+                        tbody.innerHTML += `
+                            <tr class="${alerta}">
+                                <td>${m.codigo_material}</td>
+                                <td>${m.descripcion_material}</td>
+                                <td>${m.nomenclatura_material}</td>
+                                <td>${m.ubicacion_fisica_material}</td>
+                                <td>${m.stock_actual}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        });
+    

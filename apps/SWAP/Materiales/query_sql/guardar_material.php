@@ -3,64 +3,64 @@ header('Content-Type: application/json');
 require '/var/www/login_shared/conf/conexion.php';
 $conexion = Database::conectar();
 
-if ($conexion) {
-    // 1. Recibir y limpiar datos
-    $codigo      = strtoupper(trim($_POST['codigo_material'] ?? ''));
-    $descripcion = strtoupper(trim($_POST['descripcion'] ?? ''));
-    $cantidad    = intval($_POST['cantidad_material'] ?? 0);
-    $unidad      = strtoupper(trim($_POST['unidad'] ?? ''));
-    $ubicacion   = strtoupper(trim($_POST['ubicacion'] ?? ''));
+/**
+ * Guarda una entrada de material en el inventario.
+ * Si el material es nuevo, lo inserta en control_materiales.
+ * Si ya existe, actualiza el stock_actual.
+ * Siempre registra la entrada en entradas_materiales.
+ */
+function guardarEntradaMaterial($conexion, $datos) {
+    $codigo = isset($datos['codigo_material']) ? strtoupper($datos['codigo_material']) : '';
+    $descripcion = isset($datos['descripcion']) ? strtoupper($datos['descripcion']) : '';
+    $categoria = $datos['id_categoria_material'] ?? null;
+    $unidad = isset($datos['unidad']) ? strtoupper($datos['unidad']) : '';
+    $estado = isset($datos['estado_material']) ? strtoupper($datos['estado_material']) : '';
+    $cantidad = intval($datos['cantidad_material'] ?? 0);
+    $ubicacion = isset($datos['ubicacion']) ? strtoupper($datos['ubicacion']) : '';
 
-    if (empty($codigo) || $cantidad <= 0) {
-        echo json_encode(["error" => "Código vacío o cantidad inválida"]);
-        exit;
+    // Validar campos obligatorios
+    if (!$codigo || !$descripcion || !$unidad || !$estado || $cantidad <= 0) {
+        return ['success' => false, 'error' => 'Faltan campos obligatorios o cantidad inválida'];
     }
 
-    pg_query($conexion, "BEGIN");
+    // Verificar si el material ya existe
+    $sql_check = "SELECT codigo_material FROM control_materiales WHERE codigo_material = $1";
+    $res_check = pg_query_params($conexion, $sql_check, [$codigo]);
 
-    try {
-        // 2. Verificar existencia en la tabla principal
-        $sqlCheck = "SELECT stock_actual FROM control_materiales WHERE codigo_material = $1";
-        $resCheck = pg_query_params($conexion, $sqlCheck, array($codigo));
-
-        if ($resCheck === false) {
-            throw new Exception("Error en consulta de existencia: " . pg_last_error($conexion));
+    if (pg_num_rows($res_check) === 0) {
+        // Material nuevo: insertar en control_materiales
+        $sql_insert = "INSERT INTO control_materiales (codigo_material, descripcion_material, id_categoria_material, id_unidad, id_estado_material, stock_actual, ubicacion_fisica)
+                       VALUES ($1, $2, $3, $4, $5, $6, $7)";
+        $params_insert = [$codigo, $descripcion, $categoria, $unidad, $estado, $cantidad, $ubicacion];
+        $res_insert = pg_query_params($conexion, $sql_insert, $params_insert);
+        if (!$res_insert) {
+            return ['success' => false, 'error' => 'Error al guardar material nuevo'];
         }
-
-        $existe = (pg_num_rows($resCheck) > 0);
-
-        if (!$existe) {
-            // INSERT: Crear nuevo material
-            $sqlMaestra = "INSERT INTO control_materiales (codigo_material, descripcion_material, nomenclatura_material, ubicacion_fisica_material, stock_actual) VALUES ($1, $2, $3, $4, $5);";
-            $resMaestra = pg_query_params($conexion, $sqlMaestra, array($codigo, $descripcion, $unidad, $ubicacion, $cantidad));
-            if ($resMaestra === false) {
-                throw new Exception("Error al crear material nuevo: " . pg_last_error($conexion));
-            }
-        } else {
-            // UPDATE: Sumar al stock existente
-            $sqlUpdate = "UPDATE control_materiales SET stock_actual = stock_actual + $1 WHERE codigo_material = $2;";
-            $resUpdate = pg_query_params($conexion, $sqlUpdate, array($cantidad, $codigo));
-            if ($resUpdate === false) {
-                throw new Exception("Error al actualizar stock: " . pg_last_error($conexion));
-            }
+    } else {
+        // Material existente: actualizar stock_actual
+        $sql_update = "UPDATE control_materiales SET stock_actual = stock_actual + $1 WHERE codigo_material = $2";
+        $res_update = pg_query_params($conexion, $sql_update, [$cantidad, $codigo]);
+        if (!$res_update) {
+            return ['success' => false, 'error' => 'Error al actualizar stock'];
         }
-
-        // 3. Registrar el movimiento en la tabla de entradas
-        $sqlEntrada = "INSERT INTO entradas_materiales (codigo_material, cantidad_material) VALUES ($1, $2);";
-        $resEntrada = pg_query_params($conexion, $sqlEntrada, array($codigo, $cantidad));
-        if ($resEntrada === false) {
-            throw new Exception("Error al registrar entrada: " . pg_last_error($conexion));
-        }
-
-        pg_query($conexion, "COMMIT");
-        echo json_encode(["success" => true, "mensaje" => "Guardado exitoso"]);
-    } catch (Exception $e) {
-        pg_query($conexion, "ROLLBACK");
-        echo json_encode(["error" => $e->getMessage()]);
     }
 
-    pg_close($conexion);
-} else {
-    echo json_encode(["error" => "Error de conexión"]);
+    // Registrar la entrada en entradas_materiales
+    $sql_entrada = "INSERT INTO entradas_materiales (codigo_material, cantidad) VALUES ($1, $2)";
+    $res_entrada = pg_query_params($conexion, $sql_entrada, [$codigo, $cantidad]);
+
+    if ($res_entrada) {
+        return ['success' => true, 'mensaje' => 'Entrada registrada correctamente'];
+    } else {
+        return ['success' => false, 'error' => 'Error al registrar entrada'];
+    }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $resultado = guardarEntradaMaterial($conexion, $_POST);
+    echo json_encode($resultado);
+    pg_close($conexion);
+} else {
+    echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+}
+?>

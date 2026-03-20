@@ -33,70 +33,83 @@
                     </div>
 
                     <div class="card-body modern-form-body p-5">
-                        <!--FORMULARIO-->
-                        <form id="form-entrada-material" class="row g-4">
-                            <div class="col-md-3">
-                                <label for="codigo_material" class="form-label label-bold">Código</label>
-                                <input type="text" class="form-control" id="codigo_material" name="codigo_material"
-                                    placeholder="">
-                            </div>
+                        <form id="form-entrada-material" autocomplete="off">
+                            <input type="hidden" id="id_modulo" name="id_modulo" value="4">
 
-                            <div class="col-md-9">
-                                <label for="descripcion" class="form-label label-bold">Descripción del Material</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control bg-light" id="descripcion" name="descripcion"
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Código</label>
+                                    <input type="text" class="form-control" id="codigo_material" name="codigo_material" oninput="this.value = this.value.toUpperCase()"
+                                        required placeholder="Ej: MAT-001">
+                                    <div id="estado-material" class="mt-1"
+                                        style="min-height: 25px; font-size: 0.85rem;"></div>
+                                </div>
+
+                                <div class="col-md-9">
+                                    <label class="form-label fw-bold">Descripción del Material</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="descripcion" name="descripcion" oninput="this.value = this.value.toUpperCase()"
+                                            required>
+                                        <button class="btn btn-primary" type="button" id="btn-buscar-modal"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Cantidad</label>
+                                    <input type="number" class="form-control" id="cantidad_material"
+                                        name="cantidad_material" min="1" required>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Unidad</label>
+                                    <select class="form-select" id="unidad" name="unidad" required>
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Ubicación</label>
+                                    <input type="text" class="form-control" id="ubicacion" name="ubicacion" oninput="this.value = this.value.toUpperCase()"
+                                        placeholder="Pasillo / Estante">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Adscripcion</label>
+                                    <input type="text" class="form-control bg-light" name="modulo" value="MODULO 4"
                                         readonly>
-                                    <button class="btn btn-primary" type="button" id="btn-buscar" data-bs-toggle="modal"
-                                        data-bs-target="#exampleModalCenter">
-                                        <i class="bi bi-search"></i>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Estado Físico</label>
+                                    <select class="form-select" id="estado_material" name="estado_material" required>
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="categoria" class="form-label">Categoría</label>
+                                    <select class="form-select" id="id_categoria_material" name="id_categoria_material" required>
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Observaciones de la Entrada</label>
+                                    <textarea class="form-control" id="observaciones" name="observaciones" rows="2" oninput="this.value = this.value.toUpperCase()"
+                                        placeholder="Notas..."></textarea>
+                                </div>
+
+                                <div class="col-12 text-center mt-4">
+                                    <button type="button" class="btn btn-success btn-lg px-4 shadow-sm me-2"
+                                        id="btn-guardar-entrada">
+                                        <i class="bi bi-save me-2"></i>Registrar Entrada
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-lg px-4 shadow-sm"
+                                        id="btn-limpiar-entrada">
+                                        <i class="bi bi-eraser me-2"></i>Limpiar
                                     </button>
                                 </div>
-                                <div id="estado-material" class="form-text mt-1 fw-bold"></div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label for="cantidad_material" class="form-label label-bold">Cantidad</label>
-                                <input type="number" class="form-control" id="cantidad_material"
-                                    name="cantidad_material" min="1">
-                            </div>
-
-                            <div class="col-md-3">
-                                <label for="unidad" class="form-label label-bold">Unidad</label>
-                                <select class="form-select" id="unidad" name="unidad">
-                                    <option value="">Seleccione unidad...</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="ubicacion" class="form-label label-bold">Ubicación en Almacén</label>
-                                <input type="text" class="form-control bg-light" id="ubicacion" readonly>
-                            </div>
-
-                            <div class="col-12">
-                                <label for="observaciones" class="form-label label-bold">Observaciones</label>
-                                <textarea class="form-control" id="observaciones" name="observaciones" rows="2"
-                                    placeholder="Notas adicionales..."></textarea>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="adscripcion" class="form-label label-bold">Adscripción</label>
-                                <input type="text" class="form-control bg-light" id="adscripcion" value="Módulo 04"
-                                    readonly>
-                            </div>
-
-                            <!-- <div class="col-md-6">
-                                <label for="fecha" class="form-label label-bold">Fecha y Hora de registro</label>
-                                <input type="datetime-local" class="form-control" id="fecha">
-                            </div> -->
-
-                            <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-                                <button type="button" id="btn-guardar-entrada"
-                                    class="btn btn-success px-5 py-2 rounded-pill fw-bold">
-                                    <i class="bi bi-save me-2"></i>Guardar Entrada
-                                </button>
-                                <button type="reset" class="btn btn-outline-danger px-5 py-2 rounded-pill">
-                                    <i class="bi bi-trash me-2"></i>Limpiar
-                                </button>
                             </div>
                         </form>
                     </div>
@@ -109,30 +122,31 @@
     <!-- Modal Bootstrap 5 -->
     <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg para hacerlo más ancho -->
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
                     <h5 class="modal-title" id="exampleModalCenterTitle">
                         <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="contenedor-materiales-modal"></div>
+                    <div id="contenedor-materiales-modal">
+                        <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-2"></i>Cerrar
                     </button>
-                    <button type="button" class="btn btn-success">
-                        <i class="bi bi-check-circle me-2"></i>Agregar
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                        <i class="bi bi-plus-circle me-2"></i>agregar
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
-
 
 
     <?php include './components/pie.html'; ?>

@@ -1,242 +1,127 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- REFERENCIAS AL DOM ---
-    const inputCodigo = document.getElementById('codigo_material');
-    const inputDesc = document.getElementById('descripcion');
-    const inputUnidad = document.getElementById('unidad');
-    const inputUbi = document.getElementById('ubicacion');
-    const inputCant = document.getElementById('cantidad_material');
-    const inputObs = document.getElementById('observaciones');
-    const estadoAviso = document.getElementById('estado-material');
+    const form = document.getElementById('form-entrada-material');
+    const campoCodigo = document.getElementById('codigo_material');
     const btnGuardar = document.getElementById('btn-guardar-entrada');
-     // --- FORZAR MAYÚSCULAS EN CAMPOS DE TEXTO ---
-    [inputCodigo, inputDesc, inputUbi, inputObs].forEach(input => {
-        if (input) {
-            input.addEventListener('input', function(e) {
-                e.target.value = e.target.value.toUpperCase();
-            });
-        }
-    });
-    // --- FUNCIÓN PARA CARGAR MATERIALES EN EL MODAL ---
-function cargarMaterialesEnModal() {
-    fetch('query_sql/lista_modal.php')
-        .then(response => {
-            if (!response.ok) throw new Error('Error en la respuesta del servidor');
-            return response.json();
-        })
-        .then(materiales => {
-            const contenedor = document.getElementById('contenedor-materiales-modal');
-            if (!contenedor) return;
+    const btnLimpiar = document.getElementById('btn-limpiar-entrada');
+    const feedback = document.getElementById('estado-material');
 
-            // Si hay error en la respuesta, mostrar mensaje
-            if (materiales.error) {
-                contenedor.innerHTML = `<div class="text-danger">${materiales.mensaje || 'Error al cargar registros.'}</div>`;
-                return;
-            }
+    const inputs = {
+        desc: document.getElementById('descripcion'),
+        und: document.getElementById('unidad'),
+        ubi: document.getElementById('ubicacion'),
+        est: document.getElementById('estado_material'),
+        cat: document.getElementById('id_categoria_material'), // NUEVO: Categoría
+        cant: document.getElementById('cantidad_material')
+    };
 
-            // Si no hay registros, mostrar mensaje
-            if (!Array.isArray(materiales) || materiales.length === 0) {
-                contenedor.innerHTML = '<div class="text-center text-muted">No hay registros.</div>';
-                return;
-            }
-
-            // Renderizar la tabla de materiales
-            let tabla = `<table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Descripción</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            materiales.forEach(mat => {
-                tabla += `<tr class="fila-material" data-codigo="${mat.codigo_material}" data-desc="${mat.descripcion_material}">
-                    <td>${mat.codigo_material}</td>
-                    <td>${mat.descripcion_material}</td>
-                </tr>`;
-            });
-            tabla += '</tbody></table>';
-            contenedor.innerHTML = `
-    <div class="mb-2 text-muted" style="font-size: 0.95em;">
-        <i class="bi bi-hand-index-thumb me-1"></i>Haz clic en una fila para seleccionarla y luego presiona <b>Agregar</b>.
-    </div>
-` + tabla;
-
-            // Permitir seleccionar una fila (se marca visualmente)
-            document.querySelectorAll('.fila-material').forEach(fila => {
-                fila.addEventListener('click', function() {
-                    document.querySelectorAll('.fila-material').forEach(f => f.classList.remove('table-active'));
-                    this.classList.add('table-active');
-                });
-            });
-
-            // Al dar clic en "Agregar", copiar los datos al formulario principal
-            const btnAgregar = document.querySelector('#exampleModalCenter .btn-success');
-            btnAgregar.onclick = function() {
-                const seleccionada = document.querySelector('.fila-material.table-active');
-                if (seleccionada) {
-                    inputCodigo.value = seleccionada.dataset.codigo;
-                    inputDesc.value = seleccionada.dataset.desc;
-                    // Aquí puedes agregar lógica para buscar unidad y ubicación si lo necesitas
-                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
-                    modalInstance.hide();
-                } else {
-                    Swal.fire('Selecciona un material de la lista');
-                }
-            };
-        })
-        .catch(error => {
-            const contenedor = document.getElementById('contenedor-materiales-modal');
-            if (contenedor) {
-                contenedor.innerHTML = `<div class="text-danger">Error al cargar registros: ${error.message}</div>`;
-            }
-        });
-}
-
-// --- EVENTO PARA ABRIR EL MODAL Y CARGAR LOS DATOS ---
-const modal = document.getElementById('exampleModalCenter');
-if (modal) {
-    modal.addEventListener('show.bs.modal', cargarMaterialesEnModal);
-}
-    let esMaterialNuevo = false;
-
-    // --- 1. CARGAR UNIDADES ---
-    const cargarUnidades = async () => {
+    const cargarSelect = async (url, elemento, key, label) => {
+        if (!elemento) return;
         try {
-            const response = await fetch('query_sql/get_unidades.php');
-            if (!response.ok) return;
-            const unidades = await response.json();
-
-            inputUnidad.innerHTML = '<option value="">Seleccione unidad...</option>';
-            if (Array.isArray(unidades)) {
-                unidades.forEach(uni => {
-                    const option = document.createElement('option');
-                    option.value = uni.nomenclatura_material;
-                    option.textContent = `${uni.nomenclatura_material} - ${uni.descripcion_unidad || ''}`;
-                    inputUnidad.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error("Error cargando unidades:", error);
+            const res = await fetch(url);
+            const text = await res.text();
+            const start = text.indexOf('[');
+            const end = text.lastIndexOf(']') + 1;
+            if (start === -1) throw new Error("JSON no válido");
+            
+            const data = JSON.parse(text.substring(start, end));
+            elemento.innerHTML = '<option value="">Seleccione...</option>';
+            data.forEach(item => {
+                const textoMostrar = item[label] || "Sin descripción";
+                elemento.innerHTML += `<option value="${item[key]}">${item[key]} - ${textoMostrar}</option>`;
+            });
+        } catch (e) {
+            console.error(`Error en ${url}:`, e);
+            elemento.innerHTML = '<option value="">Error</option>';
         }
     };
 
-    // --- 2. BUSCAR MATERIAL ---
-    const buscarMaterial = async (codigo) => {
-        const codigoLimpio = codigo.trim().toUpperCase();
-        if (codigoLimpio.length < 3) return;
+    const buscarMaterial = async () => {
+        const cod = campoCodigo.value.trim().toUpperCase();
+        if (cod.length < 3) return;
 
         try {
-            const response = await fetch(`query_sql/buscar_material.php?codigo=${encodeURIComponent(codigoLimpio)}`);
-            if (!response.ok) throw new Error("Error en servidor");
-
-            const data = await response.json();
+            const res = await fetch(`query_sql/buscar_material.php?codigo=${cod}`);
+            const data = await res.json();
 
             if (data && !data.error) {
-                inputDesc.value = data.descripcion_material;
-                inputUnidad.value = data.nomenclatura_material;
-                inputUbi.value = data.ubicacion_fisica_material || 'ALMACEN';
-                estadoAviso.innerHTML = `<span class="text-info">
-    <i class="bi bi-box-seam me-1"></i>Material existente (Stock actual: ${data.stock_actual})
-</span>`;
-                esMaterialNuevo = false;
-                toggleCampos(true);
+                // Material existente: mostrar datos y bloquear campos
+                inputs.desc.value = data.descripcion_material;
+                inputs.und.value = data.id_unidad;
+                inputs.ubi.value = data.ubicacion_fisica || '';
+                inputs.est.value = data.id_estado_material;
+                inputs.cat.value = data.id_categoria || '';
+                alternarBloqueo(true);
+                feedback.innerHTML = `<span class="badge bg-info">Stock Actual: ${data.stock_actual}</span>`;
+                // Aviso visual
                 Swal.fire({
                     icon: 'info',
-                    title: 'Material encontrado',
-                    html: `Stock actual: <b>${data.stock_actual}</b>`,
-                    confirmButtonColor: '#3085d6'
+                    title: 'Material existente',
+                    text: 'La descripción y datos se han cargado automáticamente. Solo puedes registrar una nueva entrada para aumentar el stock.',
+                    timer: 2500,
+                    showConfirmButton: false
                 });
             } else {
-                limpiarCamposParaNuevo();
-                estadoAviso.innerHTML = `<span class="text-warning"> Material Nuevo: Complete los datos</span>`;
-                esMaterialNuevo = true;
-                toggleCampos(false);
+                // Material nuevo: desbloquear campos y mostrar aviso
+                alternarBloqueo(false);
+                feedback.innerHTML = `<span class="badge bg-warning text-dark">Material Nuevo</span>`;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Material nuevo',
+                    text: 'Este código no existe. Ingresa los datos para registrar el material.',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
             }
-        } catch (error) {
-            console.error("Error en buscarMaterial:", error);
-        }
+        } catch (e) { console.warn("Error en búsqueda"); }
     };
 
-    // --- 3. GUARDAR ENTRADA ---
-   const guardarEntrada = async () => {
-    const codigo = inputCodigo.value.trim().toUpperCase();
-    const cant = parseFloat(inputCant.value);
-    const ubicacion = inputUbi.value.trim();
-
-    if (!codigo || isNaN(cant) || cant <= 0 || !inputUnidad.value || !ubicacion) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Campos obligatorios',
-            text: 'Por favor, complete todos los campos requeridos antes de guardar.',
-            confirmButtonColor: '#3085d6'
-        });
-        return;
-    }
-
-
-
-        try {
-            const formData = new FormData();
-            formData.append('codigo_material', codigo);
-            formData.append('descripcion', inputDesc.value.trim().toUpperCase());
-            formData.append('unidad', inputUnidad.value);
-            formData.append('ubicacion', inputUbi.value.trim().toUpperCase());
-            formData.append('cantidad_material', cant);
-            if (inputObs) formData.append('observaciones', inputObs.value);
-
-            const response = await fetch(`query_sql/guardar_material.php`, {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                estadoAviso.innerHTML = `<span class="text-success">✔ ${data.mensaje || 'Guardado correctamente'}</span>`;
-                setTimeout(() => {
-                    limpiarFormulario();
-                }, 1500);
-            } else {
-                estadoAviso.innerHTML = `<span class="text-danger">Error: ${data.error}</span>`;
-            }
-        } catch (error) {
-            console.error("Error al guardar:", error);
-            estadoAviso.innerHTML = `<span class="text-danger">Error crítico al guardar</span>`;
-        }
+    const alternarBloqueo = (bloquear) => {
+        inputs.desc.readOnly = bloquear;
+        inputs.und.disabled = bloquear;
+        inputs.est.disabled = bloquear;
+        inputs.cat.disabled = bloquear; // NUEVO
     };
 
-    // --- INICIALIZACIÓN Y EVENTOS ---
-    cargarUnidades();
-
-    inputCodigo.addEventListener('input', (e) => {
-        buscarMaterial(e.target.value);
-    });
-
-    btnGuardar.addEventListener('click', (e) => {
+    const registrarEntrada = async (e) => {
         e.preventDefault();
-        guardarEntrada();
-    });
+        if (!campoCodigo.value || !inputs.cant.value) return Swal.fire('Error', 'Faltan campos', 'warning');
 
-    // --- FUNCIONES DE APOYO ---
-    function toggleCampos(bloquear) {
-        inputDesc.readOnly = bloquear;
-        inputUnidad.disabled = bloquear;
-        inputUbi.readOnly = bloquear;
-    }
+        // IMPORTANTE: Habilitar selects temporalmente para que FormData capture los valores
+        inputs.und.disabled = false;
+        inputs.est.disabled = false;
+        inputs.cat.disabled = false;
 
-    function limpiarCamposParaNuevo() {
-        inputDesc.value = '';
-        inputUnidad.value = '';
-        inputUbi.value = '';
-    }
+        const formData = new FormData(form);
 
-    function limpiarFormulario() {
-        const form = document.getElementById('form-entrada-material');
-        if (form) form.reset();
-        estadoAviso.innerHTML = '';
-        toggleCampos(false);
-        esMaterialNuevo = false;
-    }
+        const confirm = await Swal.fire({ title: '¿Registrar?', icon: 'question', showCancelButton: true });
+        if (confirm.isConfirmed) {
+            try {
+                const res = await fetch('query_sql/guardar_material.php', { method: 'POST', body: formData });
+                const r = await res.json();
+                if (r.success) {
+                    Swal.fire('Éxito', r.mensaje, 'success');
+                    btnLimpiar.click();
+                } else {
+                    Swal.fire('Error', r.error, 'error');
+                }
+            } catch (e) { Swal.fire('Error', 'Falla de red', 'error'); }
+        }
+    };
 
-   
+    const iniciar = () => {
+        // CARGA DE CATÁLOGOS
+        cargarSelect('query_sql/get_unidades.php', inputs.und, 'id_unidad', 'descripcion_unidad');
+        cargarSelect('query_sql/get_estados_material.php', inputs.est, 'id_estado_material', 'descripcion_estado_material');
+        cargarSelect('query_sql/get_categorias.php', inputs.cat, 'id_categoria_material', 'nombre_categoria_material'); 
+
+        campoCodigo.addEventListener('blur', buscarMaterial);
+        btnGuardar.addEventListener('click', registrarEntrada);
+        btnLimpiar.addEventListener('click', () => {
+            form.reset();
+            feedback.innerHTML = '';
+            alternarBloqueo(false);
+        });
+    };
+
+    iniciar();
 });

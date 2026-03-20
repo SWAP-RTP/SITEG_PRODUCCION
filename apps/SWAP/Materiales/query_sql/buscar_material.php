@@ -1,44 +1,38 @@
 <?php
-
-require(__DIR__ . '/../../config/conexion.php');
-
 header('Content-Type: application/json; charset=utf-8');
-
-$conexion = conexion();
-if ($conexion) { 
+try {
+    require '/var/www/login_shared/conf/conexion.php';
+    if (!function_exists('conexion')) {
+        throw new Exception('Función de conexión no encontrada');
+    }
+    $conexion = conexion();
+    if (!$conexion) {
+        throw new Exception('Error de conexión a la base de datos');
+    }
     $codigo = isset($_GET['codigo']) ? strtoupper(trim($_GET['codigo'])) : '';
-
     if (empty($codigo)) {
         echo json_encode(["error" => "Código vacío"]);
         exit;
     }
-
-   
     $sql = "SELECT codigo_material, 
                    descripcion_material, 
-                   nomenclatura_material, 
-                   ubicacion_fisica_material, 
+                   id_unidad, 
+                   ubicacion_fisica, 
+                   id_estado_material, 
+                   id_categoria_material, 
                    stock_actual 
-            FROM control_materiales 
-            WHERE codigo_material = $1;";
-
+            FROM   control_materiales WHERE codigo_material = $1;";
     $qry = pg_query_params($conexion, $sql, array($codigo));
-
     if (!$qry) {
-        echo json_encode(["error" => "Error de DB", "detalle" => pg_last_error($conexion)]);
-        exit;
+        throw new Exception('Error de DB: ' . pg_last_error($conexion));
     }
-
     $res = pg_fetch_assoc($qry);
-
     if ($res) {
-     
         echo json_encode($res, JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode(["error" => "No encontrado"]);
     }
-
     pg_close($conexion);
-} else {
-    echo json_encode(["error" => "Error de conexión"]);
+} catch (Exception $e) {
+    echo json_encode(["error" => "Excepción PHP", "detalle" => $e->getMessage()]);
 }

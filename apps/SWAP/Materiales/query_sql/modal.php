@@ -14,11 +14,10 @@ try {
                      descripcion_material ASC";
     $result = pg_query($ruta_conexion, $sql);
     if (!$result) {
-        throw new Exception("Error en la consulta: " . pg_last_error($result));
+        throw new Exception("Error en la consulta: " . pg_last_error($ruta_conexion));
     }
     $materiales = pg_fetch_all($result);
-    
-echo json_encode($materiales ? $materiales : []);
+    echo json_encode($materiales ? $materiales : []);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
