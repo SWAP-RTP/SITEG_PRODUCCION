@@ -24,3 +24,5 @@ function getSistemas_sinteg()
 
 }
 echo json_encode(getSistemas_sinteg());
+
+//Database::desconectar();

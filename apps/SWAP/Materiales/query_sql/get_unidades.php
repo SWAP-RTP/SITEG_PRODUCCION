@@ -1,20 +1,29 @@
 <?php
-require(__DIR__ . '/../../config/conexion.php');
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
+require '/var/www/login_shared/conf/conexion.php';
 
-$conexion = conexion();
-if (!$conexion) {
-    echo json_encode(["error" => "Error de conexión"]);
-    exit;
+function getUnidades()
+{
+    $conexion = Database::conectar();
+    if (!$conexion) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error de conexión']);
+        exit;
+    }
+
+    $query = "SELECT   nomenclatura_material, 
+                       descripcion_unidad 
+              FROM     unidades_materiales 
+              ORDER BY nomenclatura_material ASC";
+    $result = pg_query($conexion, $query);
+
+    if (!$result) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error en la consulta: ' . pg_last_error($conexion)]);
+        exit;
+    }
+
+    $unidades = pg_fetch_all($result);
+    return $unidades ?: [];
 }
-
-$query = "SELECT nomenclatura_material, descripcion_unidad FROM unidades_materiales ORDER BY nomenclatura_material ASC";
-$resultado = pg_query($conexion, $query);
-
-$unidades = [];
-while ($fila = pg_fetch_assoc($resultado)) {
-    $unidades[] = $fila;
-}
-
-echo json_encode($unidades);
-pg_close($conexion);
+echo json_encode(getUnidades());
