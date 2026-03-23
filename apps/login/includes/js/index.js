@@ -27,6 +27,9 @@ function auth() {
           $(".contenedor_carga").removeAttr('hidden');
           $("#card_login").attr('hidden');
 
+          sessionStorage.setItem('permisos_usuario', JSON.stringify(res.permisos));
+          sessionStorage.setItem('datos_usuario', JSON.stringify(res.usuario));
+
           setTimeout(() => {
             window.location.href = "index.html";
           }, 1500);
@@ -83,6 +86,7 @@ if (errorType || sesionCerrada) {
   }
   // Limpia la URL para que no se repita el mensaje al recargar
   window.history.replaceState({}, document.title, window.location.pathname);
+  sessionStorage.clear();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
