@@ -8,10 +8,18 @@ class UsuarioRepository
         $this->db = $conexionDB;
     }
 
-    //FUNCION QUE CONSULTA EL USUARIO Y PERMISOS 
-    public function obtenerUsuarioPorCorreo($correo)
+    //FUNCION QUE ASOCIA EL CORREO CON EL ID 
+    public function obtenerCredencialPorCorreo($correo)
     {
-        $sql = "SELECT 
+        $sqlxcorreo = "SELECT id_usuario FROM usuarios_final WHERE correo = $1";
+        $res = pg_query_params($this->db, $sqlxcorreo, [$correo]);
+        $fila = pg_fetch_assoc($res);
+        return $fila['id_usuario'] ?? null;
+    }
+    //FUNCION QUE FILTRA POR CREDENCIAL AL HACER LA CONSULTA ARRIBA POR CORREO 
+    public function obtenerDatosPorCredencial($id_usuario)
+    {
+        $sqlxcredencial = "SELECT 
                 u.id_usuario,  
                 u.nombre, 
                 u.correo, 
@@ -23,15 +31,11 @@ class UsuarioRepository
             LEFT JOIN modulo_perm mp ON mp.trab_credencial = u.id_usuario::TEXT
             LEFT JOIN modulo_sistem msd ON msd.cve_modulo = mp.cve_modulo 
             LEFT JOIN adsc_direccion ads ON msd.pertenencia = ads.dir_cve
-            WHERE u.correo = $1";
+            WHERE u.id_usuario = $1";
 
-        $result = pg_query_params($this->db, $sql, [$correo]);
-        if (!$result) {
-            throw new Exception("Error en la consulta: " . pg_last_error($this->db));
-        }
+        $result = pg_query_params($this->db, $sqlxcredencial, [$id_usuario]);
         return pg_fetch_all($result);
     }
-
     //FUNCION QUE ACTUALIZA L ESTADO DE SESESSION PARA EVITAR SESIONES DOBLES
     public function actualizarSessionId($id, $sessionId)
     {
@@ -41,12 +45,8 @@ class UsuarioRepository
 
     public function obtenerSessionId($id)
     {
-        $campo = is_numeric($id) ? 'id_usuario' : 'correo';
-        $sql = "SELECT id_session FROM usuarios_final WHERE $campo = $1";
-
+        $sql = "SELECT id_session FROM usuarios_final WHERE id_usuario = $1";
         $result = pg_query_params($this->db, $sql, [$id]);
-        if (!$result)
-            return null;
         $fila = pg_fetch_assoc($result);
         return $fila['id_session'] ?? null;
     }
