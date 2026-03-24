@@ -2,18 +2,18 @@
 header('Content-Type: application/json; charset=utf-8');
 try {
     require '/var/www/login_shared/conf/conexion.php';
-    if (!function_exists('conexion')) {
-        throw new Exception('Función de conexión no encontrada');
-    }
-    $conexion = conexion();
+    $conexion = Database::conectar();
+
     if (!$conexion) {
         throw new Exception('Error de conexión a la base de datos');
     }
+
     $codigo = isset($_GET['codigo']) ? strtoupper(trim($_GET['codigo'])) : '';
     if (empty($codigo)) {
         echo json_encode(["error" => "Código vacío"]);
         exit;
     }
+
     $sql = "SELECT codigo_material, 
                    descripcion_material, 
                    id_unidad, 

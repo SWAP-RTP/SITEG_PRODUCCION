@@ -1,127 +1,269 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('form-entrada-material');
-    const campoCodigo = document.getElementById('codigo_material');
-    const btnGuardar = document.getElementById('btn-guardar-entrada');
+
+    // REFERENCIAS DE LOS ELEMENTOS DEL DOM
+    const codigoInput = document.getElementById('codigo');
+    const descripcionInput = document.getElementById('descripcion');
+    const cantidadInput = document.getElementById('cantidad');
+    const ubicacionInput = document.getElementById('ubicacion');
+    const unidadSelect = document.getElementById('unidad');
+    const estadoSelect = document.getElementById('estado');
+    const categoriaSelect = document.getElementById('id_categoria');
+    const formulario = document.getElementById('form-entrada-material');
     const btnLimpiar = document.getElementById('btn-limpiar-entrada');
-    const feedback = document.getElementById('estado-material');
+    const btnModal = document.getElementById('modal');
 
-    const inputs = {
-        desc: document.getElementById('descripcion'),
-        und: document.getElementById('unidad'),
-        ubi: document.getElementById('ubicacion'),
-        est: document.getElementById('estado_material'),
-        cat: document.getElementById('id_categoria_material'), // NUEVO: Categoría
-        cant: document.getElementById('cantidad_material')
-    };
+    // VARIABLE PARA GUARDAR EL MATERIAL ORIGINAL
+    let materialOriginal = null;
 
-    const cargarSelect = async (url, elemento, key, label) => {
-        if (!elemento) return;
+    // FUNCION QUE ACOMPLETA CAMPOS
+    async function autoCompletar(valor, url, campoEnvio, callback) {
+        if (!valor) return;
         try {
-            const res = await fetch(url);
-            const text = await res.text();
-            const start = text.indexOf('[');
-            const end = text.lastIndexOf(']') + 1;
-            if (start === -1) throw new Error("JSON no válido");
-            
-            const data = JSON.parse(text.substring(start, end));
-            elemento.innerHTML = '<option value="">Seleccione...</option>';
-            data.forEach(item => {
-                const textoMostrar = item[label] || "Sin descripción";
-                elemento.innerHTML += `<option value="${item[key]}">${item[key]} - ${textoMostrar}</option>`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [campoEnvio]: valor })
             });
-        } catch (e) {
-            console.error(`Error en ${url}:`, e);
-            elemento.innerHTML = '<option value="">Error</option>';
+            const data = await response.json();
+            callback(data);
+        } catch (error) {
+            console.error('Error:', error);
         }
-    };
+    }
 
-    const buscarMaterial = async () => {
-        const cod = campoCodigo.value.trim().toUpperCase();
-        if (cod.length < 3) return;
-
+    // LA FUNCION QUE RELLENA EL SELECT
+    async function llenarSelect(selectElement, url, campoValue, campoText) {
         try {
-            const res = await fetch(`query_sql/buscar_material.php?codigo=${cod}`);
-            const data = await res.json();
+            const response = await fetch(url);
+            const data = await response.json();
+            selectElement.innerHTML = '';
+            const opcionDefault = document.createElement('option');
+            opcionDefault.value = '';
+            opcionDefault.textContent = 'Seleccione...';
+            selectElement.appendChild(opcionDefault);
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item[campoValue];
+                option.textContent = item[campoText];
+                selectElement.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
 
-            if (data && !data.error) {
-                // Material existente: mostrar datos y bloquear campos
-                inputs.desc.value = data.descripcion_material;
-                inputs.und.value = data.id_unidad;
-                inputs.ubi.value = data.ubicacion_fisica || '';
-                inputs.est.value = data.id_estado_material;
-                inputs.cat.value = data.id_categoria || '';
-                alternarBloqueo(true);
-                feedback.innerHTML = `<span class="badge bg-info">Stock Actual: ${data.stock_actual}</span>`;
-                // Aviso visual
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Material existente',
-                    text: 'La descripción y datos se han cargado automáticamente. Solo puedes registrar una nueva entrada para aumentar el stock.',
-                    timer: 2500,
-                    showConfirmButton: false
-                });
-            } else {
-                // Material nuevo: desbloquear campos y mostrar aviso
-                alternarBloqueo(false);
-                feedback.innerHTML = `<span class="badge bg-warning text-dark">Material Nuevo</span>`;
+    //FUNCION PARA GUARDAR LOS DATOS
+    async function guardarDatos(url, datos, callback) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            const data = await response.json();
+            callback(data);
+        } catch (error) {
+            console.error('Error:', error);
+            callback({ status: 'error', message: 'Error de red o respuesta no válida' });
+        }
+    }
+
+    //FUNCION PARA EL MODAL
+    async function Modal(url, contenedorId, mostrarTabla) {
+        const contenido = document.getElementById(contenedorId);
+        contenido.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            mostrarTabla(contenido, data);
+        } catch (error) {
+            console.error('Error:', error);
+            contenido.innerHTML = '<p class="text-danger">Error al cargar los datos.</p>';
+        }
+    }
+
+    //FUNCION QUE CONECTA LA FUNCION DE TABLA CON EL MODAL
+    function MostrarTabla(contenedor, materiales) {
+        if (!Array.isArray(materiales) || materiales.length === 0) {
+            contenedor.innerHTML = '<p>No hay materiales registrados.</p>';
+            return;
+        }
+        let html = `<table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>`;
+        materiales.forEach(mat => {
+            html += `<tr>
+            <td>${mat.codigo_material}</td>
+            <td>${mat.descripcion_material}</td>
+            <td>
+                <button type="button" class="btn btn-success btn-sm agregar-material"
+                    data-codigo="${mat.codigo_material}"
+                    data-descripcion="${mat.descripcion_material}">
+                    <i class="bi bi-plus-circle"></i> Agregar
+                </button>
+            </td>
+        </tr>`;
+        });
+        html += `</tbody></table>`;
+        contenedor.innerHTML = html;
+
+        // Asigna el evento a los botones de agregar
+        contenedor.querySelectorAll('.agregar-material').forEach(btn => {
+            btn.addEventListener('click', function () {
+                codigoInput.value = this.getAttribute('data-codigo');
+                descripcionInput.value = this.getAttribute('data-descripcion');
+                // Limpia materialOriginal para forzar nueva consulta si se cambia el código
+                materialOriginal = null;
+                const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
+                if (modal) modal.hide();
+            });
+        });
+    }
+
+    // USO DEL DEBOUNCE
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // EVENTO QUE ACOMPLETA CAMPO Y GUARDA DATOS ORIGINALES
+    const UsoDebounced = debounce(() => {
+        const codigo = codigoInput.value.trim();
+        if (!codigo) {
+            materialOriginal = null;
+            return;
+        }
+        fetch(`query_sql/buscar_material.php?codigo=${encodeURIComponent(codigo)}`)
+            .then(res => res.json())
+            .then(data => {
+                descripcionInput.value = data.descripcion_material || '';
+                // Guarda todos los datos originales para comparar después
+                materialOriginal = data;
+            })
+            .catch(error => {
+                materialOriginal = null;
+                console.error('Error:', error);
+            });
+    }, 300);
+
+    codigoInput.addEventListener('input', UsoDebounced);
+
+    // LLENA LOS SELECTS
+    llenarSelect(estadoSelect, 'query_sql/obtener_estados.php', 'id_estado_material', 'descripcion_estado_material');
+    llenarSelect(unidadSelect, 'query_sql/obtener_unidades.php', 'id_unidad', 'descripcion_unidad');
+    llenarSelect(categoriaSelect, 'query_sql/obtener_categorias.php', 'id_categoria_material', 'nombre_categoria_material');
+
+    // EVENTO QUE GUARDA LOS DATOS
+    formulario.addEventListener('submit', (e) => {
+        e.preventDefault(); // evitar recarga
+
+        // Validación de campos
+        if (
+            !codigoInput.value.trim() ||
+            !descripcionInput.value.trim() ||
+            !unidadSelect.value ||
+            !ubicacionInput.value.trim() ||
+            !estadoSelect.value ||
+            !cantidadInput.value.trim() ||
+            !categoriaSelect.value
+        ) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor, llena todos los campos obligatorios.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+
+        // Validación para evitar sobrescribir
+        if (materialOriginal && codigoInput.value.trim() === materialOriginal.codigo_material) {
+            if (
+                descripcionInput.value.trim() !== (materialOriginal.descripcion_material || '') ||
+                unidadSelect.value !== (materialOriginal.id_unidad || '') ||
+                ubicacionInput.value.trim() !== (materialOriginal.ubicacion || '') ||
+                estadoSelect.value !== (materialOriginal.id_estado_material || '') ||
+                categoriaSelect.value !== (materialOriginal.id_categoria_material || '')
+
+            ) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Material nuevo',
-                    text: 'Este código no existe. Ingresa los datos para registrar el material.',
-                    timer: 2500,
-                    showConfirmButton: false
+                    title: 'Datos diferentes',
+                    text: 'Ya existe un material con este código, pero los datos no coinciden exactamente. No se puede sobrescribir.',
+                    confirmButtonColor: '#3085d6'
                 });
+                return;
             }
-        } catch (e) { console.warn("Error en búsqueda"); }
-    };
 
-    const alternarBloqueo = (bloquear) => {
-        inputs.desc.readOnly = bloquear;
-        inputs.und.disabled = bloquear;
-        inputs.est.disabled = bloquear;
-        inputs.cat.disabled = bloquear; // NUEVO
-    };
-
-    const registrarEntrada = async (e) => {
-        e.preventDefault();
-        if (!campoCodigo.value || !inputs.cant.value) return Swal.fire('Error', 'Faltan campos', 'warning');
-
-        // IMPORTANTE: Habilitar selects temporalmente para que FormData capture los valores
-        inputs.und.disabled = false;
-        inputs.est.disabled = false;
-        inputs.cat.disabled = false;
-
-        const formData = new FormData(form);
-
-        const confirm = await Swal.fire({ title: '¿Registrar?', icon: 'question', showCancelButton: true });
-        if (confirm.isConfirmed) {
-            try {
-                const res = await fetch('query_sql/guardar_material.php', { method: 'POST', body: formData });
-                const r = await res.json();
-                if (r.success) {
-                    Swal.fire('Éxito', r.mensaje, 'success');
-                    btnLimpiar.click();
-                } else {
-                    Swal.fire('Error', r.error, 'error');
-                }
-            } catch (e) { Swal.fire('Error', 'Falla de red', 'error'); }
         }
-    };
 
-    const iniciar = () => {
-        // CARGA DE CATÁLOGOS
-        cargarSelect('query_sql/get_unidades.php', inputs.und, 'id_unidad', 'descripcion_unidad');
-        cargarSelect('query_sql/get_estados_material.php', inputs.est, 'id_estado_material', 'descripcion_estado_material');
-        cargarSelect('query_sql/get_categorias.php', inputs.cat, 'id_categoria_material', 'nombre_categoria_material'); 
+        // Confirmación antes de guardar
+        Swal.fire({
+            title: "¿Deseas guardar el material?",
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            denyButtonText: `No guardar`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // armar objeto con datos
+                const datos = {
+                    codigo: codigoInput.value.trim(),
+                    descripcion: descripcionInput.value.trim(),
+                    unidad: unidadSelect.value,
+                    ubicacion: ubicacionInput.value.trim(),
+                    estado: estadoSelect.value,
+                    cantidad: cantidadInput.value.trim(),
+                    id_categoria: categoriaSelect.value,
+                };
 
-        campoCodigo.addEventListener('blur', buscarMaterial);
-        btnGuardar.addEventListener('click', registrarEntrada);
-        btnLimpiar.addEventListener('click', () => {
-            form.reset();
-            feedback.innerHTML = '';
-            alternarBloqueo(false);
+                // enviar a backend
+                guardarDatos(
+                    'query_sql/guardar_entrada.php',
+                    datos,
+                    (respuesta) => {
+                        if (respuesta.status === 'ok') {
+                            Swal.fire("¡Guardado!", "El material fue registrado correctamente.", "success");
+                            formulario.reset();
+                            materialOriginal = null;
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al guardar',
+                                text: respuesta.message || 'Ocurrió un error inesperado.',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    }
+                );
+            } else if (result.isDenied) {
+                Swal.fire("No se guardó el material", "", "info");
+            }
         });
-    };
+    });
 
-    iniciar();
+    //EVENTO PARA MODAL
+    btnModal.addEventListener('click', () => {
+        Modal('query_sql/modal.php', 'contenedor-materiales-modal', MostrarTabla);
+    });
+
+    //EVENTO PARA LIMPIAR
+    btnLimpiar.addEventListener('click', () => {
+        formulario.reset();
+        materialOriginal = null;
+        const contenedorTabla = document.getElementById('contenedor-tabla-registros');
+        const tablaRegistros = document.getElementById('tabla-registros');
+        if (contenedorTabla) contenedorTabla.style.display = 'none';
+        if (tablaRegistros) tablaRegistros.innerHTML = '';
+    });
+
 });
