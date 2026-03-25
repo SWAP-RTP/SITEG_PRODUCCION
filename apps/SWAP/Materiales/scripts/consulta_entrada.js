@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const codigoInput = document.getElementById('codigo');
     const descripcionInput = document.getElementById('descripcion');
     const unidadSelect = document.getElementById('unidad');
-    const ubicacionInput = document.getElementById('ubicacion');
     const estadoSelect = document.getElementById('estado');
     const cantidadInput = document.getElementById('cantidad');
     const categoriaSelect = document.getElementById('categoria');
     const observacionesInput = document.getElementById('observaciones');
+
 
     function TablaConsulta(contenedor, datos, columnas) {
     if (!Array.isArray(datos) || datos.length === 0) {

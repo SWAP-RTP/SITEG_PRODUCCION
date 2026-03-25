@@ -4,13 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const codigoInput = document.getElementById('codigo');
     const descripcionInput = document.getElementById('descripcion');
     const cantidadInput = document.getElementById('cantidad');
-    const ubicacionInput = document.getElementById('ubicacion');
     const unidadSelect = document.getElementById('unidad');
     const estadoSelect = document.getElementById('estado');
     const categoriaSelect = document.getElementById('id_categoria');
     const formulario = document.getElementById('form-entrada-material');
     const btnLimpiar = document.getElementById('btn-limpiar-entrada');
     const btnModal = document.getElementById('modal');
+
+
+
+    // LLENA LOS SELECTS
+    llenarSelect(estadoSelect, 'query_sql/obtener_estados.php', 'id_estado_material', 'descripcion_estado_material');
+    llenarSelect(unidadSelect, 'query_sql/obtener_unidades.php', 'id_unidad', 'descripcion_unidad');
+    llenarSelect(categoriaSelect, 'query_sql/obtener_categorias.php', 'id_categoria_material', 'nombre_categoria_material');
 
     // VARIABLE PARA GUARDAR EL MATERIAL ORIGINAL
     let materialOriginal = null;
@@ -82,49 +88,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    //FUNCION QUE CONECTA LA FUNCION DE TABLA CON EL MODAL
-    function MostrarTabla(contenedor, materiales) {
-        if (!Array.isArray(materiales) || materiales.length === 0) {
-            contenedor.innerHTML = '<p>No hay materiales registrados.</p>';
-            return;
-        }
-        let html = `<table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>`;
-        materiales.forEach(mat => {
-            html += `<tr>
-            <td>${mat.codigo_material}</td>
-            <td>${mat.descripcion_material}</td>
-            <td>
-                <button type="button" class="btn btn-success btn-sm agregar-material"
-                    data-codigo="${mat.codigo_material}"
-                    data-descripcion="${mat.descripcion_material}">
-                    <i class="bi bi-plus-circle"></i> Agregar
-                </button>
-            </td>
-        </tr>`;
-        });
-        html += `</tbody></table>`;
-        contenedor.innerHTML = html;
+    // Evento para abrir modal de materiales 
 
-        // Asigna el evento a los botones de agregar
-        contenedor.querySelectorAll('.agregar-material').forEach(btn => {
-            btn.addEventListener('click', function () {
-                codigoInput.value = this.getAttribute('data-codigo');
-                descripcionInput.value = this.getAttribute('data-descripcion');
-                // Limpia materialOriginal para forzar nueva consulta si se cambia el código
-                materialOriginal = null;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
-                if (modal) modal.hide();
-            });
-        });
-    }
+const modalBootstrap = document.getElementById('exampleModalCenter');
+if (modalBootstrap) {
+    modalBootstrap.addEventListener('shown.bs.modal', () => {
+        const contenedor = document.getElementById('contenedor-materiales-modal');
+        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+        fetch('query_sql/modal.php')
+            .then(res => res.json())
+            .then(data => {
+                mostrarTablaModal(
+                    contenedor,
+                    data,
+                    [
+                        { header: 'Código', key: 'codigo_material' },
+                        { header: 'Descripción', key: 'descripcion_material' }
+                    ],
+                    (item) => {
+                        codigoInput.value = item.codigo_material;
+                        descripcionInput.value = item.descripcion_material;
+                        materialOriginal = null;
+                        const modal = bootstrap.Modal.getInstance(modalBootstrap);
+                        if (modal) modal.hide();
+                    }
+                );
+            })
+            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
+    });
+}
 
     // USO DEL DEBOUNCE
     function debounce(func, delay) {
@@ -157,11 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     codigoInput.addEventListener('input', UsoDebounced);
 
-    // LLENA LOS SELECTS
-    llenarSelect(estadoSelect, 'query_sql/obtener_estados.php', 'id_estado_material', 'descripcion_estado_material');
-    llenarSelect(unidadSelect, 'query_sql/obtener_unidades.php', 'id_unidad', 'descripcion_unidad');
-    llenarSelect(categoriaSelect, 'query_sql/obtener_categorias.php', 'id_categoria_material', 'nombre_categoria_material');
-
     // EVENTO QUE GUARDA LOS DATOS
     formulario.addEventListener('submit', (e) => {
         e.preventDefault(); // evitar recarga
@@ -171,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
             !codigoInput.value.trim() ||
             !descripcionInput.value.trim() ||
             !unidadSelect.value ||
-            !ubicacionInput.value.trim() ||
             !estadoSelect.value ||
             !cantidadInput.value.trim() ||
             !categoriaSelect.value
@@ -190,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (
                 descripcionInput.value.trim() !== (materialOriginal.descripcion_material || '') ||
                 unidadSelect.value !== (materialOriginal.id_unidad || '') ||
-                ubicacionInput.value.trim() !== (materialOriginal.ubicacion || '') ||
                 estadoSelect.value !== (materialOriginal.id_estado_material || '') ||
                 categoriaSelect.value !== (materialOriginal.id_categoria_material || '')
 
@@ -220,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     codigo: codigoInput.value.trim(),
                     descripcion: descripcionInput.value.trim(),
                     unidad: unidadSelect.value,
-                    ubicacion: ubicacionInput.value.trim(),
+                    // ubicacion: ubicacionInput.value.trim(),
                     estado: estadoSelect.value,
                     cantidad: cantidadInput.value.trim(),
                     id_categoria: categoriaSelect.value,
@@ -251,10 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    //EVENTO PARA MODAL
-    btnModal.addEventListener('click', () => {
-        Modal('query_sql/modal.php', 'contenedor-materiales-modal', MostrarTabla);
-    });
+    //EVENTO PARA MODAL (redirige al mismo event listener de modal-material)
+    if (btnModal) {
+        btnModal.addEventListener('click', () => {
+            const btnModalMaterial = document.getElementById('modal-material');
+            if (btnModalMaterial) btnModalMaterial.click();
+        });
+    }
 
     //EVENTO PARA LIMPIAR
     btnLimpiar.addEventListener('click', () => {

@@ -1,196 +1,207 @@
+
+//evento para las funciones generica
 document.addEventListener('DOMContentLoaded', () => {
-    const btnAgregar = document.getElementById('btn-agregar-lista');
-    const tablaCuerpo = document.querySelector('#tabla-previa tbody');
-    const inputCredencial = document.getElementById('id_credencial');
-    const inputNombreTrab = document.getElementById('nombre_trabajador');
-    const inputCodMat = document.getElementById('codigo_material');
-    const inputDescMat = document.getElementById('descripcion');
-    const inputCantMat = document.getElementById('cantidad');
-    const inputEstadoMat = document.getElementById('id_estado_material');
-    // El campo unidad es opcional, si no existe puedes eliminarlo
-    const inputUnidadMat = document.getElementById('unidad');
+    const credencialesInput = document.getElementById('credencial');
+    const trabajadorInput = document.getElementById('trabajador');
+    const codigoInput = document.getElementById('codigo');
+    const descripcionInput = document.getElementById('descripcion');
+    const cantidadInput = document.getElementById('cantidad');
+    const unidadSelect = document.getElementById('unidad');
+    const estadoSelect = document.getElementById('estado');
+    const observacionesInput = document.getElementById('observaciones');
+    const formulario = document.getElementById('form-salida-material');
 
-    let listaSalida = [];
 
-    // Autocompletar nombre de trabajador
-    inputCredencial.addEventListener('input', () => {
-        const credencial = inputCredencial.value.trim();
-        // Cambia el número según la longitud de tus credenciales
-        if (credencial.length < 3) {
-            inputNombreTrab.value = "";
-            return;
-        }
-        fetch('query_sql/buscar_trabajador.php?credencial=' + encodeURIComponent(credencial))
+    // Llenar selects reutilizando la función
+    llenarSelect(unidadSelect, 'query_sql/obtener_unidades.php', 'id_unidad', 'descripcion_unidad');
+    llenarSelect(estadoSelect, 'query_sql/obtener_estados.php', 'id_estado_material', 'descripcion_estado_material');
+
+
+
+    // Evento para abrir modal de trabajadores
+    document.getElementById('modal-trabajador').addEventListener('click', () => {
+        const contenedor = document.getElementById('contenedor-trabajadores-modal');
+        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+        fetch('query_sql/modal_trabajadores.php')
             .then(res => res.json())
             .then(data => {
-                if (data.nombre) {
-                    inputNombreTrab.value = data.nombre;
-                } else {
-                    inputNombreTrab.value = "";
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Trabajador no encontrado',
-                        text: 'No existe la credencial ingresada.',
-                        confirmButtonColor: '#00332b'
-                    });
-                }
+                mostrarTablaModal(
+                    contenedor,
+                    data,
+                    [
+                        { header: 'Credencial', key: 'credencial' },
+                        { header: 'Nombre', key: 'nombre' }
+                    ],
+                    (item) => {
+                        credencialesInput.value = item.credencial;
+                        trabajadorInput.value = item.nombre;
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
+                        if (modal) modal.hide();
+                    }
+                );
             })
-            .catch(() => {
-                inputNombreTrab.value = "";
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo consultar el trabajador.',
-                    confirmButtonColor: '#00332b'
-                });
-            });
+            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los trabajadores.</p>');
     });
 
-    // Autocompletar descripción de material
-    inputCodMat.addEventListener('change', () => {
-        const codigo = inputCodMat.value.trim();
-        if (codigo === "") {
-            inputDescMat.value = "";
-            return;
-        }
-        fetch('query_sql/buscar_material.php?codigo=' + encodeURIComponent(codigo))
+    // Evento para abrir modal de materiales
+    document.getElementById('modal-material').addEventListener('click', () => {
+        const contenedor = document.getElementById('contenedor-materiales-modal');
+        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+        fetch('query_sql/modal.php')
             .then(res => res.json())
             .then(data => {
-                if (data.descripcion_material) {
-                    inputDescMat.value = data.descripcion_material;
-                } else {
-                    inputDescMat.value = "";
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Material no encontrado',
-                        text: 'No existe el código ingresado.',
-                        confirmButtonColor: '#00332b'
-                    });
-                }
+                mostrarTablaModal(
+                    contenedor,
+                    data,
+                    [
+                        { header: 'Código', key: 'codigo_material' },
+                        { header: 'Descripción', key: 'descripcion_material' }
+                    ],
+                    (item) => {
+                        codigoInput.value = item.codigo_material;
+                        descripcionInput.value = item.descripcion_material;
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
+                        if (modal) modal.hide();
+                    }
+                );
             })
-            .catch(() => {
-                inputDescMat.value = "";
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo consultar el material.',
-                    confirmButtonColor: '#00332b'
-                });
-            });
+            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
     });
 
-    // Agregar material a la lista
-    btnAgregar.addEventListener('click', () => {
-        const codigo = inputCodMat.value.trim();
-        const desc = inputDescMat.value.trim();
-        const cant = parseInt(inputCantMat.value);
-        const estadoVal = inputEstadoMat.value;
-        const estadoTexto = inputEstadoMat.options[inputEstadoMat.selectedIndex].text;
-
-        if (codigo === "" || isNaN(cant) || cant <= 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Datos incompletos',
-                text: 'Asegúrese de seleccionar un material y una cantidad válida.',
-                confirmButtonColor: '#00332b'
-            });
+    const autoCompletarTrabajador = debounce(() => {
+        const credencial = credencialesInput.value.trim();
+        if (!credencial) {
+            trabajadorInput.value = '';
             return;
         }
+        fetch(`query_sql/buscar_trabajador.php?credencial=${encodeURIComponent(credencial)}`)
+            .then(res => res.json())
+            .then(data => {
+                trabajadorInput.value = data.nombre || '';
+            })
+            .catch(error => {
+                trabajadorInput.value = '';
+                console.error('Error:', error);
+            });
+    }, 300);
 
-        const nuevoItem = {
-            codigo: codigo,
-            descripcion: desc,
-            cantidad: cant,
-            estado_id: estadoVal,
-            estado_txt: estadoTexto
+    credencialesInput.addEventListener('input', autoCompletarTrabajador);
+
+    const autoCompletarDescripcion = debounce(() => {
+        const codigo = codigoInput.value.trim();
+        if (!codigo) {
+            descripcionInput.value = '';
+            return;
+        }
+        fetch(`query_sql/buscar_material.php?codigo=${encodeURIComponent(codigo)}`)
+            .then(res => res.json())
+            .then(data => {
+                descripcionInput.value = data.descripcion_material || '';
+            })
+            .catch(error => {
+                descripcionInput.value = '';
+                console.error('Error:', error);
+            });
+    }, 300);
+
+    codigoInput.addEventListener('input', autoCompletarDescripcion);
+
+    // Validación y envío del formulario
+    formulario.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Validación básica
+        if (
+            !credencialesInput.value.trim() ||
+            !trabajadorInput.value.trim() ||
+            !codigoInput.value.trim() ||
+            !descripcionInput.value.trim() ||
+            !unidadSelect.value ||
+            !estadoSelect.value ||
+            !cantidadInput.value.trim()
+        ) {
+            mostrarAlertaCampos();
+            return;
+        }
+        const datos = {
+            credencial: credencialesInput.value.trim(),
+            trabajador: trabajadorInput.value.trim(),
+            codigo: codigoInput.value.trim(),
+            descripcion: descripcionInput.value.trim(),
+            unidad: unidadSelect.value,
+            estado: estadoSelect.value,
+            cantidad: cantidadInput.value.trim(),
+            observaciones: observacionesInput.value.trim()
         };
-
-        listaSalida.push(nuevoItem);
-        renderizarTabla();
-        limpiarSeccionMaterial();
-    });
-
-    // Renderizar tabla
-    function renderizarTabla() {
-        if (listaSalida.length === 0) {
-            tablaCuerpo.innerHTML = '<tr class="text-center text-muted"><td colspan="5">No hay materiales en la lista.</td></tr>';
-            return;
-        }
-        tablaCuerpo.innerHTML = '';
-        listaSalida.forEach((item, index) => {
-            const fila = `
-                <tr>
-                    <td>${item.codigo}</td>
-                    <td>${item.descripcion}</td>
-                    <td class="text-center">${item.cantidad}</td>
-                    <td class="text-center">${item.estado_txt}</td>
-                    <td class="text-center">
-                        <button class="btn btn-outline-danger btn-sm" onclick="quitarItem(${index})">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            tablaCuerpo.innerHTML += fila;
-        });
-    }
-
-    // Limpiar campos
-    function limpiarSeccionMaterial() {
-        inputCodMat.value = '';
-        inputDescMat.value = '';
-        inputCantMat.value = '';
-        if (inputUnidadMat) inputUnidadMat.value = '';
-        inputCodMat.focus();
-    }
-
-    // Eliminar item
-    window.quitarItem = (index) => {
-        listaSalida.splice(index, 1);
-        renderizarTabla();
-    };
-
-    // Finalizar salida y enviar al backend
-    document.querySelector('.btn-success.px-4').addEventListener('click', () => {
-        if (inputCredencial.value === "" || listaSalida.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: 'Debe ingresar la credencial y al menos un material en la lista.',
-                confirmButtonColor: '#00332b'
-            });
-            return;
-        }
-
-        Swal.fire({
-            icon: 'info',
-            title: 'Procesando Salida',
-            text: `Se registrarán ${listaSalida.length} artículos para el trabajador.`,
-            confirmButtonColor: '#00332b'
-        });
-
-        fetch('query_sql/registrar_salida.php', {
+        fetch('query_sql/guardar_salida.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                trabajador: inputCredencial.value,
-                materiales: listaSalida
-            })
+            body: JSON.stringify(datos)
         })
+            .then(res => res.json())
+            .then(respuesta => {
+                if (respuesta.status === 'ok') {
+                    mostrarAlertaExito('La salida fue registrada correctamente.');
+                    formulario.reset();
+                } else {
+                    mostrarAlertaError(respuesta.message);
+                }
+            })
+            .catch(error => {
+                mostrarAlertaError('Error de red o respuesta no válida');
+                console.error('Error:', error);
+            });
+    });
+
+
+});
+
+// Evento para abrir modal de trabajadores
+document.getElementById('modal-trabajador').addEventListener('click', () => {
+    const contenedor = document.getElementById('contenedor-trabajadores-modal');
+    contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+    fetch('query_sql/modal_trabajadores.php')
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                Swal.fire('Salida registrada', data.mensaje, 'success');
-                listaSalida = [];
-                renderizarTabla();
-                inputCredencial.value = '';
-                inputNombreTrab.value = '';
-            } else {
-                Swal.fire('Error', data.mensaje, 'error');
-            }
+            mostrarTablaModal(
+                contenedor,
+                data,
+                [
+                    { header: 'Credencial', key: 'credencial' },
+                    { header: 'Nombre', key: 'nombre' }
+                ],
+                (item) => {
+                    credencialesInput.value = item.credencial;
+                    trabajadorInput.value = item.nombre;
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
+                    if (modal) modal.hide();
+                }
+            );
         })
-        .catch(() => {
-            Swal.fire('Error', 'No se pudo registrar la salida.', 'error');
-        });
-    });
+        .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los trabajadores.</p>');
+});
+
+// Evento para abrir modal de materiales
+document.getElementById('modal-material').addEventListener('click', () => {
+    const contenedor = document.getElementById('contenedor-materiales-modal');
+    contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+    fetch('query_sql/modal.php')
+        .then(res => res.json())
+        .then(data => {
+            mostrarTablaModal(
+                contenedor,
+                data,
+                [
+                    { header: 'Código', key: 'codigo_material' },
+                    { header: 'Descripción', key: 'descripcion_material' }
+                ],
+                (item) => {
+                    codigoInput.value = item.codigo_material;
+                    descripcionInput.value = item.descripcion_material;
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
+                    if (modal) modal.hide();
+                }
+            );
+        })
+        .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
 });

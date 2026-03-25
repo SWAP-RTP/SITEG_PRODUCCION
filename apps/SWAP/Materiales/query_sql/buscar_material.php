@@ -17,7 +17,6 @@ try {
     $sql = "SELECT codigo_material, 
                    descripcion_material, 
                    id_unidad, 
-                   ubicacion_fisica, 
                    id_estado_material, 
                    id_categoria_material, 
                    stock_actual 

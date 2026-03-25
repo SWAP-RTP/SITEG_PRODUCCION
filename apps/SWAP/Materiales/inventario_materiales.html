@@ -21,102 +21,120 @@
 
     <main class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
+            <div class="col-12 col-lg-12">
                 <div class="card modern-form shadow">
-                    <div class="card-header modern-form-header text-white p-4 text-center">
-                        <h2 class="mb-0 fw-bold">
+                    <div class="card-header modern-form-header text-white p-4" style="background-color: #003366;">
+                        <h2 class="mb-0 fw-bold text-center">
                             <i class="bi bi-box-seam me-2"></i>CATÁLOGO E INVENTARIO
                         </h2>
-
                     </div>
                     <div class="card-body modern-form-body p-5">
-                        <form id="form-inventario" action="procesar_inventario.php" method="POST" class="row g-4"
-                            novalidate>
-
-                            <div class="col-md-4">
-                                <label for="codigo_material" class="form-label label-bold">Código del Material</label>
-                                <input type="text" class="form-control" id="codigo_material" name="codigo_material"
-                                    placeholder="Ej. HER-001" required>
-                            </div>
-
-                            <div class="col-md-8">
-                                <label for="descripcion" class="form-label label-bold">Descripción del Material</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion"
-                                        required>
-                                    <button class="btn btn-primary btn-search-modern px-4" type="button"
-                                        id="btn-buscar">
-                                        <i class="bi bi-search"></i> Buscar
-                                    </button>
+                        <form id="form-inventario-material" autocomplete="off" novalidate>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Código</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo"
+                                        oninput="this.value = this.value.toUpperCase()" required
+                                        placeholder="Ej: MAT-001">
+                                    <div id="estado-material" class="mt-1"
+                                        style="min-height: 25px; font-size: 0.85rem;"></div>
                                 </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="categoria" class="form-label label-bold">Categoría</label>
-                                <select class="form-select" id="categoria" name="categoria" required>
-                                    <option value="" selected disabled>Selecciona categoría...</option>
-                                    <option value="Papelería">Papelería</option>
-                                    <option value="Herramientas">Herramientas</option>
-                                    <option value="Limpieza">Limpieza</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="ubicacion" class="form-label label-bold">Ubicación Física</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                    <input type="text" class="form-control" id="ubicacion" name="ubicacion"
-                                        placeholder="Ej. Anaquel 1, Nivel B" required>
+                                <div class="col-md-9">
+                                    <label class="form-label fw-bold">Descripción del Material</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="descripcion" name="descripcion"
+                                            oninput="this.value = this.value.toUpperCase()" required>
+                                        <button class="btn btn-primary" type="button" id="modal-material"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="row g-3 align-items-end mt-2">
-                                <div class="col-md-2">
-                                    <label for="existencia" class="form-label label-bold">Existencia Actual</label>
-                                    <input type="number" class="form-control text-center bg-light" id="existencia"
-                                        name="existencia" readonly value="0">
-                                </div>
 
                                 <div class="col-md-2">
-                                    <label for="unidad" class="form-label label-bold">Unidad</label>
-                                    <input type="text" class="form-control text-center" id="unidad" name="unidad"
-                                        placeholder="PZ" required>
+                                    <label for="existencia" class="form-label fw-bold text-uppercase">Existencia
+                                        Actual</label>
+                                    <input type="number" class="form-control form-control-sm text-center bg-light"
+                                        id="existencia" name="existencia" readonly value="0">
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label for="stock_minimo" class="form-label label-bold">Stock Mínimo
+                                <div class="col-md-3">
+                                    <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock Mínimo
                                         (Alerta)</label>
-                                    <input type="number" class="form-control" id="stock_minimo" name="stock_minimo"
-                                        min="1" required>
+                                    <input type="number" class="form-control form-control-sm" id="stock_minimo"
+                                        name="stock_minimo" min="1" required autocomplete="off">
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label for="fecha" class="form-label label-bold">Fecha de Registro</label>
+                                <div class="col-md-3">
+                                    <label for="fecha" class="form-label fw-bold">Fecha de Registro</label>
                                     <input type="datetime-local" class="form-control" id="fecha" name="fecha" required>
                                 </div>
-                            </div>
 
-                            <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-                                <button type="submit" class="btn btn-success px-5 py-2 rounded-pill fw-bold">
+                            </div>
+                            <div class="col-12 text-center mt-4">
+                                <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm me-2"
+                                    id="btn-guardar-inventario">
                                     <i class="bi bi-save me-2"></i>Guardar en Inventario
                                 </button>
-                                <button type="reset" class="btn btn-outline-secondary px-5 py-2 rounded-pill">
-                                    <i class="bi bi-trash me-2"></i>Limpiar
+                                <button type="reset" class="btn btn-outline-secondary btn-lg px-4 shadow-sm"
+                                    id="btn-limpiar-inventario">
+                                    <i class="bi bi-eraser me-2"></i>Limpiar
                                 </button>
                             </div>
                         </form>
                     </div>
-
                 </div>
             </div>
         </div>
     </main>
-    <?php include './components/pie.html'; ?>
+    <!-- Modal Bootstrap-5 de materiales -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">
+                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="contenedor-materiales-modal">
+                        <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
+                    </div>
+                    <!-- PAGINACIÓN PERSONALIZADA -->
+                    <nav aria-label="Page navigation example" class="mt-3">
+                        <ul class="pagination justify-content-end">
+                            <li class="page-item disabled">
+                                <a class="page-link">Previous</a>
+                            </li>
+                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cerrar
+                    </button>
+                </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script>
+            </div>
+        </div>
+
+        <?php include './components/pie.html'; ?>
+
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+        <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script type="text/javascript" src="/app-swap/Materiales/scripts/materiales_helpers.js"></script>
+        <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script>
 
 
 </body>
