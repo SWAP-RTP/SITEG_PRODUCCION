@@ -1,4 +1,4 @@
-
+   
 //evento para las funciones generica
 document.addEventListener('DOMContentLoaded', () => {
     const credencialesInput = document.getElementById('credencial');
@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const estadoSelect = document.getElementById('estado');
     const observacionesInput = document.getElementById('observaciones');
     const formulario = document.getElementById('form-salida-material');
+ // Evento para limpiar formulario
+    const btnLimpiar = document.getElementById('btn-limpiar-entrada');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', () => {
+            formulario.reset();
+        });
+    }
 
 
     // Llenar selects reutilizando la función
@@ -131,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
             unidad: unidadSelect.value,
             estado: estadoSelect.value,
             cantidad: cantidadInput.value.trim(),
-            observaciones: observacionesInput.value.trim()
         };
         fetch('query_sql/guardar_salida.php', {
             method: 'POST',
@@ -143,13 +149,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (respuesta.status === 'ok') {
                     mostrarAlertaExito('La salida fue registrada correctamente.');
                     formulario.reset();
+                } else if (respuesta.status === 'warning') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Atención!',
+                        text: respuesta.message + ' El stock está por terminarse o ya se terminó.',
+                        confirmButtonColor: '#f39c12'
+                    });
+                    formulario.reset();
                 } else {
                     mostrarAlertaError(respuesta.message);
                 }
             })
             .catch(error => {
                 mostrarAlertaError('Error de red o respuesta no válida');
-                console.error('Error:', error);
+                console.error('Error:', error)
             });
     });
 

@@ -26,9 +26,17 @@ try {
     $rowStock = pg_fetch_assoc($resStock);
     $stockActual = $rowStock ? intval($rowStock['stock_actual']) : 0;
 
-    if ($stockActual < intval($data['cantidad'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Stock insuficiente']);
-        exit;
+    $cantidadSalida = intval($data['cantidad']);
+    $stockDespues = $stockActual - $cantidadSalida;
+    $sqlMinimo = "SELECT stock_minimo FROM control_materiales WHERE codigo_material = $1";
+    $resMinimo = pg_query_params($conexion, $sqlMinimo, [$data['codigo']]);
+    $rowMinimo = pg_fetch_assoc($resMinimo);
+    $stockMinimo = $rowMinimo ? intval($rowMinimo['stock_minimo']) : 0;
+    $advertenciaStock = '';
+    if ($stockDespues <= 0) {
+        $advertenciaStock = 'terminado';
+    } else if ($stockDespues <= $stockMinimo) {
+        $advertenciaStock = 'por_terminarse';
     }
 
     // 2. Registrar la salida
@@ -50,7 +58,13 @@ try {
         throw new Exception('Error al actualizar inventario: ' . pg_last_error($conexion));
     }
 
-    echo json_encode(['status' => 'ok']);
+    if ($advertenciaStock === 'terminado') {
+        echo json_encode(['status' => 'warning', 'message' => '¡Atención! El material se ha terminado con esta salida.']);
+    } else if ($advertenciaStock === 'por_terminarse') {
+        echo json_encode(['status' => 'warning', 'message' => 'Advertencia: El stock está por terminarse (igual o menor al mínimo) tras esta salida.']);
+    } else {
+        echo json_encode(['status' => 'ok']);
+    }
     pg_close($conexion);
 
 } catch (Exception $e) {

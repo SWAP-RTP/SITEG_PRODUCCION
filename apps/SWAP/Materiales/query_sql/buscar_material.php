@@ -13,21 +13,21 @@ try {
         echo json_encode(["error" => "Código vacío"]);
         exit;
     }
-
-    $sql = "SELECT codigo_material, 
-                   descripcion_material, 
-                   id_unidad, 
-                   id_estado_material, 
-                   id_categoria_material, 
-                   stock_actual 
-            FROM   control_materiales WHERE codigo_material = $1;";
+$sql = "SELECT codigo_material, 
+               descripcion_material, 
+               id_unidad, 
+               id_estado_material, 
+               id_categoria_material, 
+               stock_actual,
+               stock_minimo
+        FROM   control_materiales WHERE codigo_material = $1;";
     $qry = pg_query_params($conexion, $sql, array($codigo));
     if (!$qry) {
         throw new Exception('Error de DB: ' . pg_last_error($conexion));
     }
     $res = pg_fetch_assoc($qry);
     if ($res) {
-        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        echo json_encode($res);
     } else {
         echo json_encode(["error" => "No encontrado"]);
     }

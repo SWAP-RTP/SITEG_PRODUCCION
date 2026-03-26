@@ -93,10 +93,6 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label fw-bold">Observaciones de la Entrada</label>
-                                    <textarea class="form-control" id="observaciones" name="observaciones" rows="2"
-                                        oninput="this.value = this.value.toUpperCase()"
-                                        placeholder="Notas..."></textarea>
                                 </div>
 
                                 <div class="col-12 text-center mt-4">
@@ -124,7 +120,7 @@
         <!--tabla para consultar registros de entrada-->
         <div class="card mt-4 shadow" id="contenedor-tabla-registros" style="display: none;">
             <div class="card-body">
-                <h4 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>Últimos Registros</h4>
+                <h4 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>Últimos Registros Entrada</h4>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle tabla-observaciones">
                         <thead class="table-dark">
@@ -134,7 +130,6 @@
                                 <th>Descripción</th>
                                 <th>Cantidad</th>
                                 <th>Fecha Registro</th>
-                                <th>Observaciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-registros">

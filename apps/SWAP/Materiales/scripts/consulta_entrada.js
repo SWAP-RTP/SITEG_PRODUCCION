@@ -8,43 +8,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const estadoSelect = document.getElementById('estado');
     const cantidadInput = document.getElementById('cantidad');
     const categoriaSelect = document.getElementById('categoria');
-    const observacionesInput = document.getElementById('observaciones');
+
 
 
     function TablaConsulta(contenedor, datos, columnas) {
-    if (!Array.isArray(datos) || datos.length === 0) {
-        contenedor.innerHTML = '<tr><td colspan="' + columnas.length + '">No hay resultados.</td></tr>';
-        return;
-    }
-    let html = '';
-    datos.forEach(item => {
-        html += '<tr>';
-        columnas.forEach(col => {
-            let valor = item[col.key];
-            
-            if (col.key === 'fecha_registro' && valor) {
-                valor = valor.substring(0, 10);
-            }
-            if (col.key === 'observaciones' && valor) {
-                //solo se permita un cierto numero de caracteres y el resto se muestre con puntos suspensivos
-                let corto = valor.length > 30 ? valor.substring(0, 30) + '...' : valor;
-                html += `<td class="observaciones" title="${valor}">${corto}</td>`;
-            } else {
-                html += `<td>${valor}</td>`;
-            }
+        if (!Array.isArray(datos) || datos.length === 0) {
+            contenedor.innerHTML = '<tr><td colspan="' + columnas.length + '">No hay resultados.</td></tr>';
+            return;
+        }
+        let html = '';
+        datos.forEach(item => {
+            html += '<tr>';
+            columnas.forEach(col => {
+                let valor = item[col.key];
+                if (col.key === 'fecha_registro' && valor) {
+                    valor = valor.substring(0, 10);
+                }
+                html += `<td>${valor !== undefined ? valor : ''}</td>`;
+            });
+            html += '</tr>';
         });
-        html += '</tr>';
-    });
-    contenedor.innerHTML = html;
-}
+        contenedor.innerHTML = html;
+    }
 
     const columnas = [
         { header: 'Folio', key: 'folio_entrada' },
         { header: 'Código', key: 'codigo_material' },
         { header: 'Descripción', key: 'descripcion_material' },
         { header: 'Cantidad', key: 'cantidad' },
-        { header: 'Fecha Registro', key: 'fecha_registro' },
-        { header: 'Observaciones', key: 'observaciones' }
+        { header: 'Fecha Registro', key: 'fecha_registro' }
     ];
 
     btnConsultar.addEventListener('click', () => {

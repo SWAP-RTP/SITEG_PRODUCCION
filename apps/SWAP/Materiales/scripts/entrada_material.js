@@ -205,12 +205,12 @@ if (modalBootstrap) {
                     codigo: codigoInput.value.trim(),
                     descripcion: descripcionInput.value.trim(),
                     unidad: unidadSelect.value,
-                    // ubicacion: ubicacionInput.value.trim(),
                     estado: estadoSelect.value,
                     cantidad: cantidadInput.value.trim(),
                     id_categoria: categoriaSelect.value,
                 };
-
+                // Mostrar en consola para depuración
+                console.log('Datos enviados al backend:', datos);
                 // enviar a backend
                 guardarDatos(
                     'query_sql/guardar_entrada.php',

@@ -10,8 +10,7 @@ $sql = "SELECT
             e.codigo_material, 
             c.descripcion_material, 
             e.cantidad, 
-            e.fecha_registro,
-            e.observaciones
+            e.fecha_registro
         FROM entradas_materiales e
         JOIN control_materiales c ON e.codigo_material = c.codigo_material
         ORDER BY e.folio_entrada DESC 

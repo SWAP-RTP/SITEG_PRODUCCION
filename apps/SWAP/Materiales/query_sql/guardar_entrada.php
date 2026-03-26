@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 header('Content-Type: application/json');
 require '/var/www/login_shared/conf/conexion.php';
 $conexion = Database::conectar();
@@ -10,8 +13,7 @@ if (!$data) {
 }
 
 function GuardarMaterial($conexion, $data){
-    
-    #AQUI INSERTA EN EL CATALOGO PRINCIPAL
+    // 1. Insertar o actualizar en el catálogo principal
     $sql = "INSERT INTO control_materiales 
             (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual)
         VALUES 
@@ -22,33 +24,39 @@ function GuardarMaterial($conexion, $data){
             id_estado_material = EXCLUDED.id_estado_material,
             id_categoria_material = EXCLUDED.id_categoria_material,
             stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual";
-    
-$params = [
-    $data['codigo'],
-    $data['descripcion'],
-    $data['unidad'],
-    $data['estado'],
-    $data['id_categoria'],
-    intval($data['cantidad'])
-];
+
+    $params = [
+        $data['codigo'],
+        $data['descripcion'],
+        $data['unidad'],
+        $data['estado'],
+        $data['id_categoria'],
+        intval($data['cantidad'])
+    ];
     $result = pg_query_params($conexion, $sql, $params);
     if (!$result) {
-        return ["status" => "error", "message" => pg_last_error($conexion)];
+        return ["status" => "error", "message" => "Error al actualizar inventario: " . pg_last_error($conexion)];
     }
-    # AQUI INSERTA EN LA TABLA DE LAS CONSULTAS DE ENTRADA
-    $sqlEntrada = "INSERT INTO entradas_materiales (codigo_material, cantidad, observaciones) VALUES ($1, $2, $3)";
+
+    // 2. Insertar en la tabla de entradas
+    $sqlEntrada = "INSERT INTO entradas_materiales (codigo_material, cantidad) VALUES ($1, $2)";
     $paramsEntrada = [
         $data['codigo'],
-        intval($data['cantidad']),
-        $data['observaciones'] ?? null
+        intval($data['cantidad'])
     ];
     $resultEntrada = pg_query_params($conexion, $sqlEntrada, $paramsEntrada);
     if (!$resultEntrada) {
-        return ["status" => "error", "message" => "Inventario actualizado, pero error al guardar entrada: " . pg_last_error($conexion)];
+        // Éxito parcial: inventario actualizado, pero no se registró la entrada
+        return [
+            "status" => "warning",
+            "message" => "El inventario fue actualizado, pero no se pudo registrar la entrada en el historial. Por favor, contacte a soporte. Detalle: " . pg_last_error($conexion)
+        ];
     }
 
+    // Éxito total
     return ["status" => "ok"];
 }
 
-echo json_encode(GuardarMaterial($conexion, $data));
+$respuesta = GuardarMaterial($conexion, $data);
+echo json_encode($respuesta);
 pg_close($conexion);
