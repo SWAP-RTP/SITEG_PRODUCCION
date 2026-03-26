@@ -9,7 +9,6 @@ class AuthController
 {
     public function login()
     {
-        header('Content-Type: application/json');
         try {
             $db = Database::conectar();
             if (!$db) {
@@ -21,28 +20,31 @@ class AuthController
             $usuario_input = $_POST['ingresaUsuario'] ?? '';
             $pass_input = $_POST['ingresaPassword'] ?? '';
 
+            //VALIDAMOS QUE LOS CAMPOS NO ESTEN VACIOS
             if (empty($usuario_input) || empty($pass_input)) {
                 http_response_code(400);
                 echo json_encode(["status" => "error", "message" => "Usuario y contraseña requeridos"]);
                 return;
             }
-            $user_rows = $repo->obtenerUsuarioPorCorreo($usuario_input);
-            //PRIMERA VALIDACION QUE ES POR CORREO Y PASSWORD
-            if ($user_rows && password_verify($pass_input, $user_rows[0]['contrasena'])) {
-                $id_actual = $user_rows[0]['id_usuario'];
 
-                //SEGUNDA VALIDACION VERIFICA LA CREDENCIAL
-                if (empty($id_actual)) {
-                    http_response_code(403);
-                    echo json_encode(["status" => "error", "message" => "Acceso denegado:El usuario no cuenta con una credencial valida asignada "]);
-                    return;
-                }
-                //SI AMBAS VALIDACIONES SON CORRECTAS, SE GENERA EL TOKEN Y LA SESION 
+            //BUSCAMOS QUE CREDENCIAL LE PERTENECE A ESE CORREO
+            $id_usuario = $repo->obtenerCredencialPorCorreo($usuario_input);
+            if (!$id_usuario) {
+                http_response_code(401);
+                echo json_encode(["status" => "error", "message" => "Usuario o Contraseña incorrectos"]);
+                return; // ESTE RETURN ES VITAL PARA DETENER LA EJECUCIÓN AQUÍ
+            }
+            //OBTENEMOS LOS DATOS USANDO LA CREDENCIAL
+            $user_rows = $repo->obtenerDatosPorCredencial($id_usuario);
+
+            //VERIFICAMOS LA CONTRASEÑA CONTRA EL REGISTRO DE CREDENCIAL 
+            if ($user_rows && password_verify($pass_input, $user_rows[0]['contrasena'])) {
+                //si la contraseña es correcta, procedemos con la sesion del usuario
                 $session_id = bin2hex(random_bytes(16));
-                $repo->actualizarSessionId($id_actual, $session_id);
+                $repo->actualizarSessionId($id_usuario, $session_id);
 
                 $user_info = [
-                    'id' => $id_actual,
+                    'id' => $id_usuario,
                     'name' => $user_rows[0]['nombre'],
                     'correo' => $user_rows[0]['correo']
                 ];
