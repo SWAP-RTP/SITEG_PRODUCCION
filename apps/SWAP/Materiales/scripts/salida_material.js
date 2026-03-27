@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formulario.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Validación básica
+        // Validar que los campos no estén vacíos
         if (
             !credencialesInput.value.trim() ||
             !trabajadorInput.value.trim() ||
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     Swal.fire({
                         icon: 'warning',
                         title: '¡Atención!',
-                        text: respuesta.message + ' El stock está por terminarse o ya se terminó.',
+                        text: respuesta.message,
                         confirmButtonColor: '#f39c12'
                     });
                     formulario.reset();

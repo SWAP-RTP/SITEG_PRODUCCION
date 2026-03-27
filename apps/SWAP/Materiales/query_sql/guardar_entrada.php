@@ -12,19 +12,16 @@ if (!$data) {
     exit;
 }
 
-function GuardarMaterial($conexion, $data){
+function GuardarMaterial($conexion, $data)
+{
     // 1. Insertar o actualizar en el catálogo principal
-    $sql = "INSERT INTO control_materiales 
-            (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual)
-        VALUES 
-            ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (codigo_material) DO UPDATE SET
-            descripcion_material = EXCLUDED.descripcion_material,
-            id_unidad = EXCLUDED.id_unidad,
-            id_estado_material = EXCLUDED.id_estado_material,
-            id_categoria_material = EXCLUDED.id_categoria_material,
-            stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual";
-
+    
+    $sql = "INSERT INTO control_materiales
+                        (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual)
+            VALUES
+                       ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (codigo_material) DO UPDATE SET
+                     stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual";
     $params = [
         $data['codigo'],
         $data['descripcion'],

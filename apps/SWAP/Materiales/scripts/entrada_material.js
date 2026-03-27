@@ -90,33 +90,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Evento para abrir modal de materiales 
 
-const modalBootstrap = document.getElementById('exampleModalCenter');
-if (modalBootstrap) {
-    modalBootstrap.addEventListener('shown.bs.modal', () => {
-        const contenedor = document.getElementById('contenedor-materiales-modal');
-        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
-        fetch('query_sql/modal.php')
-            .then(res => res.json())
-            .then(data => {
-                mostrarTablaModal(
-                    contenedor,
-                    data,
-                    [
-                        { header: 'Código', key: 'codigo_material' },
-                        { header: 'Descripción', key: 'descripcion_material' }
-                    ],
-                    (item) => {
-                        codigoInput.value = item.codigo_material;
-                        descripcionInput.value = item.descripcion_material;
-                        materialOriginal = null;
-                        const modal = bootstrap.Modal.getInstance(modalBootstrap);
-                        if (modal) modal.hide();
-                    }
-                );
-            })
-            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
-    });
-}
+    const modalBootstrap = document.getElementById('exampleModalCenter');
+    if (modalBootstrap) {
+        modalBootstrap.addEventListener('shown.bs.modal', () => {
+            const contenedor = document.getElementById('contenedor-materiales-modal');
+            contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+            fetch('query_sql/modal.php')
+                .then(res => res.json())
+                .then(data => {
+                    mostrarTablaModal(
+                        contenedor,
+                        data,
+                        [
+                            { header: 'Código', key: 'codigo_material' },
+                            { header: 'Descripción', key: 'descripcion_material' }
+                        ],
+                        (item) => {
+                            codigoInput.value = item.codigo_material;
+                            descripcionInput.value = item.descripcion_material;
+                            materialOriginal = null;
+                            const modal = bootstrap.Modal.getInstance(modalBootstrap);
+                            if (modal) modal.hide();
+                        }
+                    );
+                })
+                .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
+        });
+    }
 
     // USO DEL DEBOUNCE
     function debounce(func, delay) {
@@ -172,24 +172,31 @@ if (modalBootstrap) {
         }
 
         // Validación para evitar sobrescribir
-        if (materialOriginal && codigoInput.value.trim() === materialOriginal.codigo_material) {
-            if (
-                descripcionInput.value.trim() !== (materialOriginal.descripcion_material || '') ||
-                unidadSelect.value !== (materialOriginal.id_unidad || '') ||
-                estadoSelect.value !== (materialOriginal.id_estado_material || '') ||
-                categoriaSelect.value !== (materialOriginal.id_categoria_material || '')
 
-            ) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Datos diferentes',
-                    text: 'Ya existe un material con este código, pero los datos no coinciden exactamente. No se puede sobrescribir.',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
+        if (materialOriginal && codigoInput.value.trim() === materialOriginal.codigo_material) {
 
         }
+
+        // if (materialOriginal && codigoInput.value.trim() === materialOriginal.codigo_material) {
+
+        //  if (
+        //         descripcionInput.value.trim() !== (materialOriginal.descripcion_material || '') ||
+        //         unidadSelect.value !== (materialOriginal.id_unidad || '') ||
+        //         estadoSelect.value !== (materialOriginal.id_estado_material || '') ||
+        //         categoriaSelect.value !== (materialOriginal.id_categoria_material || '')
+
+        //     ) {
+        //         Swal.fire({
+        //             icon: 'warning',
+        //             title: 'Datos diferentes',
+        //             text: 'Ya existe un material con este código, pero los datos no coinciden exactamente. No se puede sobrescribir.',
+        //             confirmButtonColor: '#3085d6'
+        //         });
+        //         return;
+        //     }
+
+        // }
+
 
         // Confirmación antes de guardar
         Swal.fire({
