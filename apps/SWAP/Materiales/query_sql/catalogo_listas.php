@@ -7,19 +7,19 @@ try {
     $catalogos = [];
 
     // 1. Obtener Categorías
-    $sqlCat = "SELECT id_categoria_material, nombre_categoria_material FROM categorias_materiales ORDER BY id_categoria_material ASC";
-    $resCat = pg_query($conexion, $sqlCat);
-    $catalogos['categorias'] = pg_fetch_all($resCat) ?: [];
+    $sqlCategoria = "SELECT id_categoria_material, nombre_categoria_material FROM categorias_materiales ORDER BY id_categoria_material ASC";
+    $resCategoria = pg_query($conexion, $sqlCategoria);
+    $catalogos['categorias'] = pg_fetch_all($resCategoria) ?: [];
 
     // 2. Obtener Estados
-    $sqlEst = "SELECT id_estado_material, descripcion_estado_material FROM estados_materiales ORDER BY descripcion_estado_material";
-    $resEst = pg_query($conexion, $sqlEst);
-    $catalogos['estados'] = pg_fetch_all($resEst) ?: [];
+    $sqlEstados = "SELECT id_estado_material, descripcion_estado_material FROM estados_materiales ORDER BY descripcion_estado_material";
+    $resEstados = pg_query($conexion, $sqlEstados);
+    $catalogos['estados'] = pg_fetch_all($resEstados) ?: [];
 
     // 3. Obtener Unidades
-    $sqlUni = "SELECT id_unidad, descripcion_unidad FROM unidades_materiales ORDER BY descripcion_unidad ASC";
-    $resUni = pg_query($conexion, $sqlUni);
-    $catalogos['unidades'] = pg_fetch_all($resUni) ?: [];
+    $sqlUnidades = "SELECT id_unidad, descripcion_unidad FROM unidades_materiales ORDER BY descripcion_unidad ASC";
+    $resUnidades = pg_query($conexion, $sqlUnidades);
+    $catalogos['unidades'] = pg_fetch_all($resUnidades) ?: [];
 
     pg_close($conexion);
     echo json_encode($catalogos);
