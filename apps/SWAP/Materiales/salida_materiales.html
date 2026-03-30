@@ -85,7 +85,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Estado Físico</label>
+                                <label class="form-label fw-bold">Estado Físico Material</label>
                                 <select class="form-select" id="estado" name="estado">
                                     <option value="">Cargando...</option>
                                 </select>
@@ -102,6 +102,9 @@
                                 
                                 <button class="btn btn-success fw-bold px-4">
                                     <i class="bi bi-check2-all "></i>FINALIZAR SALIDA Y REGISTRAR
+                                </button>
+                                <button type="button" class="btn btn-info btn-lg px-4 shadow-sm" id="btn-consultar-salidas">
+                                    <i class="bi bi-search me-2"></i>Consultar Registros
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary btn-lg px-4 shadow-sm"
                                     id="btn-limpiar-entrada">
@@ -148,6 +151,29 @@
             </div>
         </div>
 
+        <!--tabla para consultar registros de salida-->
+        <div class="card mt-4 shadow" id="contenedor-tabla-salidas" style="display: none;">
+            <div class="card-body">
+                <h4 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>Ultimos Registros Salida</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle tabla-observaciones">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Credencial</th>
+                                <th>Codigo</th>
+                                <th>Descripcion</th>
+                                <th>Cantidad</th>
+                                <th>Fecha Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-salidas">
+                            <!--aqui se insertaran los registros-->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
     <!-- Modal Bootstrap 5 para buscar trabajadores -->
     <div class="modal fade" id="modalTrabajador" tabindex="-1" aria-labelledby="modalTrabajadorTitle"
@@ -162,9 +188,18 @@
                         aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="buscar-trabajador-modal-salida" placeholder="Buscar por credencial o nombre...">
+                            </div>
                                         <div id="contenedor-trabajadores-modal">
                                                 <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
                                         </div>
+                                        <!-- PAGINACIÓN FUNCIONAL -->
+                                        <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-trabajadores" style="display: none;">
+                                            <ul class="pagination justify-content-end" id="ul-paginacion-trabajadores">
+                                                <!-- Se generará dinámicamente -->
+                                            </ul>
+                                        </nav>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -187,9 +222,18 @@
                         aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="buscar-material-modal-salida" placeholder="Buscar por código o descripción...">
+                            </div>
                                         <div id="contenedor-materiales-modal">
                                                 <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
                                         </div>
+                                        <!-- PAGINACIÓN FUNCIONAL -->
+                                        <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales" style="display: none;">
+                                            <ul class="pagination justify-content-end" id="ul-paginacion-materiales">
+                                                <!-- Se generará dinámicamente -->
+                                            </ul>
+                                        </nav>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -207,8 +251,8 @@
         <script type="text/javascript" src="../includes/utils/menu.js"></script>
 
         <script src="scripts/materiales_helpers.js"></script>
-        <script src="scripts/entrada_material.js"></script>
         <script src="scripts/salida_material.js"></script>
+        <script src="scripts/consulta_registro.js"></script>
 </body>
 
 </html>

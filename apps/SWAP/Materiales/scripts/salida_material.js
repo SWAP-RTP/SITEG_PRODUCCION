@@ -1,5 +1,3 @@
-   
-//evento para las funciones generica
 document.addEventListener('DOMContentLoaded', () => {
     const credencialesInput = document.getElementById('credencial');
     const trabajadorInput = document.getElementById('trabajador');
@@ -8,114 +6,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const cantidadInput = document.getElementById('cantidad');
     const unidadSelect = document.getElementById('unidad');
     const estadoSelect = document.getElementById('estado');
-    const observacionesInput = document.getElementById('observaciones');
     const formulario = document.getElementById('form-salida-material');
- // Evento para limpiar formulario
-    const btnLimpiar = document.getElementById('btn-limpiar-entrada');
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', () => {
-            formulario.reset();
-        });
-    }
+    let credencialValida = false;
 
-
-    // Llenar selects reutilizando la función
-    llenarSelect(unidadSelect, 'query_sql/obtener_unidades.php', 'id_unidad', 'descripcion_unidad');
-    llenarSelect(estadoSelect, 'query_sql/obtener_estados.php', 'id_estado_material', 'descripcion_estado_material');
-
-
-
-    // Evento para abrir modal de trabajadores
-    document.getElementById('modal-trabajador').addEventListener('click', () => {
-        const contenedor = document.getElementById('contenedor-trabajadores-modal');
-        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
-        fetch('query_sql/modal_trabajadores.php')
-            .then(res => res.json())
-            .then(data => {
-                mostrarTablaModal(
-                    contenedor,
-                    data,
-                    [
-                        { header: 'Credencial', key: 'credencial' },
-                        { header: 'Nombre', key: 'nombre' }
-                    ],
-                    (item) => {
-                        credencialesInput.value = item.credencial;
-                        trabajadorInput.value = item.nombre;
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
-                        if (modal) modal.hide();
-                    }
-                );
-            })
-            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los trabajadores.</p>');
+    // CARGAR CATÁLOGOS
+    cargarYLlenarSelects({
+        unidad: unidadSelect,
+        estado: estadoSelect
     });
 
-    // Evento para abrir modal de materiales
-    document.getElementById('modal-material').addEventListener('click', () => {
-        const contenedor = document.getElementById('contenedor-materiales-modal');
-        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
-        fetch('query_sql/modal.php')
-            .then(res => res.json())
-            .then(data => {
-                mostrarTablaModal(
-                    contenedor,
-                    data,
-                    [
-                        { header: 'Código', key: 'codigo_material' },
-                        { header: 'Descripción', key: 'descripcion_material' }
-                    ],
-                    (item) => {
-                        codigoInput.value = item.codigo_material;
-                        descripcionInput.value = item.descripcion_material;
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
-                        if (modal) modal.hide();
-                    }
-                );
-            })
-            .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
-    });
+    // ABRIR MODAL DE TRABAJADORES CON PAGINACIÓN Y BÚSQUEDA
+    abrirModalConPaginacion('modalTrabajador', 'contenedor-trabajadores-modal', 'trabajadores', 'buscar-trabajador-modal-salida',
+        [
+            { header: 'Credencial', key: 'credencial' },
+            { header: 'Nombre', key: 'nombre' }
+        ],
+        (item) => {
+            credencialesInput.value = item.credencial;
+            trabajadorInput.value = item.nombre;
+            credencialValida = true;
+            credencialesInput.classList.remove('is-invalid');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
+            if (modal) modal.hide();
+        },
+        'nav-paginacion-trabajadores',
+        'ul-paginacion-trabajadores'
+    );
 
-    const autoCompletarTrabajador = debounce(() => {
-        const credencial = credencialesInput.value.trim();
-        if (!credencial) {
-            trabajadorInput.value = '';
+    // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA
+    abrirModalConPaginacion('modalMaterial', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-salida',
+        [
+            { header: 'Código', key: 'codigo_material' },
+            { header: 'Descripción', key: 'descripcion_material' }
+        ],
+        (item) => {
+            codigoInput.value = item.codigo_material;
+            descripcionInput.value = item.descripcion_material;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
+            if (modal) modal.hide();
+        },
+        'nav-paginacion-materiales',
+        'ul-paginacion-materiales'
+    );
+
+    // AUTOCOMPLETAR TRABAJADOR POR CREDENCIAL
+    buscarYAutocompletarTrabajador(credencialesInput, trabajadorInput, (esValida) => {
+        credencialValida = esValida;
+        if (!credencialesInput.value.trim()) {
+            credencialesInput.classList.remove('is-invalid');
             return;
         }
-        fetch(`query_sql/buscar_trabajador.php?credencial=${encodeURIComponent(credencial)}`)
-            .then(res => res.json())
-            .then(data => {
-                trabajadorInput.value = data.nombre || '';
-            })
-            .catch(error => {
-                trabajadorInput.value = '';
-                console.error('Error:', error);
-            });
-    }, 300);
+        if (esValida) {
+            credencialesInput.classList.remove('is-invalid');
+        } else {
+            credencialesInput.classList.add('is-invalid');
+        }
+    });
 
-    credencialesInput.addEventListener('input', autoCompletarTrabajador);
-
+    // AUTOCOMPLETAR DESCRIPCIÓN POR CÓDIGO
     const autoCompletarDescripcion = debounce(() => {
         const codigo = codigoInput.value.trim();
-        if (!codigo) {
-            descripcionInput.value = '';
-            return;
-        }
-        fetch(`query_sql/buscar_material.php?codigo=${encodeURIComponent(codigo)}`)
-            .then(res => res.json())
-            .then(data => {
-                descripcionInput.value = data.descripcion_material || '';
-            })
-            .catch(error => {
-                descripcionInput.value = '';
-                console.error('Error:', error);
-            });
+        buscarMaterialConCallback(codigo, descripcionInput, 'estado-material');
     }, 300);
 
     codigoInput.addEventListener('input', autoCompletarDescripcion);
 
-    // Validación y envío del formulario
+    // VALIDACIÓN Y ENVÍO DEL FORMULARIO
     formulario.addEventListener('submit', (e) => {
         e.preventDefault();
+
+        if (credencialesInput.value.trim() && !credencialValida) {
+            credencialesInput.classList.add('is-invalid');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Credencial no válida',
+                text: 'La credencial ingresada no existe en la base de datos.'
+            });
+            return;
+        }
 
         // Validar que los campos no estén vacíos
         if (
@@ -139,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             estado: estadoSelect.value,
             cantidad: cantidadInput.value.trim(),
         };
-        fetch('query_sql/guardar_salida.php', {
+        fetch('query_sql/guardar_materiales.php?tipo=salida', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
@@ -167,55 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
+    formulario.addEventListener('reset', () => {
+        credencialValida = false;
+        credencialesInput.classList.remove('is-invalid');
+    });
 
-});
+    // LIMPIAR FORMULARIO
+    limpiarFormularioCompleto('form-salida-material', 'contenedor-tabla-salidas', 'tabla-salidas', 'btn-limpiar-entrada');
 
-// Evento para abrir modal de trabajadores
-document.getElementById('modal-trabajador').addEventListener('click', () => {
-    const contenedor = document.getElementById('contenedor-trabajadores-modal');
-    contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
-    fetch('query_sql/modal_trabajadores.php')
-        .then(res => res.json())
-        .then(data => {
-            mostrarTablaModal(
-                contenedor,
-                data,
-                [
-                    { header: 'Credencial', key: 'credencial' },
-                    { header: 'Nombre', key: 'nombre' }
-                ],
-                (item) => {
-                    credencialesInput.value = item.credencial;
-                    trabajadorInput.value = item.nombre;
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
-                    if (modal) modal.hide();
-                }
-            );
-        })
-        .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los trabajadores.</p>');
-});
 
-// Evento para abrir modal de materiales
-document.getElementById('modal-material').addEventListener('click', () => {
-    const contenedor = document.getElementById('contenedor-materiales-modal');
-    contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
-    fetch('query_sql/modal.php')
-        .then(res => res.json())
-        .then(data => {
-            mostrarTablaModal(
-                contenedor,
-                data,
-                [
-                    { header: 'Código', key: 'codigo_material' },
-                    { header: 'Descripción', key: 'descripcion_material' }
-                ],
-                (item) => {
-                    codigoInput.value = item.codigo_material;
-                    descripcionInput.value = item.descripcion_material;
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
-                    if (modal) modal.hide();
-                }
-            );
-        })
-        .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los materiales.</p>');
 });
