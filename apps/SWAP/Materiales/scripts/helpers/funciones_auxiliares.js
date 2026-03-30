@@ -1,4 +1,3 @@
-// Funciones reutilizables para formularios de entrada y salida de materiales
 
 // Llenar un select a partir de un arreglo de objetos
 function llenarSelectConDatos(selectElement, data, campoValue, campoText) {

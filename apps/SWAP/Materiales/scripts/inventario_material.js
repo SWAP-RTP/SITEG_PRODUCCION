@@ -283,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
         (item) => {
             codigoInput.value = item.codigo_material;
             descripcionInput.value = item.descripcion_material;
+            buscarMaterialParaInventario(item.codigo_material, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material');
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
             if (modal) modal.hide();
         },
