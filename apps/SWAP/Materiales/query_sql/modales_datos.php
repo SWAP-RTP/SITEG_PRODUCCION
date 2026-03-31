@@ -24,7 +24,6 @@ try {
     if ($pagina < 1) $pagina = 1;
     if ($limit < 1) $limit = 10;
     
-    // Recalcular offset desde página
     $offset = ($pagina - 1) * $limit;
 
     $sql = '';
