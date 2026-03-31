@@ -25,4 +25,9 @@ function getSistemas_sinteg()
 
 }
 echo json_encode(getSistemas_sinteg());
+<<<<<<< HEAD
+
+//Database::desconectar();
+=======
 Database::desconectar();
+>>>>>>> 6f120f5044b5af850cc25193832107cecdade61c
