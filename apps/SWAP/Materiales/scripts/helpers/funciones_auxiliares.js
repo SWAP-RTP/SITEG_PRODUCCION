@@ -1,3 +1,4 @@
+// ======================== 01) CATÁLOGOS Y SELECTS ========================
 
 // Llenar un select a partir de un arreglo de objetos
 function llenarSelectConDatos(selectElement, data, campoValue, campoText) {
@@ -47,6 +48,8 @@ function cargarCatalogosMateriales(url) {
         }));
 }
 
+// ======================== 02) UTILIDADES BASE ========================
+
 // Debounce para evitar llamadas excesivas
 function debounce(func, delay) {
     let timeout;
@@ -56,31 +59,81 @@ function debounce(func, delay) {
     };
 }
 
-// Mostrar alerta de campos incompletos
-function mostrarAlertaCampos() {
+// ======================== 03) ALERTAS ========================
+
+// Alerta unificada para reducir duplicación
+function mostrarAlerta({
+    icon = 'info',
+    title = '',
+    text = '',
+    confirmButtonColor,
+    html,
+    toast = false,
+    position,
+    showConfirmButton,
+    timer,
+    timerProgressBar,
+    didOpen,
+    ...opciones
+} = {}) {
+    const posicionFinal = position || (toast ? 'top' : 'center');
+
+    return Swal.fire({
+        icon,
+        title,
+        text,
+        confirmButtonColor,
+        html,
+        toast,
+        position: posicionFinal,
+        showConfirmButton,
+        timer,
+        timerProgressBar,
+        didOpen,
+        ...opciones
+    });
+}
+
+// Mostrar toast de material nuevo
+function mostrarToastMaterialNuevo() {
     Swal.fire({
         icon: 'warning',
-        title: 'Campos incompletos',
-        text: 'Por favor, llena todos los campos obligatorios.',
-        confirmButtonColor: '#3085d6'
+        title: '<strong>⚠Ingresar Material Nuevo</strong>',
+        html: 'Este material no existe<br><small class="text-muted">Puedes registrarlo sin problema</small>',
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
     });
 }
 
-// Mostrar alerta de error
-function mostrarAlertaError(mensaje) {
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: mensaje || 'Ocurrió un error inesperado.',
-        confirmButtonColor: '#d33'
-    });
+// Mostrar badge de material nuevo
+function mostrarBadgeMaterialNuevo(estadoDivId) {
+    const estadoDiv = document.getElementById(estadoDivId);
+    if (estadoDiv) {
+        estadoDiv.innerHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Material Nuevo</span>';
+        setTimeout(() => {
+            estadoDiv.innerHTML = '';
+        }, 7000);
+    }
 }
 
-// Mostrar alerta de éxito
-function mostrarAlertaExito(mensaje) {
-    Swal.fire('¡Éxito!', mensaje || 'Operación realizada correctamente.', 'success');
+// Limpiar badge de estado
+function limpiarBadgeMaterial(estadoDivId) {
+    const estadoDiv = document.getElementById(estadoDivId);
+    if (estadoDiv) {
+        estadoDiv.innerHTML = '';
+    }
 }
-// mostrar la tabla del modal de salida
+
+// ======================== 04) TABLAS Y PAGINACIÓN DE MODAL ========================
+
+// Mostrar la tabla del modal de salida
 function mostrarTablaModal(contenedor, datos, columnas, onSelect) {
     if (!Array.isArray(datos) || datos.length === 0) {
         contenedor.innerHTML = '<p>No hay resultados.</p>';
@@ -281,42 +334,7 @@ function mostrarTablaModalConPaginacion(contenedor, respuesta, columnas, onSelec
     ulPag.appendChild(nextLi);
 }
 
-// Mostrar toast de material nuevo
-function mostrarToastMaterialNuevo() {
-    Swal.fire({
-        icon: 'warning',
-        title: '<strong>⚠ Material Nuevo</strong>',
-        html: 'Este material no existe<br><small class="text-muted">Puedes registrarlo sin problema</small>',
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    });
-}
-
-// Mostrar badge de material nuevo
-function mostrarBadgeMaterialNuevo(estadoDivId) {
-    const estadoDiv = document.getElementById(estadoDivId);
-    if (estadoDiv) {
-        estadoDiv.innerHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Material Nuevo</span>';
-        setTimeout(() => {
-            estadoDiv.innerHTML = '';
-        }, 4000);
-    }
-}
-
-// Limpiar badge de estado
-function limpiarBadgeMaterial(estadoDivId) {
-    const estadoDiv = document.getElementById(estadoDivId);
-    if (estadoDiv) {
-        estadoDiv.innerHTML = '';
-    }
-}
+// ======================== 05) BÚSQUEDAS DE NEGOCIO ========================
 
 // Buscar material con callback (para entrada que necesita materialOriginal)
 function buscarMaterialConCallback(codigo, descripcionInput, estadoDivId, callback) {
@@ -325,6 +343,7 @@ function buscarMaterialConCallback(codigo, descripcionInput, estadoDivId, callba
         limpiarBadgeMaterial(estadoDivId);
         return;
     }
+
     fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(codigo))
         .then(res => res.json())
         .then(data => {
@@ -354,6 +373,7 @@ function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput,
         limpiarBadgeMaterial(estadoDivId);
         return;
     }
+
     fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(codigo))
         .then(res => res.json())
         .then(data => {
@@ -379,7 +399,7 @@ function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput,
         });
 }
 
-// ======================== FUNCIONES GENÉRICAS PARA ENTRADA, SALIDA E INVENTARIO ========================
+// ======================== 06) FLUJOS GENÉRICOS DE PANTALLA ========================
 
 // Cargar catálogos y llenar múltiples selects
 function cargarYLlenarSelects(selectors, url = 'query_sql/catalogo_listas.php') {
@@ -397,12 +417,17 @@ function cargarYLlenarSelects(selectors, url = 'query_sql/catalogo_listas.php') 
         })
         .catch(error => {
             console.error('Error al cargar catálogos:', error);
-            mostrarAlertaError('No se pudieron cargar las listas.');
+            mostrarAlerta({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar las listas.',
+                confirmButtonColor: '#d33'
+            });
         });
 }
 
-// Abrir modal con paginación y búsqueda (genérico para materiales y trabajadores)
-function abrirModalConPaginacion(modalId, contenedorId, tipo, inputBusquedaId, columnas, onSelect, navPaginacionId, ulPaginacionId) {
+// Buscar en modal con paginación y búsqueda (genérico para materiales y trabajadores)
+function BuscarModal(modalId, contenedorId, tipo, inputBusquedaId, columnas, onSelect, navPaginacionId, ulPaginacionId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     
@@ -436,6 +461,11 @@ function abrirModalConPaginacion(modalId, contenedorId, tipo, inputBusquedaId, c
         
         cargarPagina(1);
     }, { once: true });
+}
+
+// Alias retrocompatible para vistas que aun llamen al nombre anterior
+function abrirModalConPaginacion(modalId, contenedorId, tipo, inputBusquedaId, columnas, onSelect, navPaginacionId, ulPaginacionId) {
+    return BuscarModal(modalId, contenedorId, tipo, inputBusquedaId, columnas, onSelect, navPaginacionId, ulPaginacionId);
 }
 
 // Buscar trabajador y autocompletar

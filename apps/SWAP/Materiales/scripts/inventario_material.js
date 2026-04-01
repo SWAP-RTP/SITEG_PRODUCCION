@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA
-    abrirModalConPaginacion('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-inventario',
+    BuscarModal('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-inventario',
         [
             { header: 'Código', key: 'codigo_material' },
             { header: 'Descripción', key: 'descripcion_material' }

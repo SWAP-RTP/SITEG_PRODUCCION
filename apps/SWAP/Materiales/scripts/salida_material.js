@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ABRIR MODAL DE TRABAJADORES CON PAGINACIÓN Y BÚSQUEDA
-    abrirModalConPaginacion('modalTrabajador', 'contenedor-trabajadores-modal', 'trabajadores', 'buscar-trabajador-modal-salida',
+    BuscarModal('modalTrabajador', 'contenedor-trabajadores-modal', 'trabajadores', 'buscar-trabajador-modal-salida',
         [
             { header: 'Credencial', key: 'credencial' },
             { header: 'Nombre', key: 'nombre' }
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA
-    abrirModalConPaginacion('modalMaterial', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-salida',
+    BuscarModal('modalMaterial', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-salida',
         [
             { header: 'Código', key: 'codigo_material' },
             { header: 'Descripción', key: 'descripcion_material' }
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (credencialesInput.value.trim() && !credencialValida) {
             credencialesInput.classList.add('is-invalid');
-            Swal.fire({
+            mostrarAlerta({
                 icon: 'warning',
                 title: 'Credencial no válida',
                 text: 'La credencial ingresada no existe en la base de datos.'
@@ -95,7 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
             !estadoSelect.value ||
             !cantidadInput.value.trim()
         ) {
-            mostrarAlertaCampos();
+            mostrarAlerta({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor, llena todos los campos obligatorios.',
+                confirmButtonColor: '#3085d6'
+            });
             return;
         }
         const datos = {
@@ -115,10 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(respuesta => {
                 if (respuesta.status === 'ok') {
-                    mostrarAlertaExito('La salida fue registrada correctamente.');
+                    mostrarAlerta({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'La salida fue registrada correctamente.'
+                    });
                     formulario.reset();
                 } else if (respuesta.status === 'warning') {
-                    Swal.fire({
+                    mostrarAlerta({
                         icon: 'warning',
                         title: '¡Atención!',
                         text: respuesta.message,
@@ -126,11 +135,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     formulario.reset();
                 } else {
-                    mostrarAlertaError(respuesta.message);
+                    mostrarAlerta({
+                        icon: 'error',
+                        title: 'Error',
+                        text: respuesta.message || 'Ocurrió un error inesperado.',
+                        confirmButtonColor: '#d33'
+                    });
                 }
             })
             .catch(error => {
-                mostrarAlertaError('Error de red o respuesta no válida');
+                mostrarAlerta({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error de red o respuesta no válida',
+                    confirmButtonColor: '#d33'
+                });
                 console.error('Error:', error)
             });
     });
