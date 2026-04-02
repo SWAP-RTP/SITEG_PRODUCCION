@@ -7,8 +7,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const unidadSelect = document.getElementById('unidad');
     const estadoSelect = document.getElementById('estado');
     const formulario = document.getElementById('form-salida-material');
-    let credencialValida = false;
+    const mensajeCredencial = document.createElement('div');
+    mensajeCredencial.className = 'text-danger small mt-1 fw-semibold';
+    credencialesInput.insertAdjacentElement('afterend', mensajeCredencial);
+            let credencialValida = false;
+          let credencialInvalida = '';
+const mostrarAlertaCredencialNoEncontrada = () => {
+    const credencial = credencialesInput.value.trim();
 
+    if (credencial && !credencialValida && credencial !== credencialInvalida) {
+        credencialInvalida = credencial;
+        mensajeCredencial.textContent = `La credencial ${credencial} que ingresó no es válida.`;
+    } else {
+        mensajeCredencial.textContent = '';
+    }
+};
     // CARGAR CATÁLOGOS
     cargarYLlenarSelects({
         unidad: unidadSelect,
@@ -25,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
             credencialesInput.value = item.credencial;
             trabajadorInput.value = item.nombre;
             credencialValida = true;
+                credencialInvalida = '';
             credencialesInput.classList.remove('is-invalid');
+            mensajeCredencial.textContent = '';
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
             if (modal) modal.hide();
         },
@@ -54,12 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
         credencialValida = esValida;
         if (!credencialesInput.value.trim()) {
             credencialesInput.classList.remove('is-invalid');
+                credencialInvalida = '';
+            mensajeCredencial.textContent = '';
             return;
         }
         if (esValida) {
             credencialesInput.classList.remove('is-invalid');
+                credencialInvalida = '';
+            mensajeCredencial.textContent = '';
         } else {
             credencialesInput.classList.add('is-invalid');
+            mostrarAlertaCredencialNoEncontrada();
         }
     });
 
@@ -77,11 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (credencialesInput.value.trim() && !credencialValida) {
             credencialesInput.classList.add('is-invalid');
-            mostrarAlerta({
-                icon: 'warning',
-                title: 'Credencial no válida',
-                text: 'La credencial ingresada no existe en la base de datos.'
-            });
+            mostrarAlertaCredencialNoEncontrada();
             return;
         }
 
@@ -156,7 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formulario.addEventListener('reset', () => {
         credencialValida = false;
+        credencialInvalida = '';
         credencialesInput.classList.remove('is-invalid');
+        mensajeCredencial.textContent = '';
     });
 
     // LIMPIAR FORMULARIO

@@ -1,35 +1,46 @@
 // ======================== 01) CATÁLOGOS Y SELECTS ========================
 
-// Llenar un select a partir de un arreglo de objetos
-function llenarSelectConDatos(selectElement, data, campoValue, campoText) {
+// Llenar un select a partir de un arreglo o de un endpoint
+function llenarSelect(selectElement, origen, campoValue, campoText) {
     if (!selectElement) return;
-    selectElement.innerHTML = '';
 
-    const opcionDefault = document.createElement('option');
-    opcionDefault.value = '';
-    opcionDefault.textContent = 'Seleccione...';
-    selectElement.appendChild(opcionDefault);
+    const pintarDatos = (data) => {
+        selectElement.innerHTML = '';
 
-    if (!Array.isArray(data)) return;
+        const opcionDefault = document.createElement('option');
+        opcionDefault.value = '';
+        opcionDefault.textContent = 'Seleccione...';
+        selectElement.appendChild(opcionDefault);
 
-    data.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item[campoValue] ?? '';
-        option.textContent = item[campoText] ?? '';
-        selectElement.appendChild(option);
-    });
-}
+        if (!Array.isArray(data)) return;
 
-// Llenar un select con datos de un endpoint que devuelve un arreglo
-function llenarSelect(selectElement, url, campoValue, campoText) {
-    fetch(url)
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            const option = document.createElement('option');
+            option.value = item[campoValue] ?? '';
+            option.textContent = item[campoText] ?? '';
+            selectElement.appendChild(option);
+        }
+    };
+
+    if (Array.isArray(origen)) {
+        pintarDatos(origen);
+        return;
+    }
+
+    fetch(origen)
         .then(response => response.json())
         .then(data => {
-            llenarSelectConDatos(selectElement, data, campoValue, campoText);
+            pintarDatos(data);
         })
         .catch(error => {
             console.error('Error:', error);
         });
+}
+
+// Alias retrocompatible para llamadas antiguas
+function llenarSelectConDatos(selectElement, data, campoValue, campoText) {
+    return llenarSelect(selectElement, data, campoValue, campoText);
 }
 
 // Cargar catalogos unificados: categorias, estados y unidades
