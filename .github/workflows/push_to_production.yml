@@ -1,0 +1,49 @@
+name: Filtro de Calidad y Sincronizacion
+
+on:
+  push:
+    # Aquí es donde estaba el detalle.
+    # Al usar '**' le decimos que se active con CUALQUER rama que suban.
+    branches:
+      - main
+      - Gerardo
+      - mau
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validar-calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar entorno
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Prueba de Compilacion
+        run: |
+          npm install
+          npm run build
+
+  enviar-a-produccion:
+    needs: validar-calidad
+    # Esta línea es vital: asegura que aunque la Action corra en la rama 'mau',
+    # el envío a producción SOLO ocurra cuando el cambio llegue a 'main'.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar con Llave Maestra
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MI_LLAVE_MAESTRA }}
+
+      - name: Push al Repo de Produccion
+        run: |
+          git remote add prod https://github.com/SWAP-RTP/SITEG_PRODUCCION.git
+          git push prod main --force

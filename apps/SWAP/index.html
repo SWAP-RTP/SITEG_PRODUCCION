@@ -33,7 +33,7 @@ $usuario = validarAcceso();
         <?php include 'encabezado_menu.html'; ?>
 
         <div style="width: 500px;">
-            <h2 class="text-center">Menu</h2>
+            <h2 class="text-center">Menu´s</h2>
             <hr>
         </div>
         <div class="d-flex animate__animated animate__fadeIn">
@@ -106,9 +106,7 @@ $usuario = validarAcceso();
                                     </li>
                                 </ul>
                             </div>
-
-
-                             <div class="collapse" id="admin3">
+                            <<<<<<< Updated upstream <div class="collapse" id="admin3">
                                 <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">
                                     <li class="pe-2">
                                         <a href="Materiales/index.html"
@@ -117,12 +115,25 @@ $usuario = validarAcceso();
                                         </a>
                                     </li>
                                 </ul>
-                            </div>
+                </div>
 
+                =======
+                <li class="border-top my-2"></li>
+                <div class="collapse" id="admin3">
+                    <ul class="btn-toggle-nav list-unstyled fw-semibold pb-1">
+                        <li class="pe-2">
+                            <a href="Incidencias/index.html"
+                                class="link-dark rounded w-75 d-flex align-items-center gap-2 py-2 fs-6">
+                                <i class="fa-solid fa-toolbox"></i>INCIDENCIAS
+                            </a>
                         </li>
+                    </ul>
+                </div>
+                >>>>>>> Stashed changes
+                </li>
 
-                        <!-- BLOQUE PHP DINAMICO -->
-                        <?php
+                <!-- BLOQUE PHP DINAMICO -->
+                <?php
                     $modulos_menu = array();
                     $admin  = false;
                     $dg     = false;
@@ -283,15 +294,14 @@ $usuario = validarAcceso();
                     }
                     ?>
 
-                    </ul>
-                </div>
+                </ul>
             </div>
-            <!-- Imagen de Fondo --------------------------------------------------------------------------->
-            <div class="d-flex flex-column align-items-center h-auto animate__animated animate__fadeIn"
-                style="width:100%;">
-                <h1 class="text-center">Bienvenido</h1>
-                <img src="includes/images/logoRTPMI.png" alt="RTP" width="1000" height="540" class="opacity-50">
-            </div>
+        </div>
+        <!-- Imagen de Fondo --------------------------------------------------------------------------->
+        <div class="d-flex flex-column align-items-center h-auto animate__animated animate__fadeIn" style="width:100%;">
+            <h1 class="text-center">Bienvenido</h1>
+            <img src="includes/images/logoRTPMI.png" alt="RTP" width="1000" height="540" class="opacity-50">
+        </div>
         </div>
         <?php
       include 'pie_menu.html';
