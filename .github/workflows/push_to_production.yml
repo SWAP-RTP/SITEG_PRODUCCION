@@ -1,9 +1,7 @@
-name: Filtro de Calidad y Sincronizacion
+name: Filtro de Calidad Doble (React y PHP)
 
 on:
   push:
-    # Aquí es donde estaba el detalle.
-    # Al usar '**' le decimos que se active con CUALQUER rama que suban.
     branches:
       - main
       - Gerardo
@@ -14,26 +12,44 @@ on:
       - main
 
 jobs:
-  validar-calidad:
+  validar-react-sugo:
     runs-on: ubuntu-latest
     steps:
       - name: Clonar codigo
         uses: actions/checkout@v4
 
-      - name: Preparar entorno
+      - name: Preparar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
 
-      - name: Prueba de Compilacion
+      - name: Validar SUGO (React)
+        working-directory: ./apps/SUGO_
         run: |
           npm install
           npm run build
 
+  validar-php-swap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Validar SWAP (PHP)
+        working-directory: ./apps/SWAP
+        run: |
+          composer install
+          # Este comando busca errores de sintaxis en todos tus archivos PHP
+          find . -name "*.php" -exec php -l {} \;
+
   enviar-a-produccion:
-    needs: validar-calidad
-    # Esta línea es vital: asegura que aunque la Action corra en la rama 'mau',
-    # el envío a producción SOLO ocurra cuando el cambio llegue a 'main'.
+    # Esta linea es la mas importante: solo corre si AMBAS validaciones pasaron
+    needs: [validar-react-sugo, validar-php-swap]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
