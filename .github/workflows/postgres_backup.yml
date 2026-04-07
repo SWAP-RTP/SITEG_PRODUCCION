@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   backup-postgres:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
       PGHOST: ${{ secrets.PGHOST }}
@@ -27,6 +28,7 @@ jobs:
       PGDATABASE: ${{ secrets.PGDATABASE }}
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGCONNECT_TIMEOUT: "15"
       BACKUP_DIR: backups/postgres
 
     steps:
@@ -46,6 +48,16 @@ jobs:
           test -n "$PGUSER" || (echo "Falta PGUSER" && exit 1)
           test -n "$PGPASSWORD" || (echo "Falta PGPASSWORD" && exit 1)
 
+      - name: Verificar conectividad a PostgreSQL
+        run: |
+          export PGPASSWORD="$PGPASSWORD"
+          pg_isready \
+            --host="$PGHOST" \
+            --port="$PGPORT" \
+            --username="$PGUSER" \
+            --dbname="$PGDATABASE" \
+            --timeout=10
+
       - name: Preparar nombre de archivo
         run: |
           DATESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -62,6 +74,7 @@ jobs:
             --port="$PGPORT" \
             --username="$PGUSER" \
             --dbname="$PGDATABASE" \
+            --verbose \
             --format=custom \
             --blobs \
             --file="$FILE_PATH"
