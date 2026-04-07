@@ -14,6 +14,7 @@ on:
         options:
           - artifact
           - git
+          - local
 
 permissions:
   contents: write
@@ -21,7 +22,7 @@ permissions:
 jobs:
   backup-postgres:
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     env:
       PGHOST: ${{ secrets.PGHOST }}
       PGPORT: ${{ secrets.PGPORT }}
@@ -29,7 +30,13 @@ jobs:
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
       PGCONNECT_TIMEOUT: "15"
+      PGHOST_DEFAULT: "10.10.30.28"
+      PGPORT_DEFAULT: "5432"
+      PGDATABASE_DEFAULT: "desarrollo"
+      PGUSER_DEFAULT: "usuario"
+      PGPASSWORD_DEFAULT: "usuario"
       BACKUP_DIR: backups/postgres
+      BACKUP_LOCAL_DIR: ${{ vars.BACKUP_LOCAL_DIR }}
 
     steps:
       - name: Clonar repositorio
@@ -39,6 +46,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
+
+      - name: Cargar valores por defecto
+        run: |
+          echo "PGHOST=${PGHOST:-$PGHOST_DEFAULT}" >> "$GITHUB_ENV"
+          echo "PGPORT=${PGPORT:-$PGPORT_DEFAULT}" >> "$GITHUB_ENV"
+          echo "PGDATABASE=${PGDATABASE:-$PGDATABASE_DEFAULT}" >> "$GITHUB_ENV"
+          echo "PGUSER=${PGUSER:-$PGUSER_DEFAULT}" >> "$GITHUB_ENV"
+          echo "PGPASSWORD=${PGPASSWORD:-$PGPASSWORD_DEFAULT}" >> "$GITHUB_ENV"
+          echo "BACKUP_LOCAL_DIR=${BACKUP_LOCAL_DIR:-/opt/postgres_backups}" >> "$GITHUB_ENV"
 
       - name: Validar variables obligatorias
         run: |
@@ -106,6 +122,13 @@ jobs:
           name: postgres-backup-${{ env.PGDATABASE }}-${{ env.DATESTAMP }}
           path: ${{ env.FILE_PATH }}
           retention-days: 30
+
+      - name: Guardar respaldo en carpeta local
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.destino == 'local' }}
+        run: |
+          mkdir -p "$BACKUP_LOCAL_DIR"
+          cp "$FILE_PATH" "$BACKUP_LOCAL_DIR/"
+          ls -lh "$BACKUP_LOCAL_DIR"
 
       - name: Limpiar respaldos antiguos en Git (deja 15)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.destino == 'git' }}
