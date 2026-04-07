@@ -28,7 +28,6 @@ jobs:
       PGDATABASE: ${{ secrets.PGDATABASE }}
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
-      PGSSLMODE: ${{ secrets.PGSSLMODE }}
       PGCONNECT_TIMEOUT: "15"
       BACKUP_DIR: backups/postgres
 
