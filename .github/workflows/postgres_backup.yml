@@ -28,6 +28,7 @@ jobs:
       PGDATABASE: ${{ secrets.PGDATABASE }}
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGSSLMODE: ${{ secrets.PGSSLMODE }}
       PGCONNECT_TIMEOUT: "15"
       BACKUP_DIR: backups/postgres
 
@@ -58,6 +59,23 @@ jobs:
             --dbname="$PGDATABASE" \
             --timeout=10
 
+      - name: Diagnostico de conexion
+        run: |
+          export PGPASSWORD="$PGPASSWORD"
+          export PGSSLMODE="${PGSSLMODE:-prefer}"
+          echo "Host: $PGHOST"
+          echo "Puerto: $PGPORT"
+          echo "Base: $PGDATABASE"
+          echo "Usuario: $PGUSER"
+          echo "SSL mode: $PGSSLMODE"
+          getent hosts "$PGHOST" || true
+          psql \
+            --host="$PGHOST" \
+            --port="$PGPORT" \
+            --username="$PGUSER" \
+            --dbname="$PGDATABASE" \
+            --command="select now() as fecha_servidor, current_user as usuario;"
+
       - name: Preparar nombre de archivo
         run: |
           DATESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -69,12 +87,15 @@ jobs:
       - name: Generar respaldo con pg_dump
         run: |
           export PGPASSWORD="$PGPASSWORD"
+          export PGSSLMODE="${PGSSLMODE:-prefer}"
           pg_dump \
             --host="$PGHOST" \
             --port="$PGPORT" \
             --username="$PGUSER" \
             --dbname="$PGDATABASE" \
             --verbose \
+            --no-owner \
+            --no-privileges \
             --format=custom \
             --blobs \
             --file="$FILE_PATH"
