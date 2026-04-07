@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 require '/var/www/login_shared/conf/conexion.php';
 
-function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
+function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = '') {
     $conexion = Database::conectar();
 
     if (!$conexion) {
@@ -18,14 +18,17 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
     if ($pagina <= 0) {
         $pagina = 1;
     }
-
+    $search = trim((string)$search);
+    $tieneBusqueda = ($search !== '');
     $offset = ($pagina - 1) * $limite;
 
     $esPaginable = ($tipo === 'entrada' || $tipo === 'salida');
     $totalRegistros = 0;
 
     if ($tipo === 'entrada') {
-        $sqlCount = "SELECT COUNT(*) AS total FROM entradas_materiales";
+        $sqlCount = "SELECT COUNT(*) AS total
+            FROM entradas_materiales e
+            JOIN control_materiales c ON e.codigo_material = c.codigo_material";
         $sql = "SELECT
                     e.folio_entrada,
                     e.codigo_material,
@@ -34,11 +37,41 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
                     e.fecha_registro
                 FROM entradas_materiales e
                 JOIN control_materiales c ON e.codigo_material = c.codigo_material";
-        $sql .= ' ORDER BY e.folio_entrada DESC LIMIT $1 OFFSET $2';
-        $params = [$limite, $offset];
+
+        if ($tieneBusqueda) {
+            $where = " WHERE CAST(e.folio_entrada AS TEXT) ILIKE $1
+                OR e.codigo_material ILIKE $1
+                OR c.descripcion_material ILIKE $1";
+            $sqlCount .= $where;
+            $sql .= $where;
+        }
+
+        $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
+        $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
+        $sql .= " ORDER BY e.folio_entrada DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
+        $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
     } else if ($tipo === 'salida') {
-        $sqlCount = "SELECT COUNT(*) AS total FROM salidas_materiales";
+        $tieneFolioSalida = false;
+        $resColFolio = @pg_query(
+            $conexion,
+            "SELECT 1
+             FROM information_schema.columns
+             WHERE table_schema = 'public'
+               AND table_name = 'salidas_materiales'
+               AND column_name = 'folio_salida'
+             LIMIT 1"
+        );
+        if ($resColFolio && pg_num_rows($resColFolio) > 0) {
+            $tieneFolioSalida = true;
+        }
+
+        $sqlCount = "SELECT COUNT(*) AS total
+            FROM salidas_materiales s
+            JOIN control_materiales c ON s.codigo_material = c.codigo_material";
+
+        $selectFolio = $tieneFolioSalida ? 's.folio_salida,' : "'' AS folio_salida,";
         $sql = "SELECT
+                    $selectFolio
                     s.credencial,
                     s.codigo_material,
                     c.descripcion_material,
@@ -46,8 +79,30 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
                     s.fecha_registro
                 FROM salidas_materiales s
                 JOIN control_materiales c ON s.codigo_material = c.codigo_material";
-        $sql .= ' ORDER BY s.fecha_registro DESC LIMIT $1 OFFSET $2';
-        $params = [$limite, $offset];
+
+        if ($tieneBusqueda) {
+            if ($tieneFolioSalida) {
+                $where = " WHERE CAST(s.folio_salida AS TEXT) ILIKE $1
+                    OR CAST(s.credencial AS TEXT) ILIKE $1
+                    OR s.codigo_material ILIKE $1
+                    OR c.descripcion_material ILIKE $1";
+            } else {
+                $where = " WHERE CAST(s.credencial AS TEXT) ILIKE $1
+                    OR s.codigo_material ILIKE $1
+                    OR c.descripcion_material ILIKE $1";
+            }
+            $sqlCount .= $where;
+            $sql .= $where;
+        }
+
+        $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
+        $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
+        if ($tieneFolioSalida) {
+            $sql .= " ORDER BY s.folio_salida DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
+        } else {
+            $sql .= " ORDER BY s.fecha_registro DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
+        }
+        $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
     } else if ($tipo === 'inventario') {
         $sql = "SELECT
                     c.codigo_material,
@@ -74,7 +129,7 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
     }
 
     if ($esPaginable) {
-        $resCount = pg_query($conexion, $sqlCount);
+        $resCount = $tieneBusqueda ? @pg_query_params($conexion, $sqlCount, ['%' . $search . '%']) : @pg_query($conexion, $sqlCount);
         if (!$resCount) {
             $error = pg_last_error($conexion);
             pg_close($conexion);
@@ -85,9 +140,9 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
     }
 
     if (empty($params)) {
-        $res = pg_query($conexion, $sql);
+        $res = @pg_query($conexion, $sql);
     } else {
-        $res = pg_query_params($conexion, $sql, $params);
+        $res = @pg_query_params($conexion, $sql, $params);
     }
 
     if (!$res) {
@@ -120,8 +175,9 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1) {
 $tipo = $_GET['tipo'] ?? '';
 $limite = $_GET['limite'] ?? 20;
 $pagina = $_GET['pagina'] ?? 1;
+$search = $_GET['search'] ?? '';
 
-$resultado = obtenerRegistrosMateriales($tipo, $limite, $pagina);
+$resultado = obtenerRegistrosMateriales($tipo, $limite, $pagina, $search);
 if (isset($resultado['status']) && $resultado['status'] === 'error') {
     http_response_code(400);
 }

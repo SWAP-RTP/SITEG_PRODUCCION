@@ -109,8 +109,8 @@ function mostrarAlerta({
 function mostrarToastMaterialNuevo() {
     Swal.fire({
         icon: 'warning',
-        title: '<strong>⚠Ingresar Material Nuevo</strong>',
-        html: 'Este material no existe<br><small class="text-muted">Puedes registrarlo sin problema</small>',
+        title: '<strong>⚠ Se agregara un nuevo material</strong>',
+        html: 'Este material no existe en el catalogo<br><small class="text-muted">Puedes registrarlo sin problema</small>',
         toast: true,
         position: 'top',
         showConfirmButton: false,
@@ -127,7 +127,7 @@ function mostrarToastMaterialNuevo() {
 function mostrarBadgeMaterialNuevo(estadoDivId) {
     const estadoDiv = document.getElementById(estadoDivId);
     if (estadoDiv) {
-        estadoDiv.innerHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Material Nuevo</span>';
+        estadoDiv.innerHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Se agregara un nuevo material</span>';
         setTimeout(() => {
             estadoDiv.innerHTML = '';
         }, 7000);
@@ -145,9 +145,9 @@ function limpiarBadgeMaterial(estadoDivId) {
 // ======================== 04) TABLAS Y PAGINACIÓN DE MODAL ========================
 
 // Mostrar la tabla del modal de salida
-function mostrarTablaModal(contenedor, datos, columnas, onSelect) {
+function mostrarTablaModal(tabla, datos, columnas, onSelect) {
     if (!Array.isArray(datos) || datos.length === 0) {
-        contenedor.innerHTML = '<p>No hay resultados.</p>';
+        tabla.innerHTML = '<p>No hay resultados.</p>';
         return;
     }
     // Generar un id único para la tabla
@@ -170,7 +170,7 @@ function mostrarTablaModal(contenedor, datos, columnas, onSelect) {
         </td></tr>`;
     });
     html += `</tbody></table>`;
-    contenedor.innerHTML = html;
+    tabla.innerHTML = html;
 
     // Inicializar DataTables si está disponible y destruir si ya existe
     if (window.jQuery && window.jQuery.fn && window.jQuery.fn.DataTable) {
@@ -197,7 +197,7 @@ function mostrarTablaModal(contenedor, datos, columnas, onSelect) {
         }, 0);
     }
 
-    contenedor.querySelectorAll('.seleccionar-modal').forEach(btn => {
+    tabla.querySelectorAll('.seleccionar-modal').forEach(btn => {
         btn.addEventListener('click', function () {
             const item = JSON.parse(this.getAttribute('data-item'));
             onSelect(item);
@@ -206,12 +206,12 @@ function mostrarTablaModal(contenedor, datos, columnas, onSelect) {
 }
 
 // Mostrar tabla modal con paginación funcional
-function mostrarTablaModalConPaginacion(contenedor, respuesta, columnas, onSelect, navPaginacionId, ulPaginacionId, fetchCallback) {
+function mostrarTablaModalConPaginacion(tabla, respuesta, columnas, onSelect, navPaginacionId, ulPaginacionId, fetchCallback) {
     // respuesta debe tener: {datos, total, pagina, totalPaginas, limite}
     const { datos, pagina, totalPaginas } = respuesta;
 
     if (!Array.isArray(datos) || datos.length === 0) {
-        contenedor.innerHTML = '<p>No hay resultados.</p>';
+        tabla.innerHTML = '<p>Sin registros disponibles.</p>';
         // Ocultar paginación si no hay datos
         const navPag = document.getElementById(navPaginacionId);
         if (navPag) navPag.style.display = 'none';
@@ -233,16 +233,16 @@ function mostrarTablaModalConPaginacion(contenedor, respuesta, columnas, onSelec
         html += `<td>
             <button type="button" class="btn btn-success btn-sm seleccionar-modal"
                 data-item='${JSON.stringify(item)}'>
-                <i class="bi bi-plus-circle"></i> Agregar
+                <i class="bi bi-plus-circle"></i> Agregar material
             
             </button>
         </td></tr>`;
     });
     html += `</tbody></table>`;
-    contenedor.innerHTML = html;
+    tabla.innerHTML = html;
 
     // Event listeners de selección
-    contenedor.querySelectorAll('.seleccionar-modal').forEach(btn => {
+    tabla.querySelectorAll('.seleccionar-modal').forEach(btn => {
         btn.addEventListener('click', function () {
             const item = JSON.parse(this.getAttribute('data-item'));
             onSelect(item);
@@ -347,10 +347,11 @@ function mostrarTablaModalConPaginacion(contenedor, respuesta, columnas, onSelec
 
 // ======================== 05) BÚSQUEDAS DE NEGOCIO ========================
 
-// Buscar material con callback (para entrada que necesita materialOriginal)
-function buscarMaterialConCallback(codigo, descripcionInput, estadoDivId, callback) {
+// Autocompletar descripción cuando se ingresa el código del material
+function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback) {
     if (!codigo) {
         descripcionInput.value = '';
+        delete descripcionInput.dataset.autodescripcion;
         limpiarBadgeMaterial(estadoDivId);
         return;
     }
@@ -360,17 +361,28 @@ function buscarMaterialConCallback(codigo, descripcionInput, estadoDivId, callba
         .then(data => {
             if (data.descripcion_material) {
                 descripcionInput.value = data.descripcion_material;
+                descripcionInput.dataset.autodescripcion = data.descripcion_material;
                 limpiarBadgeMaterial(estadoDivId);
                 if (callback) callback(data);
             } else {
-                descripcionInput.value = '';
+                const descripcionActual = (descripcionInput.value || '').trim();
+                const descripcionAuto = (descripcionInput.dataset.autodescripcion || '').trim();
+
+                // Solo limpiar si el texto actual proviene del autocompletado anterior.
+                if (!descripcionActual || descripcionActual === descripcionAuto) {
+                    descripcionInput.value = '';
+                }
+
+                delete descripcionInput.dataset.autodescripcion;
                 mostrarBadgeMaterialNuevo(estadoDivId);
                 mostrarToastMaterialNuevo();
                 if (callback) callback(null);
             }
         })
         .catch(error => {
-            descripcionInput.value = '';
+            if (!(descripcionInput.value || '').trim()) {
+                descripcionInput.value = '';
+            }
             console.error('Error:', error);
         });
 }
@@ -427,7 +439,7 @@ function cargarYLlenarSelects(selectors, url = 'query_sql/catalogo_listas.php') 
             }
         })
         .catch(error => {
-            console.error('Error al cargar catálogos:', error);
+            console.error('Error al cargar listas:', error);
             mostrarAlerta({
                 icon: 'error',
                 title: 'Error',
@@ -443,21 +455,21 @@ function BuscarModal(modalId, contenedorId, tipo, inputBusquedaId, columnas, onS
     if (!modal) return;
     
     modal.addEventListener('shown.bs.modal', () => {
-        const contenedor = document.getElementById(contenedorId);
+        const tabla = document.getElementById(contenedorId);
         const inputBusqueda = document.getElementById(inputBusquedaId);
         let terminoBusqueda = '';
         
-        if (!contenedor) return;
-        contenedor.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
+        if (!tabla) return;
+        tabla.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
         
         const cargarPagina = (pagina = 1) => {
             const limit = tipo === 'trabajadores' ? 10 : 5;
             fetch(`query_sql/modales_datos.php?tipo=${tipo}&pagina=${pagina}&limit=${limit}&search=${encodeURIComponent(terminoBusqueda)}`)
                 .then(res => res.json())
                 .then(respuesta => {
-                    mostrarTablaModalConPaginacion(contenedor, respuesta, columnas, onSelect, navPaginacionId, ulPaginacionId, cargarPagina);
+                    mostrarTablaModalConPaginacion(tabla, respuesta, columnas, onSelect, navPaginacionId, ulPaginacionId, cargarPagina);
                 })
-                .catch(() => contenedor.innerHTML = '<p class="text-danger">Error al cargar los datos.</p>');
+                .catch(() => tabla.innerHTML = '<p class="text-danger">Error al cargar los datos.</p>');
         };
         
         const buscarConDebounce = debounce(() => {
@@ -468,8 +480,7 @@ function BuscarModal(modalId, contenedorId, tipo, inputBusquedaId, columnas, onS
         if (inputBusqueda) {
             inputBusqueda.value = '';
             inputBusqueda.oninput = buscarConDebounce;
-        }
-        
+        }        
         cargarPagina(1);
     }, { once: true });
 }

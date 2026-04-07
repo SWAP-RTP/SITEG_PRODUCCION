@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let inventarioCompleto = [];
     let paginaInventarioActual = 1;
     let limiteInventario = 5;
+    const limpiarFormularioInventario = limpiarFormularioCompleto(
+        'form-inventario-material',
+        'contenedor-tabla-inventario',
+        'tabla-inventario',
+        'btn-limpiar-inventario'
+    );
 
     // CREAR ELEMENTO PARA MOSTRAR ADVERTENCIA DE STOCK BAJO
     let advertenciaExistencia = document.getElementById('advertencia-existencia');
@@ -261,6 +267,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (formInventario) {
         formInventario.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            const codigo = codigoInput.value.trim();
+            const descripcion = descripcionInput.value.trim();
+            const stockMinimo = stockMinimoInput.value.trim();
+            const hayCapturaParcial = Boolean(codigo || descripcion || stockMinimo);
+            const camposClaveCompletos = Boolean(codigo && descripcion);
+
+            if (hayCapturaParcial && !camposClaveCompletos) {
+                mostrarAlerta({
+                    icon: 'warning',
+                    title: 'Campos incompletos',
+                    text: 'Para consultar por material, captura código y descripción.',
+                    confirmButtonColor: '#3085d6'
+                });
+                limpiarFormularioInventario();
+                return;
+            }
+
             consultarInventarioCompleto();
         });
     }
@@ -290,7 +314,5 @@ document.addEventListener('DOMContentLoaded', function () {
         'nav-paginacion-materiales',
         'ul-paginacion-materiales'
     );
-
-    limpiarFormularioCompleto('form-inventario-material', 'contenedor-tabla-inventario', 'tabla-inventario', 'btn-limpiar-inventario');
 
 });

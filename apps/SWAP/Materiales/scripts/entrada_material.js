@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     //una forma de validar que todos los campos si exiten (en vez de usar &&)
     const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
+    const limpiarFormularioEntrada = limpiarFormularioCompleto(
+        'form-entrada-material',
+        'contenedor-tabla-registros',
+        'tabla-registros',
+        'btn-limpiar-entrada'
+    );
     // CARGAR CATÁLOGOS
     cargarYLlenarSelects({ unidad: dom.unidadSelect, estado: dom.estadoSelect, categoria: dom.categoriaSelect });
     // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA (es una llamada a la funcion auxiliar)
@@ -37,17 +43,17 @@ document.addEventListener('DOMContentLoaded', () => {
         columnasModal, onSelectMaterial, 'nav-paginacion-materiales', 'ul-paginacion-materiales'
     );
     //ACOMPLETA CAMPO Y GUARDA DATOS ORIGINALES
-    const buscarMaterialDebounced = debounce(() => {
+    const autoCompletarMaterial = debounce(() => {
         const codigo = dom.codigoInput.value.trim();
-        buscarMaterialConCallback(codigo, dom.descripcionInput, 'estado-material');
+        autoCompletarMaterialPorCodigo(codigo, dom.descripcionInput, 'estado-material');
     }, 300);
-    dom.codigoInput.addEventListener('input', buscarMaterialDebounced);
+    dom.codigoInput.addEventListener('input', autoCompletarMaterial);
     //confirmacion de guardado con sweetalert2
     const confirmarGuardado = () => mostrarAlerta({
         title: '¿Deseas guardar el material?',
         showConfirmButton: true,
         showDenyButton: true,
-        showCancelButton: true,
+        showCancelButton: false,
         confirmButtonText: 'Guardar',
         denyButtonText: 'No guardar'
     });
@@ -69,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: 'Por favor, llena todos los campos obligatorios.',
                 confirmButtonColor: '#3085d6'
             });
+            limpiarFormularioEntrada();
             return;
         }
 
@@ -112,6 +119,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     //LIMPIAR FORMULARIO
-    limpiarFormularioCompleto('form-entrada-material', 'contenedor-tabla-registros', 'tabla-registros', 'btn-limpiar-entrada');
-
 });

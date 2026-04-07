@@ -7,26 +7,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const unidadSelect = document.getElementById('unidad');
     const estadoSelect = document.getElementById('estado');
     const formulario = document.getElementById('form-salida-material');
-    const mensajeCredencial = document.createElement('div');
-    mensajeCredencial.className = 'text-danger small mt-1 fw-semibold';
-    credencialesInput.insertAdjacentElement('afterend', mensajeCredencial);
-            let credencialValida = false;
-          let credencialInvalida = '';
-const mostrarAlertaCredencialNoEncontrada = () => {
-    const credencial = credencialesInput.value.trim();
+    let credencialValida = false;
+    let credencialInvalida = '';
+    const mostrarAlertaCredencialNoEncontrada = ({ force = false } = {}) => {
+        const credencial = credencialesInput.value.trim();
+        if (!credencial || credencialValida) return;
 
-    if (credencial && !credencialValida && credencial !== credencialInvalida) {
+        if (!force && credencial === credencialInvalida) return;
+
         credencialInvalida = credencial;
-        mensajeCredencial.textContent = `La credencial ${credencial} que ingresó no es válida.`;
-    } else {
-        mensajeCredencial.textContent = '';
-    }
-};
+        mostrarAlerta({
+            icon: 'warning',
+            title: 'Credencial no válida',
+            text: `La credencial ${credencial} no es válida.`,
+            confirmButtonColor: '#3085d6'
+        });
+    };
     // CARGAR CATÁLOGOS
     cargarYLlenarSelects({
         unidad: unidadSelect,
         estado: estadoSelect
     });
+    const limpiarFormularioSalida = limpiarFormularioCompleto(
+        'form-salida-material',
+        'contenedor-tabla-salidas',
+        'tabla-salidas',
+        'btn-limpiar-entrada'
+    );
 
     // ABRIR MODAL DE TRABAJADORES CON PAGINACIÓN Y BÚSQUEDA
     BuscarModal('modalTrabajador', 'contenedor-trabajadores-modal', 'trabajadores', 'buscar-trabajador-modal-salida',
@@ -40,7 +47,6 @@ const mostrarAlertaCredencialNoEncontrada = () => {
             credencialValida = true;
                 credencialInvalida = '';
             credencialesInput.classList.remove('is-invalid');
-            mensajeCredencial.textContent = '';
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalTrabajador'));
             if (modal) modal.hide();
         },
@@ -70,13 +76,11 @@ const mostrarAlertaCredencialNoEncontrada = () => {
         if (!credencialesInput.value.trim()) {
             credencialesInput.classList.remove('is-invalid');
                 credencialInvalida = '';
-            mensajeCredencial.textContent = '';
             return;
         }
         if (esValida) {
             credencialesInput.classList.remove('is-invalid');
                 credencialInvalida = '';
-            mensajeCredencial.textContent = '';
         } else {
             credencialesInput.classList.add('is-invalid');
             mostrarAlertaCredencialNoEncontrada();
@@ -86,7 +90,7 @@ const mostrarAlertaCredencialNoEncontrada = () => {
     // AUTOCOMPLETAR DESCRIPCIÓN POR CÓDIGO
     const autoCompletarDescripcion = debounce(() => {
         const codigo = codigoInput.value.trim();
-        buscarMaterialConCallback(codigo, descripcionInput, 'estado-material');
+        autoCompletarMaterialPorCodigo(codigo, descripcionInput, 'estado-material');
     }, 300);
 
     codigoInput.addEventListener('input', autoCompletarDescripcion);
@@ -97,7 +101,8 @@ const mostrarAlertaCredencialNoEncontrada = () => {
 
         if (credencialesInput.value.trim() && !credencialValida) {
             credencialesInput.classList.add('is-invalid');
-            mostrarAlertaCredencialNoEncontrada();
+            mostrarAlertaCredencialNoEncontrada({ force: true });
+            limpiarFormularioSalida();
             return;
         }
 
@@ -117,6 +122,7 @@ const mostrarAlertaCredencialNoEncontrada = () => {
                 text: 'Por favor, llena todos los campos obligatorios.',
                 confirmButtonColor: '#3085d6'
             });
+            limpiarFormularioSalida();
             return;
         }
         const datos = {
@@ -174,11 +180,7 @@ const mostrarAlertaCredencialNoEncontrada = () => {
         credencialValida = false;
         credencialInvalida = '';
         credencialesInput.classList.remove('is-invalid');
-        mensajeCredencial.textContent = '';
     });
 
     // LIMPIAR FORMULARIO
-    limpiarFormularioCompleto('form-salida-material', 'contenedor-tabla-salidas', 'tabla-salidas', 'btn-limpiar-entrada');
-
-
 });
