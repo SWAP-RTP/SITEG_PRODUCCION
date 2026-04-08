@@ -36,10 +36,30 @@ function ConsultaRegistros(config) {
             input.type = 'text';
             input.className = 'form-control form-control-sm';
             input.style.maxWidth = '340px';
+            input.style.textTransform = 'uppercase';
             input.placeholder = placeholderBusqueda;
 
+            const normalizarMayusculas = () => {
+                const valorMayusculas = input.value.toUpperCase();
+                if (input.value !== valorMayusculas) {
+                    input.value = valorMayusculas;
+                }
+                return valorMayusculas.trim();
+            };
+
+            input.addEventListener('paste', () => {
+                setTimeout(() => {
+                    terminoBusqueda = normalizarMayusculas();
+                    paginaActual = 1;
+                    clearTimeout(timeoutBusqueda);
+                    timeoutBusqueda = setTimeout(() => {
+                        cargarPagina(1);
+                    }, 300);
+                }, 0);
+            });
+
             input.addEventListener('input', () => {
-                terminoBusqueda = input.value.trim();
+                terminoBusqueda = normalizarMayusculas();
                 paginaActual = 1;
 
                 clearTimeout(timeoutBusqueda);

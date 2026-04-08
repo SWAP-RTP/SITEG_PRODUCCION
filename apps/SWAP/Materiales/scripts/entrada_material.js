@@ -1,54 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const dom = {
-        codigoInput: document.getElementById('codigo'),
-        descripcionInput: document.getElementById('descripcion'),
-        cantidadInput: document.getElementById('cantidad'),
-        unidadSelect: document.getElementById('unidad'),
-        estadoSelect: document.getElementById('estado'),
-        categoriaSelect: document.getElementById('id_categoria'),
-        btnModal: document.getElementById('modal'),
-        modalCenter: document.getElementById('exampleModalCenter'),
-        formulario: document.getElementById('form-entrada-material')
-    };
-    const obtenerDatosFormulario = () => ({
-        codigo: dom.codigoInput.value.trim(),
-        descripcion: dom.descripcionInput.value.trim(),
-        unidad: dom.unidadSelect.value,
-        estado: dom.estadoSelect.value,
-        cantidad: dom.cantidadInput.value.trim(),
-        id_categoria: dom.categoriaSelect.value
+    const materialForm = inicializarFormularioMateriales({
+        formId: 'form-entrada-material',
+        codigoInputId: 'codigo',
+        descripcionInputId: 'descripcion',
+        cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad',
+        estadoSelectId: 'estado',
+        categoriaSelectId: 'id_categoria',
+        modalMaterialId: 'exampleModalCenter',
+        modalMaterialContenedorId: 'contenedor-materiales-modal',
+        modalMaterialInputId: 'buscar-material-modal-entrada',
+        navPaginacionMaterialId: 'nav-paginacion-materiales',
+        ulPaginacionMaterialId: 'ul-paginacion-materiales',
+        contenedorTablaId: 'contenedor-tabla-registros',
+        tablaId: 'tabla-registros',
+        btnLimpiarId: 'btn-limpiar-entrada',
+        columnasMaterial: [
+            { header: 'Código', key: 'codigo_material' },
+            { header: 'Descripción', key: 'descripcion_material' }
+        ],
+        alElegirMaterial: (item) => {
+            const codigoInput = document.getElementById('codigo');
+            const descripcionInput = document.getElementById('descripcion');
+            if (codigoInput) codigoInput.value = item.codigo_material;
+            if (descripcionInput) descripcionInput.value = item.descripcion_material;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
+            if (modal) modal.hide();
+        }
     });
-    //una forma de validar que todos los campos si exiten (en vez de usar &&)
+
+    if (!materialForm.formulario) return;
+
+    const obtenerDatosFormulario = () => ({
+        codigo: materialForm.codigoInput.value.trim(),
+        descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,
+        estado: materialForm.estadoSelect.value,
+        cantidad: materialForm.cantidadInput.value.trim(),
+        id_categoria: materialForm.categoriaSelect.value
+    });
+
     const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
-    const limpiarFormularioEntrada = limpiarFormularioCompleto(
-        'form-entrada-material',
-        'contenedor-tabla-registros',
-        'tabla-registros',
-        'btn-limpiar-entrada'
-    );
-    // CARGAR CATÁLOGOS
-    cargarYLlenarSelects({ unidad: dom.unidadSelect, estado: dom.estadoSelect, categoria: dom.categoriaSelect });
-    // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA (es una llamada a la funcion auxiliar)
-    const columnasModal = [
-        { header: 'Código', key: 'codigo_material' },
-        { header: 'Descripción', key: 'descripcion_material' }
-    ];
-    const onSelectMaterial = (item) => {
-        dom.codigoInput.value = item.codigo_material;
-        dom.descripcionInput.value = item.descripcion_material;
-        const modal = bootstrap.Modal.getInstance(dom.modalCenter);
-        if (modal) modal.hide();
-    };
-    BuscarModal('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-entrada',
-        columnasModal, onSelectMaterial, 'nav-paginacion-materiales', 'ul-paginacion-materiales'
-    );
-    //ACOMPLETA CAMPO Y GUARDA DATOS ORIGINALES
-    const autoCompletarMaterial = debounce(() => {
-        const codigo = dom.codigoInput.value.trim();
-        autoCompletarMaterialPorCodigo(codigo, dom.descripcionInput, 'estado-material');
-    }, 300);
-    dom.codigoInput.addEventListener('input', autoCompletarMaterial);
-    //confirmacion de guardado con sweetalert2
+
     const confirmarGuardado = () => mostrarAlerta({
         title: '¿Deseas guardar el material?',
         showConfirmButton: true,
@@ -57,14 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmButtonText: 'Guardar',
         denyButtonText: 'No guardar'
     });
+
     const guardarEntrada = async (datos) =>
         (await fetch('query_sql/guardar_materiales.php?tipo=entrada', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         })).json();
-    //VALIDACION Y ENVÍO DEL FORMULARIO
-    dom.formulario.addEventListener('submit', async (e) => {
+
+    materialForm.formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const datos = obtenerDatosFormulario();
 
@@ -75,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: 'Por favor, llena todos los campos obligatorios.',
                 confirmButtonColor: '#3085d6'
             });
-            limpiarFormularioEntrada();
+            materialForm.limpiarFormulario();
             return;
         }
 
@@ -99,9 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: '¡Éxito!',
                     text: 'El material fue registrado correctamente'
                 });
-                dom.formulario.reset();
+                materialForm.formulario.reset();
                 return;
             }
+
             mostrarAlerta({
                 icon: 'error',
                 title: 'Error',
@@ -118,5 +113,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
         }
     });
-    //LIMPIAR FORMULARIO
 });

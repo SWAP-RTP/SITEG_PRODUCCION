@@ -2,6 +2,14 @@
 header('Content-Type: application/json; charset=utf-8');
 require '/var/www/login_shared/conf/conexion.php';
 
+function ejecutarQuerySeguro($conexion, $sql, $params, $mensajeError) {
+    $resultado = @pg_query_params($conexion, $sql, $params);
+    if (!$resultado) {
+        throw new Exception($mensajeError . ': ' . pg_last_error($conexion));
+    }
+    return $resultado;
+}
+
 function guardarEntrada($conexion, $data) {
     if (
         empty($data['codigo']) ||
@@ -30,10 +38,7 @@ function guardarEntrada($conexion, $data) {
         intval($data['cantidad'])
     ];
 
-    $resInventario = pg_query_params($conexion, $sqlInventario, $paramsInventario);
-    if (!$resInventario) {
-        throw new Exception('Error al actualizar inventario: ' . pg_last_error($conexion));
-    }
+    ejecutarQuerySeguro($conexion, $sqlInventario, $paramsInventario, 'Error al actualizar inventario');
 
     $sqlEntrada = "INSERT INTO entradas_materiales (codigo_material, cantidad) VALUES ($1, $2)";
     $paramsEntrada = [
@@ -41,10 +46,7 @@ function guardarEntrada($conexion, $data) {
         intval($data['cantidad'])
     ];
 
-    $resEntrada = pg_query_params($conexion, $sqlEntrada, $paramsEntrada);
-    if (!$resEntrada) {
-        throw new Exception('Error al registrar entrada: ' . pg_last_error($conexion));
-    }
+    ejecutarQuerySeguro($conexion, $sqlEntrada, $paramsEntrada, 'Error al registrar entrada');
 
     return ['status' => 'ok'];
 }
@@ -58,23 +60,31 @@ function guardarSalida($conexion, $data) {
         return ['status' => 'error', 'message' => 'Datos incompletos para registrar salida.'];
     }
 
-    $sqlStock = "SELECT stock_actual FROM control_materiales WHERE codigo_material = $1";
-    $resStock = pg_query_params($conexion, $sqlStock, [$data['codigo']]);
-    if (!$resStock) {
-        throw new Exception('Error al consultar stock: ' . pg_last_error($conexion));
+    $cantidadSalida = intval($data['cantidad']);
+    if ($cantidadSalida <= 0) {
+        return ['status' => 'error', 'message' => 'La cantidad de salida debe ser mayor a 0.'];
     }
+
+    $sqlStock = "SELECT stock_actual FROM control_materiales WHERE codigo_material = $1";
+    $resStock = ejecutarQuerySeguro($conexion, $sqlStock, [$data['codigo']], 'Error al consultar stock');
 
     $rowStock = pg_fetch_assoc($resStock);
-    $stockActual = $rowStock ? intval($rowStock['stock_actual']) : 0;
+    if (!$rowStock) {
+        return ['status' => 'error', 'message' => 'El material no existe en inventario.'];
+    }
 
-    $cantidadSalida = intval($data['cantidad']);
+    $stockActual = intval($rowStock['stock_actual']);
     $stockDespues = $stockActual - $cantidadSalida;
 
-    $sqlMinimo = "SELECT stock_minimo FROM control_materiales WHERE codigo_material = $1";
-    $resMinimo = pg_query_params($conexion, $sqlMinimo, [$data['codigo']]);
-    if (!$resMinimo) {
-        throw new Exception('Error al consultar stock minimo: ' . pg_last_error($conexion));
+    if ($stockDespues < 0) {
+        return [
+            'status' => 'warning',
+            'message' => 'Stock insuficiente para registrar la salida. Stock actual: ' . $stockActual . '.'
+        ];
     }
+
+    $sqlMinimo = "SELECT stock_minimo FROM control_materiales WHERE codigo_material = $1";
+    $resMinimo = ejecutarQuerySeguro($conexion, $sqlMinimo, [$data['codigo']], 'Error al consultar stock minimo');
 
     $rowMinimo = pg_fetch_assoc($resMinimo);
     $stockMinimo = $rowMinimo ? intval($rowMinimo['stock_minimo']) : 0;
@@ -93,16 +103,10 @@ function guardarSalida($conexion, $data) {
         $cantidadSalida
     ];
 
-    $resSalida = pg_query_params($conexion, $sqlSalida, $paramsSalida);
-    if (!$resSalida) {
-        throw new Exception('Error al registrar salida: ' . pg_last_error($conexion));
-    }
+    ejecutarQuerySeguro($conexion, $sqlSalida, $paramsSalida, 'Error al registrar salida');
 
     $sqlUpdate = "UPDATE control_materiales SET stock_actual = stock_actual - $1 WHERE codigo_material = $2";
-    $resUpdate = pg_query_params($conexion, $sqlUpdate, [$cantidadSalida, $data['codigo']]);
-    if (!$resUpdate) {
-        throw new Exception('Error al actualizar inventario: ' . pg_last_error($conexion));
-    }
+    ejecutarQuerySeguro($conexion, $sqlUpdate, [$cantidadSalida, $data['codigo']], 'Error al actualizar inventario');
 
     if ($advertenciaStock === 'terminado') {
         return ['status' => 'warning', 'message' => 'Atencion: El material se ha terminado con esta salida.'];

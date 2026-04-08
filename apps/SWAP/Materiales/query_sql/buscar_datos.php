@@ -44,6 +44,32 @@ function buscarTrabajador($conexion, string $credencial): array {
     return respuesta(200, $row ? ['nombre' => trim($row['nombre'])] : ['nombre' => '']);
 }
 
+function buscarTrabajadorPorNombre($conexion, string $nombre): array {
+    if ($nombre === '') {
+        return respuesta(200, ['credencial' => '', 'nombre' => '']);
+    }
+
+    $query = 'SELECT credencial, nombre
+              FROM trabajadores_materiales
+              WHERE UPPER(TRIM(nombre)) = UPPER(TRIM($1))
+              LIMIT 1';
+
+    $result = pg_query_params($conexion, $query, [$nombre]);
+    if (!$result) {
+        throw new Exception('Error en la consulta de trabajador por nombre: ' . pg_last_error($conexion));
+    }
+
+    $row = pg_fetch_assoc($result);
+    if (!$row) {
+        return respuesta(200, ['credencial' => '', 'nombre' => '']);
+    }
+
+    return respuesta(200, [
+        'credencial' => trim($row['credencial']),
+        'nombre' => trim($row['nombre'])
+    ]);
+}
+
 $conexion = null;
 $resultado = respuesta(500, ['error' => 'Excepcion PHP', 'detalle' => 'Error no controlado']);
 
@@ -66,7 +92,13 @@ try {
         $resultado = buscarMaterial($conexion, $codigo);
     } elseif ($tipo === 'trabajador') {
         $credencial = trim($_GET['credencial'] ?? '');
-        $resultado = buscarTrabajador($conexion, $credencial);
+        $nombre = trim($_GET['nombre'] ?? '');
+
+        if ($nombre !== '') {
+            $resultado = buscarTrabajadorPorNombre($conexion, $nombre);
+        } else {
+            $resultado = buscarTrabajador($conexion, $credencial);
+        }
     } else {
         $resultado = respuesta(400, ['error' => 'Tipo invalido. Use tipo=material o tipo=trabajador']);
     }
