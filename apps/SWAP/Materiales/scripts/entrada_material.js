@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const adscripcionSelect = document.getElementById('adscripcion');
+
     const materialForm = inicializarFormularioMateriales({
         formId: 'form-entrada-material',
         codigoInputId: 'codigo',
@@ -24,12 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const descripcionInput = document.getElementById('descripcion');
             if (codigoInput) codigoInput.value = item.codigo_material;
             if (descripcionInput) descripcionInput.value = item.descripcion_material;
+            autoCompletarMaterialPorCodigo(
+                item.codigo_material,
+                descripcionInput,
+                'estado-material',
+                null,
+                {
+                    unidadSelect: materialForm.unidadSelect,
+                    estadoSelect: materialForm.estadoSelect,
+                    categoriaSelect: materialForm.categoriaSelect
+                }
+            );
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
             if (modal) modal.hide();
         }
     });
-
-    if (!materialForm.formulario) return;
 
     const obtenerDatosFormulario = () => ({
         codigo: materialForm.codigoInput.value.trim(),
@@ -37,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
         unidad: materialForm.unidadSelect.value,
         estado: materialForm.estadoSelect.value,
         cantidad: materialForm.cantidadInput.value.trim(),
-        id_categoria: materialForm.categoriaSelect.value
+        id_categoria: materialForm.categoriaSelect.value,
+        adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
     const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);

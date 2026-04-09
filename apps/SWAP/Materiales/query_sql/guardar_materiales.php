@@ -17,17 +17,19 @@ function guardarEntrada($conexion, $data) {
         empty($data['unidad']) ||
         empty($data['estado']) ||
         empty($data['id_categoria']) ||
-        empty($data['cantidad'])
+                empty($data['cantidad']) ||
+                empty($data['adscripcion'])
     ) {
         return ['status' => 'error', 'message' => 'Datos incompletos para registrar entrada.'];
     }
 
     $sqlInventario = "INSERT INTO control_materiales
-                        (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual)
+                                                (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual, adscripcion)
                       VALUES
-                        ($1, $2, $3, $4, $5, $6)
+                                                ($1, $2, $3, $4, $5, $6, $7)
                       ON CONFLICT (codigo_material) DO UPDATE SET
-                        stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual";
+                                                stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual,
+                                                adscripcion = EXCLUDED.adscripcion";
 
     $paramsInventario = [
         $data['codigo'],
@@ -35,7 +37,8 @@ function guardarEntrada($conexion, $data) {
         $data['unidad'],
         $data['estado'],
         $data['id_categoria'],
-        intval($data['cantidad'])
+        intval($data['cantidad']),
+        $data['adscripcion']
     ];
 
     ejecutarQuerySeguro($conexion, $sqlInventario, $paramsInventario, 'Error al actualizar inventario');
@@ -53,7 +56,6 @@ function guardarEntrada($conexion, $data) {
 
 function guardarSalida($conexion, $data) {
     if (
-        empty($data['credencial']) ||
         empty($data['codigo']) ||
         empty($data['cantidad'])
     ) {
@@ -96,9 +98,14 @@ function guardarSalida($conexion, $data) {
         $advertenciaStock = 'por_terminarse';
     }
 
+    $credencialSalida = trim((string)($data['credencial'] ?? ''));
+    if ($credencialSalida === '') {
+        $credencialSalida = null;
+    }
+
     $sqlSalida = "INSERT INTO salidas_materiales (credencial, codigo_material, cantidad) VALUES ($1, $2, $3)";
     $paramsSalida = [
-        $data['credencial'],
+        $credencialSalida,
         $data['codigo'],
         $cantidadSalida
     ];

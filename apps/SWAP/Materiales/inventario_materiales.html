@@ -52,23 +52,56 @@
                                 </div>
 
 
-                                <div class="col-md-2">
-                                    <label for="existencia" class="form-label fw-bold text-uppercase">Existencia
-                                        Actual</label>
-                                    <input type="number" class="form-control form-control-sm text-center bg-light"
-                                        id="existencia" name="existencia" readonly value="0">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Cantidad</label>
+                                    <input type="number" class="form-control bg-light" id="cantidad" name="cantidad" min="1"
+                                        readonly value="0">
                                 </div>
 
 
                                 <div class="col-md-3">
-                                    <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock Mínimo</label>
-                                    <input type="number" class="form-control form-control-sm" id="stock_minimo"
-                                        name="stock_minimo" min="0">
+                                    <label class="form-label fw-bold">Unidad de Medida</label>
+                                    <select class="form-select" id="unidad" name="unidad">
+                                        <option value="">Cargando...</option>
+                                    </select>
                                 </div>
-                                  <div class="col-md-2">
-                                    <label class="form-label fw-bold">Adscripcion</label>
-                                    <input type="text" class="form-control bg-light" name="modulo" value="MODULO 4"
-                                        readonly>
+
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Estado Físico Material</label>
+                                    <select class="form-select" id="estado" name="estado">
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
+
+
+                                <div class="row g-3 w-100 mt-1">
+                                    <div class="col-md-3">
+                                        <label for="existencia" class="form-label fw-bold text-uppercase">Existencia Actual</label>
+                                        <input type="number" class="form-control form-control-sm text-center bg-light"
+                                            id="existencia" name="existencia" readonly value="0">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock Mínimo</label>
+                                        <input type="number" class="form-control form-control-sm" id="stock_minimo"
+                                            name="stock_minimo" min="0">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Adscripcion</label>
+                                        <select class="form-select" id="adscripcion" name="adscripcion" required>
+                                            <option value="MODULO 4" selected>MODULO 4</option>
+                                            <option value="ALMACEN CENTRAL">ALMACEN CENTRAL</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Categoría</label>
+                                        <select class="form-select" id="id_categoria" name="id_categoria">
+                                            <option value="">Cargando...</option>
+                                        </select>
+                                    </div>
                                 </div>
 
 
@@ -277,7 +310,6 @@
         <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_catalogos.js"></script>
         <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_modal.js"></script>
         <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_formularios.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/funciones_auxiliares.js"></script>
         <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script>
 
 

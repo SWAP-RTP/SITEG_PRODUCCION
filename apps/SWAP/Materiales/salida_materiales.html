@@ -32,8 +32,10 @@
                     </div>
 
                     <div class="card-body modern-form-body p-5">
-                        <form id="form-salida-material" class="row g-4" onsubmit="return false;">
+                        <form id="form-salida-material" class="row g-4" novalidate>
 
+                            <!-- Campos de trabajador temporalmente desactivados por solicitud -->
+                            <!--
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">No. Credencial</label>
                                 <input type="text" class="form-control" id="credencial" name="credencial"
@@ -53,11 +55,12 @@
                                 </div>
                             </div>
                             <hr class="my-4">
+                            -->
 
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Código</label>
                                 <input type="text" class="form-control" id="codigo" name="codigo"
-                                    oninput="this.value = this.value.toUpperCase()"  placeholder="Ej: MAT-001">
+                                    oninput="this.value = this.value.toUpperCase()" required placeholder="Ej: MAT-001">
                                 <div id="estado-material" class="mt-1" style="min-height: 25px; font-size: 0.85rem;">
                                 </div>
                             </div>
@@ -65,7 +68,7 @@
                                 <label class="form-label fw-bold">Descripción del Material</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="descripcion" name="descripcion"
-                                        oninput="this.value = this.value.toUpperCase()">
+                                        oninput="this.value = this.value.toUpperCase()" required>
                                     <button class="btn btn-primary" type="button" id="modal-material"
                                         data-bs-toggle="modal" data-bs-target="#modalMaterial">
                                         <i class="bi bi-search"></i>
@@ -76,25 +79,34 @@
 
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Cantidad</label>
-                                <input type="number" class="form-control" id="cantidad" name="cantidad" min="1">
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Unidad de Medida</label>
-                                <select class="form-select" id="unidad" name="unidad">
+                                <select class="form-select" id="unidad" name="unidad" required>
                                     <option value="">Cargando...</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Estado Físico Material</label>
-                                <select class="form-select" id="estado" name="estado">
+                                <select class="form-select" id="estado" name="estado" required>
                                     <option value="">Cargando...</option>
                                 </select>
                             </div>
                             
                                 <div class="col-md-2">
                                     <label class="form-label fw-bold">Adscripcion</label>
-                                    <input type="text" class="form-control bg-light" name="modulo" value="MODULO 4"
-                                        readonly>
+                                    <select class="form-select" id="adscripcion" name="adscripcion" required>
+                                        <option value="MODULO 4" selected>MODULO 4</option>
+                                        <option value="ALMACEN CENTRAL">ALMACEN CENTRAL</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Categoría</label>
+                                    <select class="form-select" id="id_categoria" name="id_categoria" required>
+                                        <option value="">Cargando...</option>
+                                    </select>
                                 </div>
 
 
@@ -160,7 +172,6 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>Folio</th>
-                                <th>Credencial</th>
                                 <th>Codigo</th>
                                 <th>Descripcion</th>
                                 <th>Cantidad</th>
@@ -176,40 +187,7 @@
         </div>
 
     </main>
-    <!-- Modal Bootstrap 5 para buscar trabajadores -->
-    <div class="modal fade" id="modalTrabajador" tabindex="-1" aria-labelledby="modalTrabajadorTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalTrabajadorTitle">
-                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de trabajadores
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                            <div class="mb-3">
-                                <input type="text" class="form-control" id="buscar-trabajador-modal-salida" placeholder="Buscar por credencial o nombre...">
-                            </div>
-                                        <div id="contenedor-trabajadores-modal">
-                                                <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
-                                        </div>
-                                        <!-- PAGINACIÓN FUNCIONAL -->
-                                        <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-trabajadores" style="display: none;">
-                                            <ul class="pagination justify-content-end" id="ul-paginacion-trabajadores">
-                                                <!-- Se generará dinámicamente -->
-                                            </ul>
-                                        </nav>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-2"></i>Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de trabajadores desactivado temporalmente por solicitud -->
 
     <!-- Modal Bootstrap 5 para buscar materiales -->
     <div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="modalMaterialTitle" aria-hidden="true">
@@ -256,7 +234,6 @@
         <script src="scripts/helpers/materiales_catalogos.js"></script>
         <script src="scripts/helpers/materiales_modal.js"></script>
         <script src="scripts/helpers/materiales_formularios.js"></script>
-        <script src="scripts/helpers/funciones_auxiliares.js"></script>
         <script src="scripts/salida_material.js"></script>
         <script src="scripts/consulta_registro.js"></script>
 </body>

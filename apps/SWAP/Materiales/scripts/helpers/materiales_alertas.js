@@ -51,15 +51,32 @@
         }
     }
 
+    function mostrarBadgeExistencia(estadoDivId, existe) {
+        const estadoDiv = document.getElementById(estadoDivId);
+        if (!estadoDiv) return;
+
+        if (existe) {
+            estadoDiv.innerHTML = `<span class="badge bg-success"><i class="bi bi-check-circle"></i> Material encontrado</span>`;
+        } else {
+            estadoDiv.innerHTML = `<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle"></i> Material no existe</span>`;
+        }
+    }
+
     function notificarMaterialNuevo(estadoDivId) {
-        limpiarBadgeMaterial(estadoDivId);
-        mostrarToastMaterialNuevo();
+        mostrarBadgeExistencia(estadoDivId, false);
     }
 
     global.MaterialesAlertas = {
         mostrarAlerta,
         mostrarToastMaterialNuevo,
         notificarMaterialNuevo,
-        limpiarBadgeMaterial
+        limpiarBadgeMaterial,
+        mostrarBadgeExistencia
     };
+
+    global.mostrarAlerta = mostrarAlerta;
+    global.mostrarToastMaterialNuevo = mostrarToastMaterialNuevo;
+    global.notificarMaterialNuevo = notificarMaterialNuevo;
+    global.limpiarBadgeMaterial = limpiarBadgeMaterial;
+    global.mostrarBadgeExistencia = mostrarBadgeExistencia;
 })(window);

@@ -256,10 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tablaBodyId: 'tabla-salidas',
             contenedorId: 'contenedor-tabla-salidas',
             endpoint: 'query_sql/consultas_materiales.php?tipo=salida',
-            placeholderBusqueda: 'Buscar por folio, credencial, codigo o descripcion...',
+            placeholderBusqueda: 'Buscar por folio, codigo o descripcion...',
             columnas: [
                 { header: 'Folio', key: 'folio_salida' },
-                { header: 'Credencial', key: 'credencial' },
                 { header: 'Codigo', key: 'codigo_material' },
                 { header: 'Descripcion', key: 'descripcion_material' },
                 { header: 'Cantidad', key: 'cantidad' },

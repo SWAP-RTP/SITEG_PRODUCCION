@@ -10,4 +10,6 @@
     global.MaterialesUtils = {
         debounce
     };
+
+    global.debounce = debounce;
 })(window);

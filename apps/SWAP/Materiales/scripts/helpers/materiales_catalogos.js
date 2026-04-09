@@ -64,4 +64,8 @@
         cargarCatalogosMateriales,
         cargarYLlenarSelects
     };
+
+    global.llenarSelect = llenarSelect;
+    global.cargarCatalogosMateriales = cargarCatalogosMateriales;
+    global.cargarYLlenarSelects = cargarYLlenarSelects;
 })(window);

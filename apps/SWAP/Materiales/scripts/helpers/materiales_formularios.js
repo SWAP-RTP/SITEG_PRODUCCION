@@ -1,8 +1,13 @@
 (function (global) {
-    function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback) {
+    function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback, selects = {}) {
+        const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
+
         if (!codigo) {
             descripcionInput.value = '';
             delete descripcionInput.dataset.autodescripcion;
+            if (unidadSelect) unidadSelect.value = '';
+            if (estadoSelect) estadoSelect.value = '';
+            if (categoriaSelect) categoriaSelect.value = '';
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
         }
@@ -13,7 +18,10 @@
                 if (data.descripcion_material) {
                     descripcionInput.value = data.descripcion_material;
                     descripcionInput.dataset.autodescripcion = data.descripcion_material;
-                    global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
+                    if (unidadSelect) unidadSelect.value = data.id_unidad || '';
+                    if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
+                    if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
+                    global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                     if (callback) callback(data);
                 } else {
                     const descripcionActual = (descripcionInput.value || '').trim();
@@ -24,6 +32,9 @@
                     }
 
                     delete descripcionInput.dataset.autodescripcion;
+                    if (unidadSelect) unidadSelect.value = '';
+                    if (estadoSelect) estadoSelect.value = '';
+                    if (categoriaSelect) categoriaSelect.value = '';
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                     if (callback) callback(null);
                 }
@@ -32,15 +43,23 @@
                 if (!(descripcionInput.value || '').trim()) {
                     descripcionInput.value = '';
                 }
+                if (unidadSelect) unidadSelect.value = '';
+                if (estadoSelect) estadoSelect.value = '';
+                if (categoriaSelect) categoriaSelect.value = '';
                 console.error('Error:', error);
             });
     }
 
-    function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId) {
+    function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId, selects = {}) {
+        const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
+
         if (!codigo) {
             descripcionInput.value = '';
             existenciaInput.value = 0;
             if (stockMinimoInput) stockMinimoInput.value = '';
+            if (unidadSelect) unidadSelect.value = '';
+            if (estadoSelect) estadoSelect.value = '';
+            if (categoriaSelect) categoriaSelect.value = '';
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
         }
@@ -52,12 +71,18 @@
                     descripcionInput.value = data.descripcion_material;
                     existenciaInput.value = data.stock_actual || 0;
                     if (stockMinimoInput) stockMinimoInput.value = data.stock_minimo || '';
+                    if (unidadSelect) unidadSelect.value = data.id_unidad || '';
+                    if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
+                    if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
                     existenciaInput.classList.remove('is-invalid');
-                    global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
+                    global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                 } else {
                     descripcionInput.value = '';
                     existenciaInput.value = 0;
                     if (stockMinimoInput) stockMinimoInput.value = '';
+                    if (unidadSelect) unidadSelect.value = '';
+                    if (estadoSelect) estadoSelect.value = '';
+                    if (categoriaSelect) categoriaSelect.value = '';
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                 }
             })
@@ -65,6 +90,9 @@
                 descripcionInput.value = '';
                 existenciaInput.value = 0;
                 if (stockMinimoInput) stockMinimoInput.value = '';
+                if (unidadSelect) unidadSelect.value = '';
+                if (estadoSelect) estadoSelect.value = '';
+                if (categoriaSelect) categoriaSelect.value = '';
                 console.error('Error:', error);
             });
     }
@@ -126,7 +154,11 @@
         if (codigoInput && descripcionInput) {
             const autoCompletar = global.MaterialesUtils.debounce(() => {
                 const codigo = codigoInput.value.trim();
-                autoCompletarMaterialPorCodigo(codigo, descripcionInput, 'estado-material');
+                autoCompletarMaterialPorCodigo(codigo, descripcionInput, 'estado-material', null, {
+                    unidadSelect,
+                    estadoSelect,
+                    categoriaSelect
+                });
             }, 300);
 
             codigoInput.addEventListener('input', autoCompletar);
@@ -146,55 +178,6 @@
             categoriaSelect,
             limpiarFormulario
         };
-    }
-
-    function buscarYAutocompletarTrabajador(credencialInput, trabajadorInput, onResult) {
-        const buscar = global.MaterialesUtils.debounce(() => {
-            const credencial = credencialInput.value.trim();
-            if (!credencial) {
-                trabajadorInput.value = '';
-                if (onResult) onResult(false, null);
-                return;
-            }
-            fetch(`query_sql/buscar_datos.php?tipo=trabajador&credencial=${encodeURIComponent(credencial)}`)
-                .then(res => res.json())
-                .then(data => {
-                    trabajadorInput.value = data.nombre || '';
-                    if (onResult) onResult(Boolean(data.nombre), data);
-                })
-                .catch(error => {
-                    trabajadorInput.value = '';
-                    if (onResult) onResult(false, null);
-                    console.error('Error:', error);
-                });
-        }, 300);
-
-        credencialInput.addEventListener('input', buscar);
-    }
-
-    function buscarYAutocompletarCredencialPorTrabajador(trabajadorInput, credencialInput, onResult) {
-        const buscar = global.MaterialesUtils.debounce(() => {
-            const nombre = trabajadorInput.value.trim();
-            if (!nombre) {
-                credencialInput.value = '';
-                if (onResult) onResult(false, null);
-                return;
-            }
-
-            fetch(`query_sql/buscar_datos.php?tipo=trabajador&nombre=${encodeURIComponent(nombre)}`)
-                .then(res => res.json())
-                .then(data => {
-                    credencialInput.value = data.credencial || '';
-                    if (onResult) onResult(Boolean(data.credencial), data);
-                })
-                .catch(error => {
-                    credencialInput.value = '';
-                    if (onResult) onResult(false, null);
-                    console.error('Error:', error);
-                });
-        }, 300);
-
-        trabajadorInput.addEventListener('input', buscar);
     }
 
     function limpiarFormularioCompleto(formularioId, contenedorTablaId, tablaId, btnLimpiarId) {
@@ -220,8 +203,11 @@
         autoCompletarMaterialPorCodigo,
         buscarMaterialParaInventario,
         inicializarFormularioMateriales,
-        buscarYAutocompletarTrabajador,
-        buscarYAutocompletarCredencialPorTrabajador,
         limpiarFormularioCompleto
     };
+
+    global.autoCompletarMaterialPorCodigo = autoCompletarMaterialPorCodigo;
+    global.buscarMaterialParaInventario = buscarMaterialParaInventario;
+    global.inicializarFormularioMateriales = inicializarFormularioMateriales;
+    global.limpiarFormularioCompleto = limpiarFormularioCompleto;
 })(window);

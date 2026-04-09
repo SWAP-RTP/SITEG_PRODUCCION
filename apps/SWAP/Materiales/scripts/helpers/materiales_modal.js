@@ -248,4 +248,9 @@
         BuscarModal,
         abrirModalConPaginacion
     };
+
+    global.mostrarTablaModal = mostrarTablaModal;
+    global.mostrarTablaModalConPaginacion = mostrarTablaModalConPaginacion;
+    global.BuscarModal = BuscarModal;
+    global.abrirModalConPaginacion = abrirModalConPaginacion;
 })(window);

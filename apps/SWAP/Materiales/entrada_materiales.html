@@ -34,7 +34,6 @@
 
                     <div class="card-body modern-form-body p-5">
                         <form id="form-entrada-material" autocomplete="off" novalidate>
-                            <input type="hidden" id="modulo" name="modulo" value="4">
 
                             <div class="row g-3">
                                 <div class="col-md-3">
@@ -80,8 +79,10 @@
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Adscripcion</label>
-                                    <input type="text" class="form-control bg-light" name="modulo" value="MODULO 4"
-                                        readonly>
+                                    <select class="form-select" id="adscripcion" name="adscripcion" required>
+                                        <option value="MODULO 4" selected>MODULO 4</option>
+                                        <option value="ALMACEN CENTRAL">ALMACEN CENTRAL</option>
+                                    </select>
                                 </div>
 
 
@@ -195,7 +196,6 @@
 <script type="text/javascript" src="scripts/helpers/materiales_catalogos.js"></script>
 <script type="text/javascript" src="scripts/helpers/materiales_modal.js"></script>
 <script type="text/javascript" src="scripts/helpers/materiales_formularios.js"></script>
-<script type="text/javascript" src="scripts/helpers/funciones_auxiliares.js"></script>
 <script type="text/javascript" src="scripts/entrada_material.js"></script>
 <script type="text/javascript" src="scripts/consulta_registro.js"></script>
 </body>
