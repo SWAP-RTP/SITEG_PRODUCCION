@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { header: 'Folio', key: 'folio_entrada' },
                 { header: 'Descripcion', key: 'descripcion_material' },
                 { header: 'Unidad', key: 'unidad' },
+                { header: 'Estado Fisico', key: 'estado' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],
@@ -261,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { header: 'Folio', key: 'folio_salida' },
                 { header: 'Descripcion', key: 'descripcion_material' },
                 { header: 'Unidad', key: 'unidad' },
+                { header: 'Estado Fisico', key: 'estado' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],

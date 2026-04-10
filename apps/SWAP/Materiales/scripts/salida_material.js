@@ -1,23 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const adscripcionSelect = document.getElementById('adscripcion');
+    //es una expresion regular para validar el formato del codigo MA seguido de 8 digitos
     const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
-    const materialForm = FormularioMateriales({
-        formId: 'form-salida-material',
-        codigoInputId: 'codigo',
-        descripcionInputId: 'descripcion',
-        cantidadInputId: 'cantidad',
-        unidadSelectId: 'unidad',
-        estadoSelectId: 'estado',
-        categoriaSelectId: 'id_categoria',
-        modalMaterialId: 'modalMaterial',
-        modalMaterialContenedorId: 'contenedor-materiales-modal',
-        modalMaterialInputId: 'buscar-material-modal-salida',
-        navPaginacionMaterialId: 'nav-paginacion-materiales',
-        ulPaginacionMaterialId: 'ul-paginacion-materiales',
-        contenedorTablaId: 'contenedor-tabla-salidas',
-        tablaId: 'tabla-salidas',
-        btnLimpiarId: 'btn-limpiar-entrada',
+    const materialForm = FormularioMateriales({formId: 'form-salida-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad',estadoSelectId: 'estado',categoriaSelectId: 'id_categoria',modalMaterialId: 'modalMaterial',
+        modalMaterialContenedorId: 'contenedor-materiales-modal-salida',modalMaterialInputId: 'buscar-material-modal-salida',navPaginacionMaterialId: 'nav-paginacion-materiales-salida',
+        ulPaginacionMaterialId: 'ul-paginacion-materiales-salida',contenedorTablaId: 'contenedor-tabla-salidas',
+        tablaId: 'tabla-salidas',btnLimpiarId: 'btn-limpiar-entrada',
         columnasMaterial: [
             { header: 'Código', key: 'codigo_material' },
             { header: 'Descripción', key: 'descripcion_material' }
@@ -45,13 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!materialForm.formulario) return;
 
-    const obtenerDatosFormulario = () => ({
-        codigo: materialForm.codigoInput.value.trim(),
-        descripcion: materialForm.descripcionInput.value.trim(),
-        unidad: materialForm.unidadSelect.value,
-        estado: materialForm.estadoSelect.value,
-        cantidad: materialForm.cantidadInput.value.trim(),
-        id_categoria: materialForm.categoriaSelect.value,
+    const obtenerDatosFormulario = () => ({codigo: materialForm.codigoInput.value.trim(),descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,estado: materialForm.estadoSelect.value,cantidad: materialForm.cantidadInput.value.trim(),id_categoria: materialForm.categoriaSelect.value,
         adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 

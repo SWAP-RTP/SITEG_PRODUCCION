@@ -39,56 +39,71 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = 
 
     if ($tipo === 'entrada') {
         $tieneSnapshotMovimiento = tablaTieneColumna($conexion, 'entradas_materiales', 'id_unidad');
+        $tieneFolioEntrada = tablaTieneColumna($conexion, 'entradas_materiales', 'folio_entrada');
 
         if ($tieneSnapshotMovimiento) {
-                $selectUnidad = "COALESCE(u.descripcion_unidad, 'N/A') AS unidad";
-                $joinsExtra = '';
-                $groupFields = ['e.codigo_material', 'c.descripcion_material', 'e.id_unidad', 'u.descripcion_unidad'];
-                $searchFields = ['e.codigo_material ILIKE $1', 'c.descripcion_material ILIKE $1', "COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1"];
+            $selectFolioEntrada = $tieneFolioEntrada
+                ? "COALESCE(e.folio_entrada, e.codigo_material) AS folio_entrada"
+                : "e.codigo_material AS folio_entrada";
 
-                if (tablaTieneColumna($conexion, 'entradas_materiales', 'id_estado_material')) {
-                    $joinsExtra .= ' LEFT JOIN estados_materiales es ON e.id_estado_material = es.id_estado_material';
-                    $groupFields[] = 'e.id_estado_material';
-                }
-                if (tablaTieneColumna($conexion, 'entradas_materiales', 'id_categoria_material')) {
-                    $joinsExtra .= ' LEFT JOIN categorias_materiales catm ON e.id_categoria_material = catm.id_categoria_material';
-                    $groupFields[] = 'e.id_categoria_material';
-                }
-                if (tablaTieneColumna($conexion, 'entradas_materiales', 'adscripcion')) {
-                    $groupFields[] = 'e.adscripcion';
-                }
-
-                $baseFrom = " FROM entradas_materiales e
-                    JOIN control_materiales c ON e.codigo_material = c.codigo_material
-                    LEFT JOIN unidades_materiales u ON e.id_unidad = u.id_unidad"
-                    . $joinsExtra;
-                $selectBase = "SELECT
-                        e.codigo_material AS folio_entrada,
-                        c.descripcion_material,
-                        $selectUnidad,
-                        SUM(e.cantidad) AS cantidad,
-                        MAX(e.fecha_registro) AS fecha_registro";
-                $groupBy = ' GROUP BY ' . implode(', ', $groupFields);
-                $orderBy = " ORDER BY MAX(e.fecha_registro) DESC";
-                $searchField = implode(' OR ', $searchFields);
-                $sqlCount = "SELECT COUNT(*) AS total FROM (" . $selectBase . $baseFrom . ($tieneBusqueda ? " WHERE " . $searchField : "") . $groupBy . ") x";
-                $sql = $selectBase . $baseFrom . ($tieneBusqueda ? " WHERE " . $searchField : "") . $groupBy . $orderBy;
-        } else {
             $sqlCount = "SELECT COUNT(*) AS total
                 FROM entradas_materiales e
-                JOIN control_materiales c ON e.codigo_material = c.codigo_material";
+                JOIN control_materiales c ON e.codigo_material = c.codigo_material
+                LEFT JOIN unidades_materiales u ON e.id_unidad = u.id_unidad
+                LEFT JOIN estados_materiales es ON e.id_estado_material = es.id_estado_material";
+
             $sql = "SELECT
-                        e.codigo_material AS folio_entrada,
+                        $selectFolioEntrada,
                         c.descripcion_material,
-                        '' AS unidad,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(es.descripcion_estado_material, 'N/A') AS estado,
                         e.cantidad,
                         e.fecha_registro
                     FROM entradas_materiales e
-                    JOIN control_materiales c ON e.codigo_material = c.codigo_material";
+                    JOIN control_materiales c ON e.codigo_material = c.codigo_material
+                    LEFT JOIN unidades_materiales u ON e.id_unidad = u.id_unidad
+                    LEFT JOIN estados_materiales es ON e.id_estado_material = es.id_estado_material";
 
             if ($tieneBusqueda) {
                 $where = " WHERE e.codigo_material ILIKE $1
-                    OR c.descripcion_material ILIKE $1";
+                    OR c.descripcion_material ILIKE $1
+                    OR COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1
+                    OR COALESCE(es.descripcion_estado_material, 'N/A') ILIKE $1";
+                if ($tieneFolioEntrada) {
+                    $where .= " OR COALESCE(e.folio_entrada, '') ILIKE $1";
+                }
+                $sqlCount .= $where;
+                $sql .= $where;
+            }
+
+            $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
+            $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
+            $sql .= " ORDER BY e.id_entrada DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
+            $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
+        } else {
+            $sqlCount = "SELECT COUNT(*) AS total
+                FROM entradas_materiales e
+                JOIN control_materiales c ON e.codigo_material = c.codigo_material
+                LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad
+                LEFT JOIN estados_materiales es ON c.id_estado_material = es.id_estado_material";
+            $sql = "SELECT
+                        e.codigo_material AS folio_entrada,
+                        c.descripcion_material,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(es.descripcion_estado_material, 'N/A') AS estado,
+                        e.cantidad,
+                        e.fecha_registro
+                    FROM entradas_materiales e
+                    JOIN control_materiales c ON e.codigo_material = c.codigo_material
+                    LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad
+                    LEFT JOIN estados_materiales es ON c.id_estado_material = es.id_estado_material";
+                  
+
+            if ($tieneBusqueda) {
+                $where = " WHERE e.codigo_material ILIKE $1
+                    OR c.descripcion_material ILIKE $1
+                    OR COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1
+                    OR COALESCE(es.descripcion_estado_material, 'N/A') ILIKE $1";
                 $sqlCount .= $where;
                 $sql .= $where;
             }
@@ -98,53 +113,76 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = 
             $sql .= " ORDER BY e.id_entrada DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
             $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
         }
-
-        if ($tieneSnapshotMovimiento) {
-            $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
-            $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
-            $sql .= " LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
-            $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
-        }
     } else if ($tipo === 'salida') {
         $tieneSnapshotMovimiento = tablaTieneColumna($conexion, 'salidas_materiales', 'id_unidad');
+        $tieneFolioSalida = tablaTieneColumna($conexion, 'salidas_materiales', 'folio_salida');
 
         if ($tieneSnapshotMovimiento) {
-            $baseFrom = " FROM salidas_materiales s
+            $selectFolioSalida = $tieneFolioSalida
+                ? "COALESCE(s.folio_salida, s.codigo_material) AS folio_salida"
+                : "s.codigo_material AS folio_salida";
+
+            $sqlCount = "SELECT COUNT(*) AS total
+                FROM salidas_materiales s
                 JOIN control_materiales c ON s.codigo_material = c.codigo_material
                 LEFT JOIN unidades_materiales u ON s.id_unidad = u.id_unidad";
-            $selectBase = "SELECT
-                    s.codigo_material AS folio_salida,
-                    COALESCE(s.credencial, '') AS credencial,
-                    c.descripcion_material,
-                    COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
-                    SUM(s.cantidad) AS cantidad,
-                    MAX(s.fecha_registro) AS fecha_registro";
-            $groupBy = " GROUP BY s.codigo_material, s.credencial, c.descripcion_material, s.id_unidad, u.descripcion_unidad";
-            $orderBy = " ORDER BY MAX(s.fecha_registro) DESC";
-            $searchField = "s.codigo_material ILIKE $1 OR CAST(s.credencial AS TEXT) ILIKE $1 OR c.descripcion_material ILIKE $1 OR COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1";
-            $sqlBase = $selectBase . $baseFrom;
-            $sqlCount = "SELECT COUNT(*) AS total FROM (" . $selectBase . $baseFrom . ($tieneBusqueda ? " WHERE " . $searchField : "") . $groupBy . ") x";
-            $sql = $sqlBase . ($tieneBusqueda ? " WHERE " . $searchField : "") . $groupBy . $orderBy;
+
+            $sql = "SELECT
+                        $selectFolioSalida,
+                        COALESCE(s.credencial::text, '') AS credencial,
+                        c.descripcion_material,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(es.descripcion_estado_material, 'N/A') AS estado,
+                        s.cantidad,
+                        s.fecha_registro
+                    FROM salidas_materiales s
+                    JOIN control_materiales c ON s.codigo_material = c.codigo_material
+                    LEFT JOIN unidades_materiales u ON s.id_unidad = u.id_unidad
+                    LEFT JOIN estados_materiales es ON s.id_estado_material = es.id_estado_material";
+
+            if ($tieneBusqueda) {
+                $where = " WHERE s.codigo_material ILIKE $1
+                    OR CAST(s.credencial AS TEXT) ILIKE $1
+                    OR c.descripcion_material ILIKE $1
+                    OR COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1
+                    OR COALESCE(es.descripcion_estado_material, 'N/A') ILIKE $1";
+                if ($tieneFolioSalida) {
+                    $where .= " OR COALESCE(s.folio_salida, '') ILIKE $1";
+                }
+                $sqlCount .= $where;
+                $sql .= $where;
+            }
+
+            $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
+            $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
+            $sql .= " ORDER BY s.id_salida DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
+            $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
         } else {
             $sqlCount = "SELECT COUNT(*) AS total
                 FROM salidas_materiales s
-                JOIN control_materiales c ON s.codigo_material = c.codigo_material";
+                JOIN control_materiales c ON s.codigo_material = c.codigo_material
+                LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad";
 
             $selectFolio = 's.codigo_material AS folio_salida,';
             $sql = "SELECT
                         $selectFolio
                         s.credencial,
                         c.descripcion_material,
-                        '' AS unidad,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(e.descripcion_estado_material, 'N/A') AS estado,
                         s.cantidad,
                         s.fecha_registro
                     FROM salidas_materiales s
-                    JOIN control_materiales c ON s.codigo_material = c.codigo_material";
+                    JOIN control_materiales c ON s.codigo_material = c.codigo_material
+                    LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad
+                    LEFT JOIN estados_materiales e ON c.id_estado_material = e.id_estado_material";
 
             if ($tieneBusqueda) {
                 $where = " WHERE s.codigo_material ILIKE $1
                     OR CAST(s.credencial AS TEXT) ILIKE $1
-                    OR c.descripcion_material ILIKE $1";
+                    OR c.descripcion_material ILIKE $1
+                    OR COALESCE(u.descripcion_unidad, 'N/A') ILIKE $1
+                    OR COALESCE(e.descripcion_estado_material, 'N/A') ILIKE $1";
                 $sqlCount .= $where;
                 $sql .= $where;
             }
@@ -154,32 +192,80 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = 
             $sql .= " ORDER BY s.id_salida DESC LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
             $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
         }
-
-        if ($tieneSnapshotMovimiento) {
-            $limitPlaceholder = $tieneBusqueda ? '$2' : '$1';
-            $offsetPlaceholder = $tieneBusqueda ? '$3' : '$2';
-            $sql .= " LIMIT $limitPlaceholder OFFSET $offsetPlaceholder";
-            $params = $tieneBusqueda ? ['%' . $search . '%', $limite, $offset] : [$limite, $offset];
-        }
     } else if ($tipo === 'inventario') {
-        $sql = "SELECT
-                    c.codigo_material,
-                    c.descripcion_material,
-                    COALESCE(c.stock_actual, 0) AS stock_actual,
-                    COALESCE(c.stock_minimo, 0) AS stock_minimo,
-                    COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
-                    COALESCE(cat.nombre_categoria_material, 'N/A') AS categoria,
-                    COALESCE(e.descripcion_estado_material, 'N/A') AS estado,
-                    CASE
-                        WHEN COALESCE(c.stock_actual, 0) <= 0 THEN 'agotado'
-                        WHEN COALESCE(c.stock_actual, 0) <= COALESCE(c.stock_minimo, 0) THEN 'bajo'
-                        ELSE 'disponible'
-                    END AS estatus_stock
-                FROM control_materiales c
-                LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad
-                LEFT JOIN categorias_materiales cat ON c.id_categoria_material = cat.id_categoria_material
-                LEFT JOIN estados_materiales e ON c.id_estado_material = e.id_estado_material
-                ORDER BY c.descripcion_material ASC";
+        $tieneSnapshotEntradas = tablaTieneColumna($conexion, 'entradas_materiales', 'id_unidad');
+        $tieneSnapshotSalidas = tablaTieneColumna($conexion, 'salidas_materiales', 'id_unidad');
+
+        if ($tieneSnapshotEntradas && $tieneSnapshotSalidas) {
+            $sql = "WITH movimientos AS (
+                        SELECT
+                            e.codigo_material,
+                            e.id_unidad,
+                            e.id_estado_material,
+                            e.id_categoria_material,
+                            e.adscripcion,
+                            e.cantidad::numeric AS delta
+                        FROM entradas_materiales e
+                        UNION ALL
+                        SELECT
+                            s.codigo_material,
+                            s.id_unidad,
+                            s.id_estado_material,
+                            s.id_categoria_material,
+                            s.adscripcion,
+                            (-s.cantidad)::numeric AS delta
+                        FROM salidas_materiales s
+                    ), resumen AS (
+                        SELECT
+                            m.codigo_material,
+                            m.id_unidad,
+                            m.id_estado_material,
+                            m.id_categoria_material,
+                            m.adscripcion,
+                            SUM(m.delta) AS stock_actual
+                        FROM movimientos m
+                        GROUP BY m.codigo_material, m.id_unidad, m.id_estado_material, m.id_categoria_material, m.adscripcion
+                    )
+                    SELECT
+                        r.codigo_material,
+                        c.descripcion_material,
+                        COALESCE(r.stock_actual, 0) AS stock_actual,
+                        COALESCE(c.stock_minimo, 0) AS stock_minimo,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(cat.nombre_categoria_material, 'N/A') AS categoria,
+                        COALESCE(es.descripcion_estado_material, 'N/A') AS estado,
+                        CASE
+                            WHEN COALESCE(r.stock_actual, 0) <= 0 THEN 'agotado'
+                            WHEN COALESCE(r.stock_actual, 0) <= COALESCE(c.stock_minimo, 0) THEN 'bajo'
+                            ELSE 'disponible'
+                        END AS estatus_stock
+                    FROM resumen r
+                    JOIN control_materiales c ON r.codigo_material = c.codigo_material
+                    LEFT JOIN unidades_materiales u ON r.id_unidad = u.id_unidad
+                    LEFT JOIN categorias_materiales cat ON r.id_categoria_material = cat.id_categoria_material
+                    LEFT JOIN estados_materiales es ON r.id_estado_material = es.id_estado_material
+                    WHERE COALESCE(r.stock_actual, 0) <> 0
+                    ORDER BY c.descripcion_material ASC, COALESCE(u.descripcion_unidad, 'N/A') ASC";
+        } else {
+            $sql = "SELECT
+                        c.codigo_material,
+                        c.descripcion_material,
+                        COALESCE(c.stock_actual, 0) AS stock_actual,
+                        COALESCE(c.stock_minimo, 0) AS stock_minimo,
+                        COALESCE(u.descripcion_unidad, 'N/A') AS unidad,
+                        COALESCE(cat.nombre_categoria_material, 'N/A') AS categoria,
+                        COALESCE(e.descripcion_estado_material, 'N/A') AS estado,
+                        CASE
+                            WHEN COALESCE(c.stock_actual, 0) <= 0 THEN 'agotado'
+                            WHEN COALESCE(c.stock_actual, 0) <= COALESCE(c.stock_minimo, 0) THEN 'bajo'
+                            ELSE 'disponible'
+                        END AS estatus_stock
+                    FROM control_materiales c
+                    LEFT JOIN unidades_materiales u ON c.id_unidad = u.id_unidad
+                    LEFT JOIN categorias_materiales cat ON c.id_categoria_material = cat.id_categoria_material
+                    LEFT JOIN estados_materiales e ON c.id_estado_material = e.id_estado_material
+                    ORDER BY c.descripcion_material ASC";
+        }
         $params = [];
     } else {
         pg_close($conexion);
@@ -221,7 +307,6 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = 
         return [
             'datos' => $registros,
             'total' => $totalRegistros,
-            'pagina' => $pagina,
             'totalPaginas' => $totalPaginas,
             'limite' => $limite,
         ];

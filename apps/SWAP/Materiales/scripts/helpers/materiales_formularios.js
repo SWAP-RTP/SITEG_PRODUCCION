@@ -4,7 +4,7 @@
         return [unidadSelect, estadoSelect, categoriaSelect].filter(Boolean);
     }
 
-    function setCatalogosAbiertos(selects = {}, abiertos = false) {
+    function CatalogosAbiertos(selects = {}, abiertos = false) {
         const lista = obtenerSelectsCatalogo(selects);
 
         lista.forEach(select => {
@@ -25,7 +25,7 @@
             if (unidadSelect) unidadSelect.value = '';
             if (estadoSelect) estadoSelect.value = '';
             if (categoriaSelect) categoriaSelect.value = '';
-            setCatalogosAbiertos(selects, false);
+            CatalogosAbiertos(selects, false);
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
         }
@@ -39,7 +39,7 @@
                     if (unidadSelect) unidadSelect.value = data.id_unidad || '';
                     if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
                     if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
-                    setCatalogosAbiertos(selects, false);
+                    CatalogosAbiertos(selects, false);
                     global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                     if (callback) callback(data);
                 } else {
@@ -54,7 +54,7 @@
                     if (unidadSelect) unidadSelect.value = '';
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
-                    setCatalogosAbiertos(selects, true);
+                    CatalogosAbiertos(selects, true);
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                     if (callback) callback(null);
                 }
@@ -66,7 +66,7 @@
                 if (unidadSelect) unidadSelect.value = '';
                 if (estadoSelect) estadoSelect.value = '';
                 if (categoriaSelect) categoriaSelect.value = '';
-                setCatalogosAbiertos(selects, true);
+                CatalogosAbiertos(selects, true);
                 console.error('Error:', error);
             });
     }
@@ -95,7 +95,7 @@
             if (unidadSelect) unidadSelect.value = '';
             if (estadoSelect) estadoSelect.value = '';
             if (categoriaSelect) categoriaSelect.value = '';
-            setCatalogosAbiertos(selects, false);
+            CatalogosAbiertos(selects, false);
             bloquearCatalogosInventario(false);
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
@@ -111,7 +111,7 @@
                     if (unidadSelect) unidadSelect.value = data.id_unidad || '';
                     if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
                     if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
-                    setCatalogosAbiertos(selects, false);
+                    CatalogosAbiertos(selects, false);
                     bloquearCatalogosInventario(true);
                     existenciaInput.classList.remove('is-invalid');
                     global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
@@ -122,7 +122,7 @@
                     if (unidadSelect) unidadSelect.value = '';
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
-                    setCatalogosAbiertos(selects, true);
+                    CatalogosAbiertos(selects, true);
                     bloquearCatalogosInventario(false);
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                 }
@@ -134,7 +134,7 @@
                 if (unidadSelect) unidadSelect.value = '';
                 if (estadoSelect) estadoSelect.value = '';
                 if (categoriaSelect) categoriaSelect.value = '';
-                setCatalogosAbiertos(selects, true);
+                CatalogosAbiertos(selects, true);
                 bloquearCatalogosInventario(false);
                 console.error('Error:', error);
             });
@@ -178,7 +178,7 @@
                 categoria: categoriaSelect
             }, cargaCatalogosUrl);
 
-            setCatalogosAbiertos({ unidadSelect, estadoSelect, categoriaSelect }, false);
+            CatalogosAbiertos({ unidadSelect, estadoSelect, categoriaSelect }, false);
         }
 
         const manejadorSeleccionMaterial = alElegirMaterial || onSelectMaterial;

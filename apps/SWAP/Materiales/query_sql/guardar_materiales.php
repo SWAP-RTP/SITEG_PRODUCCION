@@ -22,7 +22,6 @@ function codigoMaterialEsGenerado($conexion) {
               AND table_name = 'control_materiales'
               AND column_name = 'codigo_material'
             LIMIT 1";
-
     $res = @pg_query($conexion, $sql);
     if (!$res) {
         $cache = false;
@@ -92,14 +91,11 @@ function guardarEntrada($conexion, $data) {
         $resExiste = ejecutarQuerySeguro($conexion, $sqlExiste, [$codigoIngresado], 'Error al validar codigo de material');
         $materialExiste = (bool)pg_fetch_assoc($resExiste);
     }
-
     if ($materialExiste) {
         $sqlUpdateInventario = "UPDATE control_materiales
-                                SET stock_actual = stock_actual + $1,
-                                    adscripcion = $2
-                                WHERE codigo_material = $3";
+                                SET adscripcion = $1
+                                WHERE codigo_material = $2";
         $paramsUpdateInventario = [
-            $cantidadEntrada,
             $data['adscripcion'],
             $codigoIngresado
         ];
@@ -116,7 +112,7 @@ function guardarEntrada($conexion, $data) {
                 $data['unidad'],
                 $data['estado'],
                 $data['id_categoria'],
-                $cantidadEntrada,
+                0,
                 0,
                 $data['adscripcion']
             ];
@@ -140,7 +136,7 @@ function guardarEntrada($conexion, $data) {
                 $data['unidad'],
                 $data['estado'],
                 $data['id_categoria'],
-                $cantidadEntrada,
+                0,
                 0,
                 $data['adscripcion']
             ];
@@ -266,9 +262,6 @@ function guardarSalida($conexion, $data) {
     $sqlSalida = 'INSERT INTO salidas_materiales (' . implode(', ', $columnasSalida) . ') VALUES (' . implode(', ', $valoresSalida) . ')';
 
     ejecutarQuerySeguro($conexion, $sqlSalida, $paramsSalida, 'Error al registrar salida');
-
-    $sqlUpdate = "UPDATE control_materiales SET stock_actual = stock_actual - $1 WHERE codigo_material = $2";
-    ejecutarQuerySeguro($conexion, $sqlUpdate, [$cantidadSalida, $data['codigo']], 'Error al actualizar inventario');
 
     if ($advertenciaStock === 'terminado') {
         return ['status' => 'warning', 'message' => 'Atencion: El material se ha terminado con esta salida.'];

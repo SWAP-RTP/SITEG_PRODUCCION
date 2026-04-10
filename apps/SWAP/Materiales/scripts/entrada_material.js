@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const adscripcionSelect = document.getElementById('adscripcion');
+     //es una expresion regular para validar el formato del codigo MA seguido de 8 digitos
     const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
     const materialForm = FormularioMateriales({formId: 'form-entrada-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
@@ -30,14 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const obtenerDatosFormulario = () => ({
-        codigo: materialForm.codigoInput.value.trim(),
-        descripcion: materialForm.descripcionInput.value.trim(),
-        unidad: materialForm.unidadSelect.value,
-        estado: materialForm.estadoSelect.value,
-        cantidad: materialForm.cantidadInput.value.trim(),
-        id_categoria: materialForm.categoriaSelect.value,
-        adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
+    const obtenerDatosFormulario = () => ({codigo: materialForm.codigoInput.value.trim(),descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,estado: materialForm.estadoSelect.value,cantidad: materialForm.cantidadInput.value.trim(),
+        id_categoria: materialForm.categoriaSelect.value,adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
     const normalizarCodigoMA = (valor = '') => {
@@ -99,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         })).json();
-
+//VALIDACIONES Y ENVÍO DE FORMULARIO
     materialForm.formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const datos = obtenerDatosFormulario();
