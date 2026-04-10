@@ -58,7 +58,7 @@
         if (existe) {
             estadoDiv.innerHTML = `<span class="badge bg-success"><i class="bi bi-check-circle"></i> Material encontrado</span>`;
         } else {
-            estadoDiv.innerHTML = `<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle"></i> Material no existe</span>`;
+            estadoDiv.innerHTML = `<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle"></i> Se va ingresar nuevo material</span>`;
         }
     }
 

@@ -235,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholderBusqueda: 'Buscar por folio, codigo o descripcion...',
             columnas: [
                 { header: 'Folio', key: 'folio_entrada' },
-                { header: 'Codigo', key: 'codigo_material' },
                 { header: 'Descripcion', key: 'descripcion_material' },
+                { header: 'Unidad', key: 'unidad' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],
@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholderBusqueda: 'Buscar por folio, codigo o descripcion...',
             columnas: [
                 { header: 'Folio', key: 'folio_salida' },
-                { header: 'Codigo', key: 'codigo_material' },
                 { header: 'Descripcion', key: 'descripcion_material' },
+                { header: 'Unidad', key: 'unidad' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],

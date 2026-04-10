@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const adscripcionSelect = document.getElementById('adscripcion');
+    const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
-    const materialForm = inicializarFormularioMateriales({
+    const materialForm = FormularioMateriales({
         formId: 'form-salida-material',
         codigoInputId: 'codigo',
         descripcionInputId: 'descripcion',
@@ -54,9 +55,45 @@ document.addEventListener('DOMContentLoaded', () => {
         adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
+    const normalizarCodigoMA = (valor = '') => {
+        const limpio = String(valor).toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        if (limpio === '') return '';
+        if (limpio === 'M' || limpio === 'MA') return limpio;
+
+        let digitos = '';
+        if (limpio.startsWith('MA')) {
+            digitos = limpio.slice(2).replace(/\D/g, '');
+        } else {
+            digitos = limpio.replace(/\D/g, '');
+        }
+
+        return `MA${digitos.slice(0, 8)}`;
+    };
+
+    if (materialForm.codigoInput) {
+        materialForm.codigoInput.addEventListener('input', () => {
+            materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
+        });
+    }
+
     const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
 
-    const limpiarFormularioSalida = materialForm.limpiarFormulario;
+    const limpiarEstadoVisualMaterial = () => {
+        if (typeof limpiarBadgeMaterial === 'function') {
+            limpiarBadgeMaterial('estado-material');
+        }
+    };
+
+    const limpiarFormularioSalida = () => {
+        materialForm.limpiarFormulario();
+        limpiarEstadoVisualMaterial();
+    };
+
+    const btnLimpiarSalida = document.getElementById('btn-limpiar-entrada');
+    if (btnLimpiarSalida) {
+        btnLimpiarSalida.addEventListener('click', limpiarEstadoVisualMaterial);
+    }
 
     const confirmarGuardado = () => mostrarAlerta({
         title: '¿Deseas guardar la salida del material?',
@@ -68,10 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const guardarSalida = async (datos) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
         const response = await fetch('query_sql/guardar_materiales.php?tipo=salida', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
+            body: JSON.stringify(datos),
+            signal: controller.signal
+        }).finally(() => {
+            clearTimeout(timeoutId);
         });
 
         const raw = await response.text();
@@ -91,6 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
     materialForm.formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const submitBtn = materialForm.formulario.querySelector('button[type="submit"], button:not([type])');
+        const textoOriginalBtn = submitBtn ? submitBtn.innerHTML : '';
+
         const datos = obtenerDatosFormulario();
 
         if (!camposRequeridosCompletos(datos)) {
@@ -101,6 +147,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonColor: '#3085d6'
             });
             limpiarFormularioSalida();
+            return;
+        }
+
+        if (!CODIGO_MA_REGEX.test(datos.codigo)) {
+            mostrarAlerta({
+                icon: 'warning',
+                title: 'Código inválido',
+                text: 'El código debe tener el formato MA00000001 (MA + 8 dígitos).',
+                confirmButtonColor: '#f39c12'
+            });
+            materialForm.codigoInput.focus();
             return;
         }
 
@@ -116,43 +173,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!result.isConfirmed) return;
 
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
+        }
+
         try {
             const respuesta = await guardarSalida(datos);
             if (respuesta.status === 'ok') {
-                mostrarAlerta({
+                await mostrarAlerta({
                     icon: 'success',
                     title: '¡Éxito!',
                     text: 'La salida fue registrada correctamente.'
                 });
-                materialForm.formulario.reset();
+                limpiarFormularioSalida();
                 return;
             }
 
             if (respuesta.status === 'warning') {
-                mostrarAlerta({
+                await mostrarAlerta({
                     icon: 'warning',
                     title: '¡Atención!',
                     text: respuesta.message,
                     confirmButtonColor: '#f39c12'
                 });
-                materialForm.formulario.reset();
+                limpiarFormularioSalida();
                 return;
             }
 
-            mostrarAlerta({
+            await mostrarAlerta({
                 icon: 'error',
                 title: 'Error',
                 text: respuesta.message || 'Ocurrió un error inesperado.',
                 confirmButtonColor: '#d33'
             });
         } catch (error) {
-            mostrarAlerta({
+            const mensajeError = error.name === 'AbortError'
+                ? 'La solicitud tardo demasiado en responder. Intenta nuevamente.'
+                : (error.message || 'Error de red o respuesta no válida');
+
+            await mostrarAlerta({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'Error de red o respuesta no válida',
+                text: mensajeError,
                 confirmButtonColor: '#d33'
             });
             console.error('Error:', error);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = textoOriginalBtn;
+            }
         }
     });
 

@@ -7,6 +7,7 @@
         const opcionDefault = document.createElement('option');
         opcionDefault.value = '';
         opcionDefault.textContent = 'Seleccione...';
+        opcionDefault.title = 'Seleccione...';
         selectElement.appendChild(opcionDefault);
 
         if (!Array.isArray(data)) return;
@@ -15,7 +16,9 @@
             const item = data[i];
             const option = document.createElement('option');
             option.value = item[campoValue] ?? '';
-            option.textContent = item[campoText] ?? '';
+            const texto = item[campoText] ?? '';
+            option.textContent = texto;
+            option.title = texto;
             selectElement.appendChild(option);
         }
     }

@@ -1,25 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const adscripcionSelect = document.getElementById('adscripcion');
+    const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
-    const materialForm = inicializarFormularioMateriales({
-        formId: 'form-entrada-material',
-        codigoInputId: 'codigo',
-        descripcionInputId: 'descripcion',
-        cantidadInputId: 'cantidad',
-        unidadSelectId: 'unidad',
-        estadoSelectId: 'estado',
-        categoriaSelectId: 'id_categoria',
-        modalMaterialId: 'exampleModalCenter',
-        modalMaterialContenedorId: 'contenedor-materiales-modal',
-        modalMaterialInputId: 'buscar-material-modal-entrada',
-        navPaginacionMaterialId: 'nav-paginacion-materiales',
-        ulPaginacionMaterialId: 'ul-paginacion-materiales',
+    const materialForm = FormularioMateriales({formId: 'form-entrada-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad',estadoSelectId: 'estado',categoriaSelectId: 'id_categoria',modalMaterialId: 'exampleModalCenter',modalMaterialContenedorId: 'contenedor-materiales-modal',
+        modalMaterialInputId: 'buscar-material-modal-entrada',navPaginacionMaterialId: 'nav-paginacion-materiales',ulPaginacionMaterialId: 'ul-paginacion-materiales',
         contenedorTablaId: 'contenedor-tabla-registros',
-        tablaId: 'tabla-registros',
-        btnLimpiarId: 'btn-limpiar-entrada',
-        columnasMaterial: [
-            { header: 'Código', key: 'codigo_material' },
-            { header: 'Descripción', key: 'descripcion_material' }
+        tablaId: 'tabla-registros',btnLimpiarId: 'btn-limpiar-entrada',
+        columnasMaterial: [{ header: 'Código', key: 'codigo_material' },{ header: 'Descripción', key: 'descripcion_material' }
         ],
         alElegirMaterial: (item) => {
             const codigoInput = document.getElementById('codigo');
@@ -52,7 +40,49 @@ document.addEventListener('DOMContentLoaded', () => {
         adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
+    const normalizarCodigoMA = (valor = '') => {
+        const limpio = String(valor).toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        // Permite borrar completamente el campo sin que se reponga automaticamente.
+        if (limpio === '') return '';
+
+        // Permite estados parciales de escritura/borrado del prefijo.
+        if (limpio === 'M' || limpio === 'MA') return limpio;
+
+        let digitos = '';
+        if (limpio.startsWith('MA')) {
+            digitos = limpio.slice(2).replace(/\D/g, '');
+        } else {
+            // Si pega solo numeros, autocompleta prefijo MA.
+            digitos = limpio.replace(/\D/g, '');
+        }
+
+        return `MA${digitos.slice(0, 8)}`;
+    };
+
+    if (materialForm.codigoInput) {
+        materialForm.codigoInput.addEventListener('input', () => {
+            materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
+        });
+    }
+
     const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
+
+    const limpiarEstadoVisualMaterial = () => {
+        if (typeof limpiarBadgeMaterial === 'function') {
+            limpiarBadgeMaterial('estado-material');
+        }
+    };
+
+    const limpiarFormularioEntrada = () => {
+        materialForm.limpiarFormulario();
+        limpiarEstadoVisualMaterial();
+    };
+
+    const btnLimpiarEntrada = document.getElementById('btn-limpiar-entrada');
+    if (btnLimpiarEntrada) {
+        btnLimpiarEntrada.addEventListener('click', limpiarEstadoVisualMaterial);
+    }
 
     const confirmarGuardado = () => mostrarAlerta({
         title: '¿Deseas guardar el material?',
@@ -81,7 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: 'Por favor, llena todos los campos obligatorios.',
                 confirmButtonColor: '#3085d6'
             });
-            materialForm.limpiarFormulario();
+            limpiarFormularioEntrada();
+            return;
+        }
+
+        if (!CODIGO_MA_REGEX.test(datos.codigo)) {
+            mostrarAlerta({
+                icon: 'warning',
+                title: 'Código inválido',
+                text: 'El código debe tener el formato MA00000001 (MA + 8 dígitos).',
+                confirmButtonColor: '#f39c12'
+            });
+            materialForm.codigoInput.focus();
             return;
         }
 
@@ -105,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: '¡Éxito!',
                     text: 'El material fue registrado correctamente'
                 });
-                materialForm.formulario.reset();
+                limpiarFormularioEntrada();
                 return;
             }
 

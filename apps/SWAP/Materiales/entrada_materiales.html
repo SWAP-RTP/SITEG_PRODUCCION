@@ -39,8 +39,9 @@
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Código</label>
                                     <input type="text" class="form-control" id="codigo" name="codigo"
-                                        oninput="this.value = this.value.toUpperCase()" required
-                                        placeholder="Ej: MAT-001">
+                                        oninput="this.value = this.value.toUpperCase()" maxlength="10" required
+                                        pattern="^MA[0-9]{8}$" title="Formato válido: MA00000001"
+                                        placeholder="Ej: MA00000001">
                                     <div id="estado-material" class="mt-1"
                                         style="min-height: 25px; font-size: 0.85rem;"></div>
                                 </div>
@@ -57,7 +58,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="form-label fw-bold">Cantidad</label>
                                     <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"
                                         required>
@@ -65,13 +66,19 @@
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Unidad de Medida</label>
-                                    <select class="form-select" id="unidad" name="unidad" required>
+                                    <select class="form-select catalogo-scroll" id="unidad" name="unidad" size="5" required>
                                         <option value="">Cargando...</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Estado Físico Material</label>
-                                    <select class="form-select" id="estado" name="estado" required>
+                                    <select class="form-select catalogo-scroll" id="estado" name="estado" size="5" required>
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
+                                  <div class="col-md-4">
+                                    <label class="form-label fw-bold">Categoría</label>
+                                    <select class="form-select catalogo-scroll" id="id_categoria" name="id_categoria" size="5" required>
                                         <option value="">Cargando...</option>
                                     </select>
                                 </div>
@@ -86,12 +93,7 @@
                                 </div>
 
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Categoría</label>
-                                    <select class="form-select" id="id_categoria" name="id_categoria" required>
-                                        <option value="">Cargando...</option>
-                                    </select>
-                                </div>
+                              
 
                                 <div class="col-md-12">
                                 </div>
@@ -127,8 +129,8 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>Folio</th>
-                                <th>Código</th>
                                 <th>Descripción</th>
+                                <th>Unidad</th>
                                 <th>Cantidad</th>
                                 <th>Fecha Registro</th>
                             </tr>

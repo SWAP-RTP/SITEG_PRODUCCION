@@ -34,8 +34,8 @@
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Código</label>
                                     <input type="text" class="form-control" id="codigo" name="codigo"
-                                        oninput="this.value = this.value.toUpperCase()" required
-                                        placeholder="Ej: MAT-001">
+                                        oninput="this.value = this.value.toUpperCase()" maxlength="10" required
+                                        placeholder="Ej: MA000000">
                                     <div id="estado-material" class="mt-1"
                                         style="min-height: 25px; font-size: 0.85rem;"></div>
                                 </div>
@@ -50,18 +50,18 @@
                                         </button>
                                     </div>
                                 </div>
+<!-- 
 
-
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="form-label fw-bold">Cantidad</label>
-                                    <input type="number" class="form-control bg-light" id="cantidad" name="cantidad" min="1"
-                                        readonly value="0">
-                                </div>
+                                    <input type="number" class="form-control bg-light" id="cantidad" name="cantidad"
+                                        min="1" readonly value="0">
+                                </div> -->
 
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Unidad de Medida</label>
-                                    <select class="form-select" id="unidad" name="unidad">
+                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="unidad" name="unidad" size="1">
                                         <option value="">Cargando...</option>
                                     </select>
                                 </div>
@@ -69,24 +69,35 @@
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Estado Físico Material</label>
-                                    <select class="form-select" id="estado" name="estado">
+                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="estado" name="estado" size="1">
                                         <option value="">Cargando...</option>
                                     </select>
                                 </div>
 
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Categoría</label>
+                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="id_categoria" name="id_categoria"
+                                        size="1">
+                                        <option value="">Cargando...</option>
+                                    </select>
+                                </div>
 
-                                <div class="row g-3 w-100 mt-1">
+                                <div class="col-12">
+                                <div class="row g-3 mt-1">
                                     <div class="col-md-3">
-                                        <label for="existencia" class="form-label fw-bold text-uppercase">Existencia Actual</label>
+                                        <label for="existencia" class="form-label fw-bold text-uppercase">Existencia
+                                            Actual</label>
                                         <input type="number" class="form-control form-control-sm text-center bg-light"
                                             id="existencia" name="existencia" readonly value="0">
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock Mínimo</label>
+                                        <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock
+                                            Mínimo</label>
                                         <input type="number" class="form-control form-control-sm" id="stock_minimo"
                                             name="stock_minimo" min="0">
                                     </div>
+
 
                                     <div class="col-md-3">
                                         <label class="form-label fw-bold">Adscripcion</label>
@@ -96,12 +107,8 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold">Categoría</label>
-                                        <select class="form-select" id="id_categoria" name="id_categoria">
-                                            <option value="">Cargando...</option>
-                                        </select>
-                                    </div>
+
+                                </div>
                                 </div>
 
 
@@ -138,7 +145,7 @@
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <div>
-                                    <p class="text-muted mb-1 small">Total  de materiales</p>
+                                    <p class="text-muted mb-1 small">Total de materiales</p>
                                     <h4 class="mb-0 fw-bold" id="kpi-total-materiales">0</h4>
                                 </div>
                                 <i class="bi bi-box-seam fs-2 text-primary"></i>
@@ -184,7 +191,8 @@
                     <div class="col-12 col-xl-7">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line me-2"></i>Progreso de Stock General</h6>
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line me-2"></i>Progreso de Stock
+                                    General</h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -193,7 +201,8 @@
                                         <span id="progreso-disponible-texto">0%</span>
                                     </div>
                                     <div class="progress" style="height: 12px;">
-                                        <div id="progreso-disponible" class="progress-bar bg-success" style="width: 0%"></div>
+                                        <div id="progreso-disponible" class="progress-bar bg-success" style="width: 0%">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -211,7 +220,8 @@
                                         <span id="progreso-agotado-texto">0%</span>
                                     </div>
                                     <div class="progress" style="height: 12px;">
-                                        <div id="progreso-agotado" class="progress-bar bg-danger" style="width: 0%"></div>
+                                        <div id="progreso-agotado" class="progress-bar bg-danger" style="width: 0%">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -221,7 +231,8 @@
                     <div class="col-12 col-xl-5">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>Lista de Materiales Críticos</h6>
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>Lista de Materiales
+                                    Críticos</h6>
                             </div>
                             <div class="card-body">
                                 <ul class="list-group list-group-flush" id="lista-criticos-inventario">
@@ -246,7 +257,7 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Código</th>
+                                <th>Folio</th>
                                 <th>Descripción</th>
                                 <th>Categoría</th>
                                 <th>Unidad</th>
@@ -279,13 +290,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <input type="text" class="form-control" id="buscar-material-modal-inventario" placeholder="Buscar por código o descripción...">
+                        <input type="text" class="form-control" id="buscar-material-modal-inventario"
+                            placeholder="Buscar por código o descripción...">
                     </div>
                     <div id="contenedor-materiales-modal">
                         <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
                     </div>
                     <!-- PAGINACIÓN FUNCIONAL -->
-                    <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales" style="display: none;">
+                    <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales"
+                        style="display: none;">
                         <ul class="pagination justify-content-end" id="ul-paginacion-materiales">
                             <!-- Se generará dinámicamente -->
                         </ul>

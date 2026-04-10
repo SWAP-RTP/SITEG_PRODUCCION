@@ -1,4 +1,21 @@
 (function (global) {
+    function obtenerSelectsCatalogo(selects = {}) {
+        const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
+        return [unidadSelect, estadoSelect, categoriaSelect].filter(Boolean);
+    }
+
+    function setCatalogosAbiertos(selects = {}, abiertos = false) {
+        const lista = obtenerSelectsCatalogo(selects);
+
+        lista.forEach(select => {
+            if (!select.classList.contains('catalogo-scroll')) return;
+
+            select.size = abiertos ? 6 : 1;
+            select.classList.toggle('catalogo-scroll-cerrado', !abiertos);
+            select.classList.toggle('catalogo-scroll-abierto', abiertos);
+        });
+    }
+
     function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
 
@@ -8,6 +25,7 @@
             if (unidadSelect) unidadSelect.value = '';
             if (estadoSelect) estadoSelect.value = '';
             if (categoriaSelect) categoriaSelect.value = '';
+            setCatalogosAbiertos(selects, false);
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
         }
@@ -21,6 +39,7 @@
                     if (unidadSelect) unidadSelect.value = data.id_unidad || '';
                     if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
                     if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
+                    setCatalogosAbiertos(selects, false);
                     global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                     if (callback) callback(data);
                 } else {
@@ -35,6 +54,7 @@
                     if (unidadSelect) unidadSelect.value = '';
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
+                    setCatalogosAbiertos(selects, true);
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                     if (callback) callback(null);
                 }
@@ -46,12 +66,27 @@
                 if (unidadSelect) unidadSelect.value = '';
                 if (estadoSelect) estadoSelect.value = '';
                 if (categoriaSelect) categoriaSelect.value = '';
+                setCatalogosAbiertos(selects, true);
                 console.error('Error:', error);
             });
     }
 
     function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
+
+        const bloquearCatalogosInventario = (bloqueados) => {
+            [unidadSelect, estadoSelect, categoriaSelect].forEach(select => {
+                if (!select) return;
+                select.disabled = bloqueados;
+                select.size = bloqueados ? 1 : 5;
+                select.classList.toggle('catalogo-scroll-cerrado', true);
+                select.classList.remove('catalogo-scroll-abierto');
+            });
+
+            if (stockMinimoInput) {
+                stockMinimoInput.readOnly = true;
+            }
+        };
 
         if (!codigo) {
             descripcionInput.value = '';
@@ -60,6 +95,8 @@
             if (unidadSelect) unidadSelect.value = '';
             if (estadoSelect) estadoSelect.value = '';
             if (categoriaSelect) categoriaSelect.value = '';
+            setCatalogosAbiertos(selects, false);
+            bloquearCatalogosInventario(false);
             global.MaterialesAlertas.limpiarBadgeMaterial(estadoDivId);
             return;
         }
@@ -74,6 +111,8 @@
                     if (unidadSelect) unidadSelect.value = data.id_unidad || '';
                     if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
                     if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
+                    setCatalogosAbiertos(selects, false);
+                    bloquearCatalogosInventario(true);
                     existenciaInput.classList.remove('is-invalid');
                     global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                 } else {
@@ -83,6 +122,8 @@
                     if (unidadSelect) unidadSelect.value = '';
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
+                    setCatalogosAbiertos(selects, true);
+                    bloquearCatalogosInventario(false);
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                 }
             })
@@ -93,11 +134,13 @@
                 if (unidadSelect) unidadSelect.value = '';
                 if (estadoSelect) estadoSelect.value = '';
                 if (categoriaSelect) categoriaSelect.value = '';
+                setCatalogosAbiertos(selects, true);
+                bloquearCatalogosInventario(false);
                 console.error('Error:', error);
             });
     }
 
-    function inicializarFormularioMateriales(config) {
+    function FormularioMateriales(config) {
         const {
             formId,
             codigoInputId,
@@ -134,6 +177,8 @@
                 estado: estadoSelect,
                 categoria: categoriaSelect
             }, cargaCatalogosUrl);
+
+            setCatalogosAbiertos({ unidadSelect, estadoSelect, categoriaSelect }, false);
         }
 
         const manejadorSeleccionMaterial = alElegirMaterial || onSelectMaterial;
@@ -184,8 +229,21 @@
         const formulario = document.getElementById(formularioId);
         const btnLimpiar = document.getElementById(btnLimpiarId);
 
+        const cerrarCatalogosDelFormulario = () => {
+            if (!formulario) return;
+
+            const catalogos = formulario.querySelectorAll('.catalogo-scroll');
+            catalogos.forEach(select => {
+                select.disabled = false;
+                select.size = 1;
+                select.classList.remove('catalogo-scroll-abierto');
+                select.classList.add('catalogo-scroll-cerrado');
+            });
+        };
+
         const ejecutarLimpieza = () => {
             if (formulario) formulario.reset();
+            cerrarCatalogosDelFormulario();
             const contenedor = document.getElementById(contenedorTablaId);
             const tabla = document.getElementById(tablaId);
             if (contenedor) contenedor.style.display = 'none';
@@ -202,12 +260,12 @@
     global.MaterialesFormularios = {
         autoCompletarMaterialPorCodigo,
         buscarMaterialParaInventario,
-        inicializarFormularioMateriales,
+        FormularioMateriales,
         limpiarFormularioCompleto
     };
 
     global.autoCompletarMaterialPorCodigo = autoCompletarMaterialPorCodigo;
     global.buscarMaterialParaInventario = buscarMaterialParaInventario;
-    global.inicializarFormularioMateriales = inicializarFormularioMateriales;
+    global.FormularioMateriales = FormularioMateriales;
     global.limpiarFormularioCompleto = limpiarFormularioCompleto;
 })(window);
