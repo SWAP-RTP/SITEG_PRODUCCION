@@ -1,108 +1,165 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const dom = {
-        codigoInput: document.getElementById('codigo'),
-        descripcionInput: document.getElementById('descripcion'),
-        cantidadInput: document.getElementById('cantidad'),
-        unidadSelect: document.getElementById('unidad'),
-        estadoSelect: document.getElementById('estado'),
-        categoriaSelect: document.getElementById('id_categoria'),
-        btnModal: document.getElementById('modal'),
-        modalMaterialBtn: document.getElementById('modal-material'),
-        modalCenter: document.getElementById('exampleModalCenter'),
-        formulario: document.getElementById('form-entrada-material')
-    };
+    const adscripcionSelect = document.getElementById('adscripcion');
+     //es una expresion regular para validar el formato del codigo MA seguido de 8 digitos
+    const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
-    const obtenerDatosFormulario = () => ({
-        codigo: dom.codigoInput.value.trim(),
-        descripcion: dom.descripcionInput.value.trim(),
-        unidad: dom.unidadSelect.value,
-        estado: dom.estadoSelect.value,
-        cantidad: dom.cantidadInput.value.trim(),
-        id_categoria: dom.categoriaSelect.value
+    const materialForm = FormularioMateriales({formId: 'form-entrada-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad',estadoSelectId: 'estado',categoriaSelectId: 'id_categoria',modalMaterialId: 'exampleModalCenter',modalMaterialContenedorId: 'contenedor-materiales-modal',
+        modalMaterialInputId: 'buscar-material-modal-entrada',navPaginacionMaterialId: 'nav-paginacion-materiales',ulPaginacionMaterialId: 'ul-paginacion-materiales',
+        contenedorTablaId: 'contenedor-tabla-registros',
+        tablaId: 'tabla-registros',btnLimpiarId: 'btn-limpiar-entrada',
+        columnasMaterial: [{ header: 'Código', key: 'codigo_material' },{ header: 'Descripción', key: 'descripcion_material' }
+        ],
+        alElegirMaterial: (item) => {
+            const codigoInput = document.getElementById('codigo');
+            const descripcionInput = document.getElementById('descripcion');
+            if (codigoInput) codigoInput.value = item.codigo_material;
+            if (descripcionInput) descripcionInput.value = item.descripcion_material;
+            autoCompletarMaterialPorCodigo(
+                item.codigo_material,
+                descripcionInput,
+                'estado-material',
+                null,
+                {
+                    unidadSelect: materialForm.unidadSelect,
+                    estadoSelect: materialForm.estadoSelect,
+                    categoriaSelect: materialForm.categoriaSelect
+                }
+            );
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
+            if (modal) modal.hide();
+        }
     });
-    //una forma de validar que todos los campos si exiten
-    const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
 
-    // CARGAR CATÁLOGOS
-    cargarYLlenarSelects({unidad: dom.unidadSelect,estado: dom.estadoSelect,categoria: dom.categoriaSelect});
+    const obtenerDatosFormulario = () => ({codigo: materialForm.codigoInput.value.trim(),descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,estado: materialForm.estadoSelect.value,cantidad: materialForm.cantidadInput.value.trim(),
+        id_categoria: materialForm.categoriaSelect.value,adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
+    });
 
-    // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA (es una llamada a la funcion auxiliar)
-    const columnasModal = [
-        { header: 'Código', key: 'codigo_material' },
-        { header: 'Descripción', key: 'descripcion_material' }
-    ];
+    const normalizarCodigoMA = (valor = '') => {
+        const limpio = String(valor).toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-    const onSelectMaterial = (item) => {
-        dom.codigoInput.value = item.codigo_material;
-        dom.descripcionInput.value = item.descripcion_material;
-        const modal = bootstrap.Modal.getInstance(dom.modalCenter);
-        if (modal) modal.hide();
-    };
+        // Permite borrar completamente el campo sin que se reponga automaticamente.
+        if (limpio === '') return '';
 
-    abrirModalConPaginacion('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-entrada',
-        columnasModal, onSelectMaterial, 'nav-paginacion-materiales', 'ul-paginacion-materiales'
-    );
+        // Permite estados parciales de escritura/borrado del prefijo.
+        if (limpio === 'M' || limpio === 'MA') return limpio;
 
-    // EVENTO QUE ACOMPLETA CAMPO Y GUARDA DATOS ORIGINALES
-    const buscarMaterialDebounced = debounce(() => {
-        const codigo = dom.codigoInput.value.trim();
-        buscarMaterialConCallback(codigo, dom.descripcionInput, 'estado-material');
-    }, 300);
-
-    dom.codigoInput.addEventListener('input', buscarMaterialDebounced);
-
-    //VALIDACION Y ENVÍO DEL FORMULARIO
-    dom.formulario.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const datos = obtenerDatosFormulario();
-
-        // Validación de campos
-        if (!camposRequeridosCompletos(datos)) {
-            mostrarAlertaCampos();
-            return;
+        let digitos = '';
+        if (limpio.startsWith('MA')) {
+            digitos = limpio.slice(2).replace(/\D/g, '');
+        } else {
+            // Si pega solo numeros, autocompleta prefijo MA.
+            digitos = limpio.replace(/\D/g, '');
         }
 
-        // Confirmación antes de guardar
-        Swal.fire({
-            title: "¿Deseas guardar el material?",
-            showDenyButton: true,
-            showCancelButton: true,
-            confirmButtonText: "Guardar",
-            denyButtonText: "No guardar"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch('query_sql/guardar_materiales.php?tipo=entrada', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                })
-                    .then(res => res.json())
-                    .then(respuesta => {
-                        if (respuesta.status === 'ok') {
-                            mostrarAlertaExito('El material fue registrado correctamente');
-                            dom.formulario.reset();
-                        } else {
-                            mostrarAlertaError(respuesta.message || 'Error desconocido');
-                        }
-                    })
-                    .catch(error => {
-                        mostrarAlertaError('Error de conexión');
-                        console.error('Error:', error);
-                    });
-            } else if (result.isDenied) {
-                Swal.fire("No se guardó el material", "", "info");
-            }
-        });
-    });
+        return `MA${digitos.slice(0, 8)}`;
+    };
 
-    // EVENTO PARA MODAL 
-    if (dom.btnModal && dom.modalMaterialBtn) {
-        dom.btnModal.addEventListener('click', () => {
-            dom.modalMaterialBtn.click();
+    if (materialForm.codigoInput) {
+        materialForm.codigoInput.addEventListener('input', () => {
+            materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
         });
     }
 
-    //LIMPIAR FORMULARIO
-    limpiarFormularioCompleto('form-entrada-material', 'contenedor-tabla-registros', 'tabla-registros', 'btn-limpiar-entrada');
+    const camposRequeridosCompletos = (datos) => Object.values(datos).every(Boolean);
 
+    const limpiarEstadoVisualMaterial = () => {
+        if (typeof limpiarBadgeMaterial === 'function') {
+            limpiarBadgeMaterial('estado-material');
+        }
+    };
+
+    const limpiarFormularioEntrada = () => {
+        materialForm.limpiarFormulario();
+        limpiarEstadoVisualMaterial();
+    };
+
+    const btnLimpiarEntrada = document.getElementById('btn-limpiar-entrada');
+    if (btnLimpiarEntrada) {
+        btnLimpiarEntrada.addEventListener('click', limpiarEstadoVisualMaterial);
+    }
+
+    const confirmarGuardado = () => mostrarAlerta({
+        title: '¿Deseas guardar el material?',
+        showConfirmButton: true,
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: 'Guardar',
+        denyButtonText: 'No guardar'
+    });
+
+    const guardarEntrada = async (datos) =>
+        (await fetch('query_sql/guardar_materiales.php?tipo=entrada', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        })).json();
+//VALIDACIONES Y ENVÍO DE FORMULARIO
+    materialForm.formulario.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const datos = obtenerDatosFormulario();
+
+        if (!camposRequeridosCompletos(datos)) {
+            mostrarAlerta({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor, llena todos los campos obligatorios.',
+                confirmButtonColor: '#3085d6'
+            });
+            limpiarFormularioEntrada();
+            return;
+        }
+
+        if (!CODIGO_MA_REGEX.test(datos.codigo)) {
+            mostrarAlerta({
+                icon: 'warning',
+                title: 'Código inválido',
+                text: 'El código debe tener el formato MA00000001 (MA + 8 dígitos).',
+                confirmButtonColor: '#f39c12'
+            });
+            materialForm.codigoInput.focus();
+            return;
+        }
+
+        const result = await confirmarGuardado();
+
+        if (result.isDenied) {
+            mostrarAlerta({
+                icon: 'info',
+                title: 'No se guardó el material'
+            });
+            return;
+        }
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const respuesta = await guardarEntrada(datos);
+            if (respuesta.status === 'ok') {
+                mostrarAlerta({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'El material fue registrado correctamente'
+                });
+                limpiarFormularioEntrada();
+                return;
+            }
+
+            mostrarAlerta({
+                icon: 'error',
+                title: 'Error',
+                text: respuesta.message || 'Error desconocido',
+                confirmButtonColor: '#d33'
+            });
+        } catch (error) {
+            mostrarAlerta({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error de conexión',
+                confirmButtonColor: '#d33'
+            });
+            console.error('Error:', error);
+        }
+    });
 });

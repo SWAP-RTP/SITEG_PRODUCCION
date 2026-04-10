@@ -2,79 +2,226 @@
 header('Content-Type: application/json; charset=utf-8');
 require '/var/www/login_shared/conf/conexion.php';
 
+function ejecutarQuerySeguro($conexion, $sql, $params, $mensajeError) {
+    $resultado = @pg_query_params($conexion, $sql, $params);
+    if (!$resultado) {
+        throw new Exception($mensajeError . ': ' . pg_last_error($conexion));
+    }
+    return $resultado;
+}
+
+function codigoMaterialEsGenerado($conexion) {
+    static $cache = null;
+    if ($cache !== null) {
+        return $cache;
+    }
+
+    $sql = "SELECT is_generated
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'control_materiales'
+              AND column_name = 'codigo_material'
+            LIMIT 1";
+    $res = @pg_query($conexion, $sql);
+    if (!$res) {
+        $cache = false;
+        return $cache;
+    }
+
+    $row = pg_fetch_assoc($res);
+    $cache = isset($row['is_generated']) && strtoupper((string)$row['is_generated']) === 'ALWAYS';
+    return $cache;
+}
+
+function tablaTieneColumna($conexion, $tabla, $columna) {
+        $sql = "SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                            AND table_name = $1
+                            AND column_name = $2
+                        LIMIT 1";
+
+        $res = @pg_query_params($conexion, $sql, [$tabla, $columna]);
+        return $res && pg_num_rows($res) > 0;
+}
+
+    function agregarCampoMovimiento(&$columnas, &$valores, &$params, $nombreColumna, $valor) {
+        $columnas[] = $nombreColumna;
+        $valores[] = '$' . (count($params) + 1);
+        $params[] = $valor;
+    }
+
+function esCodigoMAValido($codigo) {
+    return preg_match('/^MA[0-9]{8}$/', (string)$codigo) === 1;
+}
+
 function guardarEntrada($conexion, $data) {
     if (
-        empty($data['codigo']) ||
         empty($data['descripcion']) ||
         empty($data['unidad']) ||
         empty($data['estado']) ||
         empty($data['id_categoria']) ||
-        empty($data['cantidad'])
+        empty($data['cantidad']) ||
+        empty($data['adscripcion'])
     ) {
         return ['status' => 'error', 'message' => 'Datos incompletos para registrar entrada.'];
     }
 
-    $sqlInventario = "INSERT INTO control_materiales
-                        (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual)
-                      VALUES
-                        ($1, $2, $3, $4, $5, $6)
-                      ON CONFLICT (codigo_material) DO UPDATE SET
-                        stock_actual = control_materiales.stock_actual + EXCLUDED.stock_actual";
-
-    $paramsInventario = [
-        $data['codigo'],
-        $data['descripcion'],
-        $data['unidad'],
-        $data['estado'],
-        $data['id_categoria'],
-        intval($data['cantidad'])
-    ];
-
-    $resInventario = pg_query_params($conexion, $sqlInventario, $paramsInventario);
-    if (!$resInventario) {
-        throw new Exception('Error al actualizar inventario: ' . pg_last_error($conexion));
+    $cantidadEntrada = intval($data['cantidad']);
+    if ($cantidadEntrada <= 0) {
+        return ['status' => 'error', 'message' => 'La cantidad de entrada debe ser mayor a 0.'];
     }
 
-    $sqlEntrada = "INSERT INTO entradas_materiales (codigo_material, cantidad) VALUES ($1, $2)";
-    $paramsEntrada = [
-        $data['codigo'],
-        intval($data['cantidad'])
-    ];
+    $codigoIngresado = trim((string)($data['codigo'] ?? ''));
+    $usarCodigoGenerado = codigoMaterialEsGenerado($conexion);
 
-    $resEntrada = pg_query_params($conexion, $sqlEntrada, $paramsEntrada);
-    if (!$resEntrada) {
-        throw new Exception('Error al registrar entrada: ' . pg_last_error($conexion));
+    if (!$usarCodigoGenerado && $codigoIngresado === '') {
+        return ['status' => 'error', 'message' => 'El codigo del material es obligatorio en el esquema actual.'];
     }
 
-    return ['status' => 'ok'];
+    if ($codigoIngresado !== '' && !esCodigoMAValido($codigoIngresado)) {
+        return ['status' => 'error', 'message' => 'El codigo debe tener formato MA00000001 (MA + 8 digitos).'];
+    }
+
+    $codigoMaterialFinal = $codigoIngresado;
+
+    $materialExiste = false;
+    if ($codigoIngresado !== '') {
+        $sqlExiste = "SELECT 1 FROM control_materiales WHERE codigo_material = $1 LIMIT 1";
+        $resExiste = ejecutarQuerySeguro($conexion, $sqlExiste, [$codigoIngresado], 'Error al validar codigo de material');
+        $materialExiste = (bool)pg_fetch_assoc($resExiste);
+    }
+    if ($materialExiste) {
+        $sqlUpdateInventario = "UPDATE control_materiales
+                                SET adscripcion = $1
+                                WHERE codigo_material = $2";
+        $paramsUpdateInventario = [
+            $data['adscripcion'],
+            $codigoIngresado
+        ];
+        ejecutarQuerySeguro($conexion, $sqlUpdateInventario, $paramsUpdateInventario, 'Error al actualizar inventario');
+    } else {
+        if ($usarCodigoGenerado) {
+            $sqlInsertInventario = "INSERT INTO control_materiales
+                                    (descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual, stock_minimo, adscripcion)
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                                    RETURNING codigo_material";
+
+            $paramsInsertInventario = [
+                $data['descripcion'],
+                $data['unidad'],
+                $data['estado'],
+                $data['id_categoria'],
+                0,
+                0,
+                $data['adscripcion']
+            ];
+
+            $resInsert = ejecutarQuerySeguro($conexion, $sqlInsertInventario, $paramsInsertInventario, 'Error al crear material');
+            $rowInsert = pg_fetch_assoc($resInsert);
+            $codigoMaterialFinal = $rowInsert['codigo_material'] ?? '';
+
+            if ($codigoMaterialFinal === '') {
+                throw new Exception('No se pudo obtener el codigo generado del material.');
+            }
+        } else {
+            $sqlInsertInventario = "INSERT INTO control_materiales
+                                    (codigo_material, descripcion_material, id_unidad, id_estado_material, id_categoria_material, stock_actual, stock_minimo, adscripcion)
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                                    RETURNING codigo_material";
+
+            $paramsInsertInventario = [
+                $codigoIngresado,
+                $data['descripcion'],
+                $data['unidad'],
+                $data['estado'],
+                $data['id_categoria'],
+                0,
+                0,
+                $data['adscripcion']
+            ];
+
+            $resInsert = ejecutarQuerySeguro($conexion, $sqlInsertInventario, $paramsInsertInventario, 'Error al crear material');
+            $rowInsert = pg_fetch_assoc($resInsert);
+            $codigoMaterialFinal = $rowInsert['codigo_material'] ?? '';
+
+            if ($codigoMaterialFinal === '') {
+                throw new Exception('No se pudo obtener el codigo final del material.');
+            }
+
+            if ($codigoIngresado !== '' && $codigoMaterialFinal !== $codigoIngresado) {
+                throw new Exception(
+                    'El folio capturado fue reemplazado por la base de datos (' . $codigoMaterialFinal . '). ' .
+                    'Revisa el trigger de control_materiales para permitir codigo manual cuando se capture.'
+                );
+            }
+        }
+    }
+
+    $columnasEntrada = ['codigo_material', 'cantidad'];
+    $valoresEntrada = ['$1', '$2'];
+    $paramsEntrada = [$codigoMaterialFinal, $cantidadEntrada];
+
+    if (tablaTieneColumna($conexion, 'entradas_materiales', 'id_unidad')) {
+        agregarCampoMovimiento($columnasEntrada, $valoresEntrada, $paramsEntrada, 'id_unidad', $data['unidad']);
+    }
+    if (tablaTieneColumna($conexion, 'entradas_materiales', 'id_estado_material')) {
+        agregarCampoMovimiento($columnasEntrada, $valoresEntrada, $paramsEntrada, 'id_estado_material', $data['estado']);
+    }
+    if (tablaTieneColumna($conexion, 'entradas_materiales', 'id_categoria_material')) {
+        agregarCampoMovimiento($columnasEntrada, $valoresEntrada, $paramsEntrada, 'id_categoria_material', $data['id_categoria']);
+    }
+    if (tablaTieneColumna($conexion, 'entradas_materiales', 'adscripcion')) {
+        agregarCampoMovimiento($columnasEntrada, $valoresEntrada, $paramsEntrada, 'adscripcion', $data['adscripcion']);
+    }
+
+    $sqlEntrada = 'INSERT INTO entradas_materiales (' . implode(', ', $columnasEntrada) . ') VALUES (' . implode(', ', $valoresEntrada) . ')';
+
+    ejecutarQuerySeguro($conexion, $sqlEntrada, $paramsEntrada, 'Error al registrar entrada');
+
+    return [
+        'status' => 'ok',
+        'codigo_material' => $codigoMaterialFinal
+    ];
 }
 
 function guardarSalida($conexion, $data) {
     if (
-        empty($data['credencial']) ||
         empty($data['codigo']) ||
         empty($data['cantidad'])
     ) {
         return ['status' => 'error', 'message' => 'Datos incompletos para registrar salida.'];
     }
 
-    $sqlStock = "SELECT stock_actual FROM control_materiales WHERE codigo_material = $1";
-    $resStock = pg_query_params($conexion, $sqlStock, [$data['codigo']]);
-    if (!$resStock) {
-        throw new Exception('Error al consultar stock: ' . pg_last_error($conexion));
+    if (!esCodigoMAValido($data['codigo'])) {
+        return ['status' => 'error', 'message' => 'El codigo debe tener formato MA00000001 (MA + 8 digitos).'];
     }
-
-    $rowStock = pg_fetch_assoc($resStock);
-    $stockActual = $rowStock ? intval($rowStock['stock_actual']) : 0;
 
     $cantidadSalida = intval($data['cantidad']);
+    if ($cantidadSalida <= 0) {
+        return ['status' => 'error', 'message' => 'La cantidad de salida debe ser mayor a 0.'];
+    }
+
+    $sqlStock = "SELECT stock_actual FROM control_materiales WHERE codigo_material = $1";
+    $resStock = ejecutarQuerySeguro($conexion, $sqlStock, [$data['codigo']], 'Error al consultar stock');
+
+    $rowStock = pg_fetch_assoc($resStock);
+    if (!$rowStock) {
+        return ['status' => 'error', 'message' => 'El material no existe en inventario.'];
+    }
+
+    $stockActual = intval($rowStock['stock_actual']);
     $stockDespues = $stockActual - $cantidadSalida;
 
-    $sqlMinimo = "SELECT stock_minimo FROM control_materiales WHERE codigo_material = $1";
-    $resMinimo = pg_query_params($conexion, $sqlMinimo, [$data['codigo']]);
-    if (!$resMinimo) {
-        throw new Exception('Error al consultar stock minimo: ' . pg_last_error($conexion));
+    if ($stockDespues < 0) {
+        return [
+            'status' => 'warning',
+            'message' => 'Stock insuficiente para registrar la salida. Stock actual: ' . $stockActual . '.'
+        ];
     }
+
+    $sqlMinimo = "SELECT stock_minimo FROM control_materiales WHERE codigo_material = $1";
+    $resMinimo = ejecutarQuerySeguro($conexion, $sqlMinimo, [$data['codigo']], 'Error al consultar stock minimo');
 
     $rowMinimo = pg_fetch_assoc($resMinimo);
     $stockMinimo = $rowMinimo ? intval($rowMinimo['stock_minimo']) : 0;
@@ -86,23 +233,35 @@ function guardarSalida($conexion, $data) {
         $advertenciaStock = 'por_terminarse';
     }
 
-    $sqlSalida = "INSERT INTO salidas_materiales (credencial, codigo_material, cantidad) VALUES ($1, $2, $3)";
+    $credencialSalida = trim((string)($data['credencial'] ?? ''));
+    if ($credencialSalida === '') {
+        $credencialSalida = null;
+    }
+
+    $columnasSalida = ['credencial', 'codigo_material', 'cantidad'];
+    $valoresSalida = ['$1', '$2', '$3'];
     $paramsSalida = [
-        $data['credencial'],
+        $credencialSalida,
         $data['codigo'],
         $cantidadSalida
     ];
 
-    $resSalida = pg_query_params($conexion, $sqlSalida, $paramsSalida);
-    if (!$resSalida) {
-        throw new Exception('Error al registrar salida: ' . pg_last_error($conexion));
+    if (tablaTieneColumna($conexion, 'salidas_materiales', 'id_unidad')) {
+        agregarCampoMovimiento($columnasSalida, $valoresSalida, $paramsSalida, 'id_unidad', $data['unidad']);
+    }
+    if (tablaTieneColumna($conexion, 'salidas_materiales', 'id_estado_material')) {
+        agregarCampoMovimiento($columnasSalida, $valoresSalida, $paramsSalida, 'id_estado_material', $data['estado']);
+    }
+    if (tablaTieneColumna($conexion, 'salidas_materiales', 'id_categoria_material')) {
+        agregarCampoMovimiento($columnasSalida, $valoresSalida, $paramsSalida, 'id_categoria_material', $data['id_categoria']);
+    }
+    if (tablaTieneColumna($conexion, 'salidas_materiales', 'adscripcion')) {
+        agregarCampoMovimiento($columnasSalida, $valoresSalida, $paramsSalida, 'adscripcion', $data['adscripcion']);
     }
 
-    $sqlUpdate = "UPDATE control_materiales SET stock_actual = stock_actual - $1 WHERE codigo_material = $2";
-    $resUpdate = pg_query_params($conexion, $sqlUpdate, [$cantidadSalida, $data['codigo']]);
-    if (!$resUpdate) {
-        throw new Exception('Error al actualizar inventario: ' . pg_last_error($conexion));
-    }
+    $sqlSalida = 'INSERT INTO salidas_materiales (' . implode(', ', $columnasSalida) . ') VALUES (' . implode(', ', $valoresSalida) . ')';
+
+    ejecutarQuerySeguro($conexion, $sqlSalida, $paramsSalida, 'Error al registrar salida');
 
     if ($advertenciaStock === 'terminado') {
         return ['status' => 'warning', 'message' => 'Atencion: El material se ha terminado con esta salida.'];

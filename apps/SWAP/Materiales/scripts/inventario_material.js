@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     const codigoInput = document.getElementById('codigo');
     const descripcionInput = document.getElementById('descripcion');
-    const existenciaInput = document.getElementById('existencia'); 
+    const cantidadInput = document.getElementById('cantidad');
+    const unidadSelect = document.getElementById('unidad');
+    const estadoSelect = document.getElementById('estado');
+    const categoriaSelect = document.getElementById('id_categoria');
+    const existenciaInput = document.getElementById('existencia');
     const stockMinimoInput = document.getElementById('stock_minimo');
     const formInventario = document.getElementById('form-inventario-material');
     const tablaInventario = document.getElementById('tabla-inventario');
@@ -23,6 +27,18 @@ document.addEventListener('DOMContentLoaded', function () {
     let inventarioCompleto = [];
     let paginaInventarioActual = 1;
     let limiteInventario = 5;
+    const limpiarFormularioInventario = limpiarFormularioCompleto(
+        'form-inventario-material',
+        'contenedor-tabla-inventario',
+        'tabla-inventario',
+        'btn-limpiar-inventario'
+    );
+
+    cargarYLlenarSelects({
+        unidad: unidadSelect,
+        estado: estadoSelect,
+        categoria: categoriaSelect
+    });
 
     // CREAR ELEMENTO PARA MOSTRAR ADVERTENCIA DE STOCK BAJO
     let advertenciaExistencia = document.getElementById('advertencia-existencia');
@@ -38,13 +54,18 @@ document.addEventListener('DOMContentLoaded', function () {
         formInventario.addEventListener('reset', function () {
             existenciaInput.classList.remove('is-invalid');
             if (advertenciaExistencia) advertenciaExistencia.textContent = '';
+            if (cantidadInput) cantidadInput.value = 0;
         });
     }
 
     // BUSCAR MATERIAL Y AUTOCOMPLETAR CAMPOS
     codigoInput.addEventListener('input', debounce(() => {
         const codigo = codigoInput.value.trim();
-        buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material');
+        buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material', {
+            unidadSelect,
+            estadoSelect,
+            categoriaSelect
+        });
     }, 300));
 
     // VALIDAR STOCK ACTUAL vs STOCK MÍNIMO
@@ -261,6 +282,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (formInventario) {
         formInventario.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            const codigo = codigoInput.value.trim();
+            const descripcion = descripcionInput.value.trim();
+            const stockMinimo = stockMinimoInput.value.trim();
+            const hayCapturaParcial = Boolean(codigo || descripcion || stockMinimo);
+            const camposClaveCompletos = Boolean(codigo && descripcion);
+
+            if (hayCapturaParcial && !camposClaveCompletos) {
+                mostrarAlerta({
+                    icon: 'warning',
+                    title: 'Campos incompletos',
+                    text: 'Para consultar por material, captura código y descripción.',
+                    confirmButtonColor: '#3085d6'
+                });
+                limpiarFormularioInventario();
+                return;
+            }
+
             consultarInventarioCompleto();
         });
     }
@@ -275,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ABRIR MODAL DE MATERIALES CON PAGINACIÓN Y BÚSQUEDA
-    abrirModalConPaginacion('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-inventario',
+    BuscarModal('exampleModalCenter', 'contenedor-materiales-modal', 'materiales', 'buscar-material-modal-inventario',
         [
             { header: 'Código', key: 'codigo_material' },
             { header: 'Descripción', key: 'descripcion_material' }
@@ -283,14 +322,16 @@ document.addEventListener('DOMContentLoaded', function () {
         (item) => {
             codigoInput.value = item.codigo_material;
             descripcionInput.value = item.descripcion_material;
-            buscarMaterialParaInventario(item.codigo_material, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material');
+            buscarMaterialParaInventario(item.codigo_material, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material', {
+                unidadSelect,
+                estadoSelect,
+                categoriaSelect
+            });
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
             if (modal) modal.hide();
         },
         'nav-paginacion-materiales',
         'ul-paginacion-materiales'
     );
-
-    limpiarFormularioCompleto('form-inventario-material', 'contenedor-tabla-inventario', 'tabla-inventario', 'btn-limpiar-inventario');
 
 });

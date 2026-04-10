@@ -1,4 +1,4 @@
-function inicializarConsultaRegistros(config) {
+function ConsultaRegistros(config) {
     const {
         botonId,
         tablaBodyId,
@@ -6,6 +6,7 @@ function inicializarConsultaRegistros(config) {
         endpoint,
         columnas,
         limite = 10,
+        placeholderBusqueda = 'Buscar registros...',
         mensajeVacio = 'No hay resultados.'
     } = config;
 
@@ -17,8 +18,68 @@ function inicializarConsultaRegistros(config) {
 
     let paginaActual = 1;
     let totalPaginas = 1;
+    let terminoBusqueda = '';
+    let timeoutBusqueda = null;
+    let ultimaBusquedaSinResultados = '';
 
     const paginacionId = `paginacion-${tablaBodyId}`;
+    const busquedaId = `busqueda-${tablaBodyId}`;
+
+    function obtenerInputBusqueda() {
+        let input = document.getElementById(busquedaId);
+        if (!input) {
+            const contenedorBusqueda = document.createElement('div');
+            contenedorBusqueda.className = 'mb-3 d-flex justify-content-end';
+
+            input = document.createElement('input');
+            input.id = busquedaId;
+            input.type = 'text';
+            input.className = 'form-control form-control-sm';
+            input.style.maxWidth = '340px';
+            input.style.textTransform = 'uppercase';
+            input.placeholder = placeholderBusqueda;
+
+            const normalizarMayusculas = () => {
+                const valorMayusculas = input.value.toUpperCase();
+                if (input.value !== valorMayusculas) {
+                    input.value = valorMayusculas;
+                }
+                return valorMayusculas.trim();
+            };
+
+            input.addEventListener('paste', () => {
+                setTimeout(() => {
+                    terminoBusqueda = normalizarMayusculas();
+                    paginaActual = 1;
+                    clearTimeout(timeoutBusqueda);
+                    timeoutBusqueda = setTimeout(() => {
+                        cargarPagina(1);
+                    }, 300);
+                }, 0);
+            });
+
+            input.addEventListener('input', () => {
+                terminoBusqueda = normalizarMayusculas();
+                paginaActual = 1;
+
+                clearTimeout(timeoutBusqueda);
+                timeoutBusqueda = setTimeout(() => {
+                    cargarPagina(1);
+                }, 300);
+            });
+
+            const contenedorPrincipal = contenedorTabla.querySelector('.card-body') || contenedorTabla;
+            const referencia = contenedorPrincipal.querySelector('.table-responsive') || null;
+            contenedorBusqueda.appendChild(input);
+
+            if (referencia) {
+                contenedorPrincipal.insertBefore(contenedorBusqueda, referencia);
+            } else {
+                contenedorPrincipal.appendChild(contenedorBusqueda);
+            }
+        }
+        return input;
+    }
 
     function obtenerContenedorPaginacion() {
         let nav = document.getElementById(paginacionId);
@@ -36,8 +97,23 @@ function inicializarConsultaRegistros(config) {
     function renderTabla(datos) {
         if (!Array.isArray(datos) || datos.length === 0) {
             tablaBody.innerHTML = `<tr><td colspan="${columnas.length}" class="text-center">${mensajeVacio}</td></tr>`;
+
+            if (terminoBusqueda && terminoBusqueda !== ultimaBusquedaSinResultados) {
+                ultimaBusquedaSinResultados = terminoBusqueda;
+                if (typeof mostrarAlerta === 'function') {
+                    mostrarAlerta({
+                        icon: 'info',
+                        title: 'Sin coincidencias',
+                        text: `No existen registros para "${terminoBusqueda}".`,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            }
+
             return;
         }
+
+        ultimaBusquedaSinResultados = '';
 
         let html = '';
         datos.forEach(item => {
@@ -100,7 +176,7 @@ function inicializarConsultaRegistros(config) {
 
     function construirUrlConPagina(pagina) {
         const sep = endpoint.includes('?') ? '&' : '?';
-        return `${endpoint}${sep}pagina=${pagina}&limite=${limite}`;
+        return `${endpoint}${sep}pagina=${pagina}&limite=${limite}&search=${encodeURIComponent(terminoBusqueda)}`;
     }
 
     function cargarPagina(pagina) {
@@ -134,9 +210,16 @@ function inicializarConsultaRegistros(config) {
     }
 
     btnConsultar.addEventListener('click', () => {
+        obtenerInputBusqueda();
         paginaActual = 1;
+        ultimaBusquedaSinResultados = '';
         cargarPagina(1);
     });
+}
+
+// Alias retrocompatible para no afectar llamadas existentes
+function inicializarConsultaRegistros(config) {
+    return ConsultaRegistros(config);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -144,15 +227,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (
         document.getElementById('btn-consultar-entradas') && document.getElementById('tabla-registros') && document.getElementById('contenedor-tabla-registros')
     ) {
-        inicializarConsultaRegistros({
+        ConsultaRegistros({
             botonId: 'btn-consultar-entradas',
             tablaBodyId: 'tabla-registros',
             contenedorId: 'contenedor-tabla-registros',
             endpoint: 'query_sql/consultas_materiales.php?tipo=entrada',
+            placeholderBusqueda: 'Buscar por folio, codigo o descripcion...',
             columnas: [
                 { header: 'Folio', key: 'folio_entrada' },
-                { header: 'Codigo', key: 'codigo_material' },
                 { header: 'Descripcion', key: 'descripcion_material' },
+                { header: 'Unidad', key: 'unidad' },
+                { header: 'Estado Fisico', key: 'estado' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],
@@ -167,15 +252,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('tabla-salidas') &&
         document.getElementById('contenedor-tabla-salidas')
     ) {
-        inicializarConsultaRegistros({
+        ConsultaRegistros({
             botonId: 'btn-consultar-salidas',
             tablaBodyId: 'tabla-salidas',
             contenedorId: 'contenedor-tabla-salidas',
             endpoint: 'query_sql/consultas_materiales.php?tipo=salida',
+            placeholderBusqueda: 'Buscar por folio, codigo o descripcion...',
             columnas: [
-                { header: 'Credencial', key: 'credencial' },
-                { header: 'Codigo', key: 'codigo_material' },
+                { header: 'Folio', key: 'folio_salida' },
                 { header: 'Descripcion', key: 'descripcion_material' },
+                { header: 'Unidad', key: 'unidad' },
+                { header: 'Estado Fisico', key: 'estado' },
                 { header: 'Cantidad', key: 'cantidad' },
                 { header: 'Fecha Registro', key: 'fecha_registro' }
             ],

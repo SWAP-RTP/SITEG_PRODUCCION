@@ -1,0 +1,15 @@
+(function (global) {
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    global.MaterialesUtils = {
+        debounce
+    };
+
+    global.debounce = debounce;
+})(window);
