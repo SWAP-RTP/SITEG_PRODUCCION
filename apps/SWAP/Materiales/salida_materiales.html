@@ -66,14 +66,17 @@
                                 <div id="estado-material" class="mt-1" style="min-height: 25px; font-size: 0.85rem;">
                                 </div>
                             </div>
-                            <div class="col-md-9">
+                            <div class="col-md-9 position-relative">
                                 <label class="form-label fw-bold">Descripción del Material</label>
-                                <div class="input-group">
+                                <div class="input-group align-items-center">
                                     <input type="text" class="form-control" id="descripcion" name="descripcion"
                                         oninput="this.value = this.value.toUpperCase()" required>
                                     <button class="btn btn-primary" type="button" id="modal-material"
                                         data-bs-toggle="modal" data-bs-target="#modalMaterial">
                                         <i class="bi bi-search"></i>
+                                    </button>
+                                    <button type="button" class="btn p-0 ms-2" id="ayuda-salida" style="background: none; border: none; outline: none;">
+                                        <i class="bi bi-question-circle-fill text-warning fs-4" title="Ayuda"></i>
                                     </button>
                                 </div>
                             </div>
@@ -190,6 +193,36 @@
             </div>
         </div>
 
+    <!-- Modal de ayuda salida -->
+    <div class="modal fade" id="modalAyudaSalida" tabindex="-1" aria-labelledby="modalAyudaSalidaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning-subtle">
+                    <h5 class="modal-title" id="modalAyudaSalidaLabel"><i class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda para registro de salida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li>Selecciona un material con stock disponible.</li>
+                        <li>Usa el botón de búsqueda <i class='bi bi-search'></i> para elegir el material.</li>
+                        <li>Ingresa la cantidad a retirar (debe ser mayor a 0 y no superar el stock).</li>
+                        <li>Guarda para registrar la salida. Si el material se agota, aparecerá como agotado en inventario.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ayudaBtn = document.getElementById('ayuda-salida');
+            if (ayudaBtn) {
+                ayudaBtn.addEventListener('click', function () {
+                    var modal = new bootstrap.Modal(document.getElementById('modalAyudaSalida'));
+                    modal.show();
+                });
+            }
+        });
+    </script>
     </main>
     <!-- Modal de trabajadores desactivado temporalmente por solicitud -->
 
@@ -199,7 +232,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
                     <h5 class="modal-title" id="modalMaterialTitle">
-                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
+                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales de salida
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Cerrar"></button>

@@ -16,10 +16,11 @@
         });
     }
 
+
     function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
-
-        if (!codigo) {
+        // Solo continuar si el código es MA+8 dígitos
+        if (!/^MA\d{8}$/.test(codigo)) {
             descripcionInput.value = '';
             delete descripcionInput.dataset.autodescripcion;
             if (unidadSelect) unidadSelect.value = '';
@@ -33,6 +34,8 @@
         fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(codigo))
             .then(res => res.json())
             .then(data => {
+                // Obtener el input de cantidad si está disponible
+                const cantidadInput = selects && selects.cantidadInput ? selects.cantidadInput : (window.materialForm && window.materialForm.cantidadInput ? window.materialForm.cantidadInput : null);
                 if (data.descripcion_material) {
                     descripcionInput.value = data.descripcion_material;
                     descripcionInput.dataset.autodescripcion = data.descripcion_material;
@@ -40,6 +43,12 @@
                     if (estadoSelect) estadoSelect.value = data.id_estado_material || '';
                     if (categoriaSelect) categoriaSelect.value = data.id_categoria_material || '';
                     CatalogosAbiertos(selects, false);
+                    if (cantidadInput) {
+                        cantidadInput.disabled = false;
+                        if (typeof data.stock_actual !== 'undefined' && data.stock_actual !== null) {
+                            cantidadInput.value = data.stock_actual;
+                        }
+                    }
                     global.MaterialesAlertas.mostrarBadgeExistencia(estadoDivId, true);
                     if (callback) callback(data);
                 } else {
@@ -55,11 +64,13 @@
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
                     CatalogosAbiertos(selects, true);
+                    if (cantidadInput) cantidadInput.disabled = false;
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                     if (callback) callback(null);
                 }
             })
             .catch(error => {
+                const cantidadInput = selects && selects.cantidadInput ? selects.cantidadInput : (window.materialForm && window.materialForm.cantidadInput ? window.materialForm.cantidadInput : null);
                 if (!(descripcionInput.value || '').trim()) {
                     descripcionInput.value = '';
                 }
@@ -67,9 +78,11 @@
                 if (estadoSelect) estadoSelect.value = '';
                 if (categoriaSelect) categoriaSelect.value = '';
                 CatalogosAbiertos(selects, true);
+                if (cantidadInput) cantidadInput.disabled = false;
                 console.error('Error:', error);
             });
     }
+
 
     function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
@@ -88,7 +101,8 @@
             }
         };
 
-        if (!codigo) {
+        // Solo continuar si el código es MA+8 dígitos
+        if (!/^MA\d{8}$/.test(codigo)) {
             descripcionInput.value = '';
             existenciaInput.value = 0;
             if (stockMinimoInput) stockMinimoInput.value = '';
@@ -123,7 +137,12 @@
                     if (estadoSelect) estadoSelect.value = '';
                     if (categoriaSelect) categoriaSelect.value = '';
                     CatalogosAbiertos(selects, true);
-                    bloquearCatalogosInventario(false);
+                    // Habilitar selects cuando el material no existe
+                    [unidadSelect, estadoSelect, categoriaSelect].forEach(select => {
+                        if (!select) return;
+                        select.disabled = false;
+                    });
+                    if (stockMinimoInput) stockMinimoInput.readOnly = false;
                     global.MaterialesAlertas.notificarMaterialNuevo(estadoDivId);
                 }
             })
@@ -184,10 +203,17 @@
         const manejadorSeleccionMaterial = alElegirMaterial || onSelectMaterial;
 
         if (modalMaterialId && modalMaterialContenedorId && modalMaterialInputId && manejadorSeleccionMaterial) {
+            // Detectar tipo de formulario por id para decidir el tipo del modal
+            let tipoModal = 'materiales';
+            if (formId && formId.includes('entrada')) {
+                tipoModal = 'entradas';
+            } else if (formId && formId.includes('salida')) {
+                tipoModal = 'salidas';
+            }
             global.MaterialesModal.BuscarModal(
                 modalMaterialId,
                 modalMaterialContenedorId,
-                'materiales',
+                tipoModal,
                 modalMaterialInputId,
                 columnasMaterial,
                 manejadorSeleccionMaterial,

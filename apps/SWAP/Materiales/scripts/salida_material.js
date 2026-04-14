@@ -35,8 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!materialForm.formulario) return;
 
-    const obtenerDatosFormulario = () => ({codigo: materialForm.codigoInput.value.trim(),descripcion: materialForm.descripcionInput.value.trim(),
-        unidad: materialForm.unidadSelect.value,estado: materialForm.estadoSelect.value,cantidad: materialForm.cantidadInput.value.trim(),id_categoria: materialForm.categoriaSelect.value,
+    const obtenerDatosFormulario = () => ({
+        codigo: materialForm.codigoInput.value.trim(),
+        descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,
+        estado: materialForm.estadoSelect.value,
+        cantidad: materialForm.cantidadInput.value.trim(),
+        id_categoria: materialForm.categoriaSelect.value,
         adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
@@ -59,6 +64,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (materialForm.codigoInput) {
         materialForm.codigoInput.addEventListener('input', () => {
             materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
+            const codigo = materialForm.codigoInput.value.trim();
+            if (/^MA\d{8}$/.test(codigo)) {
+                autoCompletarMaterialPorCodigo(
+                    codigo,
+                    materialForm.descripcionInput,
+                    'estado-material',
+                    null,
+                    {
+                        unidadSelect: materialForm.unidadSelect,
+                        estadoSelect: materialForm.estadoSelect,
+                        categoriaSelect: materialForm.categoriaSelect
+                    }
+                );
+            } else {
+                // Si el código no es válido, limpiar y cerrar catálogos
+                materialForm.descripcionInput.value = '';
+                if (materialForm.unidadSelect) materialForm.unidadSelect.value = '';
+                if (materialForm.estadoSelect) materialForm.estadoSelect.value = '';
+                if (materialForm.categoriaSelect) materialForm.categoriaSelect.value = '';
+                if (window.CatalogosAbiertos) {
+                    CatalogosAbiertos({
+                        unidadSelect: materialForm.unidadSelect,
+                        estadoSelect: materialForm.estadoSelect,
+                        categoriaSelect: materialForm.categoriaSelect
+                    }, false);
+                }
+            }
         });
     }
 

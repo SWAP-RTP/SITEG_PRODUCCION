@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     unidadSelect: materialForm.unidadSelect,
                     estadoSelect: materialForm.estadoSelect,
-                    categoriaSelect: materialForm.categoriaSelect
+                    categoriaSelect: materialForm.categoriaSelect,
+                    cantidadInput: materialForm.cantidadInput
                 }
             );
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
@@ -59,6 +60,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (materialForm.codigoInput) {
         materialForm.codigoInput.addEventListener('input', () => {
             materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
+            const codigo = materialForm.codigoInput.value.trim();
+            if (/^MA\d{8}$/.test(codigo)) {
+                autoCompletarMaterialPorCodigo(
+                    codigo,
+                    materialForm.descripcionInput,
+                    'estado-material',
+                    null,
+                    {
+                        unidadSelect: materialForm.unidadSelect,
+                        estadoSelect: materialForm.estadoSelect,
+                        categoriaSelect: materialForm.categoriaSelect,
+                        cantidadInput: materialForm.cantidadInput
+                    }
+                );
+            } else {
+                // Si el código no es válido, limpiar y cerrar catálogos
+                materialForm.descripcionInput.value = '';
+                if (materialForm.unidadSelect) materialForm.unidadSelect.value = '';
+                if (materialForm.estadoSelect) materialForm.estadoSelect.value = '';
+                if (materialForm.categoriaSelect) materialForm.categoriaSelect.value = '';
+                if (window.CatalogosAbiertos) {
+                    CatalogosAbiertos({
+                        unidadSelect: materialForm.unidadSelect,
+                        estadoSelect: materialForm.estadoSelect,
+                        categoriaSelect: materialForm.categoriaSelect
+                    }, false);
+                }
+                if (materialForm.cantidadInput) materialForm.cantidadInput.value = '';
+            }
         });
     }
 
@@ -100,7 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const datos = obtenerDatosFormulario();
 
-        if (!camposRequeridosCompletos(datos)) {
+        // Permitir código vacío o válido
+        const datosSinCodigo = Object.assign({}, datos);
+        delete datosSinCodigo.codigo;
+        if (!camposRequeridosCompletos(datosSinCodigo)) {
             mostrarAlerta({
                 icon: 'warning',
                 title: 'Campos incompletos',
@@ -111,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (!CODIGO_MA_REGEX.test(datos.codigo)) {
+        if (datos.codigo && !CODIGO_MA_REGEX.test(datos.codigo)) {
             mostrarAlerta({
                 icon: 'warning',
                 title: 'Código inválido',
