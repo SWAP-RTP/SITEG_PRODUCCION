@@ -61,11 +61,28 @@ document.addEventListener('DOMContentLoaded', function () {
     // BUSCAR MATERIAL Y AUTOCOMPLETAR CAMPOS
     codigoInput.addEventListener('input', debounce(() => {
         const codigo = codigoInput.value.trim();
-        buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material', {
-            unidadSelect,
-            estadoSelect,
-            categoriaSelect
-        });
+        if (/^MA\d{8}$/.test(codigo)) {
+            buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, 'estado-material', {
+                unidadSelect,
+                estadoSelect,
+                categoriaSelect
+            });
+        } else {
+            // Si el código no es válido, limpiar y cerrar catálogos
+            descripcionInput.value = '';
+            existenciaInput.value = 0;
+            if (stockMinimoInput) stockMinimoInput.value = '';
+            if (unidadSelect) unidadSelect.value = '';
+            if (estadoSelect) estadoSelect.value = '';
+            if (categoriaSelect) categoriaSelect.value = '';
+            if (window.CatalogosAbiertos) {
+                CatalogosAbiertos({
+                    unidadSelect,
+                    estadoSelect,
+                    categoriaSelect
+                }, false);
+            }
+        }
     }, 300));
 
     // VALIDAR STOCK ACTUAL vs STOCK MÍNIMO
@@ -160,11 +177,15 @@ document.addEventListener('DOMContentLoaded', function () {
         let html = '';
         datos.forEach(item => {
             const estatus = String(item.estatus_stock || '').toLowerCase();
-            const estiloCelda = (estatus === 'bajo')
-                ? 'style="background-color:#ffd6d6 !important;color:#7a0010 !important;font-weight:600;"'
-                : '';
+            let estiloCelda = '';
+            let claseFila = '';
+            if (estatus === 'agotado') {
+                claseFila = 'table-danger fw-bold';
+            } else if (estatus === 'bajo') {
+                estiloCelda = 'style="background-color:#ffd6d6 !important;color:#7a0010 !important;font-weight:600;"';
+            }
 
-            html += `<tr>
+            html += `<tr class="${claseFila}">
                 <td ${estiloCelda}>${item.codigo_material || ''}</td>
                 <td ${estiloCelda}>${item.descripcion_material || ''}</td>
                 <td ${estiloCelda}>${item.categoria || ''}</td>

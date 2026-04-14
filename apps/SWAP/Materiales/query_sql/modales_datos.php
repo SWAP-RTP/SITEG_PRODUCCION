@@ -93,8 +93,54 @@ try {
             ? pg_query($conexion, $selectSql)
             : pg_query_params($conexion, $selectSql, $sqlParams);
 
+    } elseif ($tipo === 'entradas') {
+        // JOIN para obtener descripcion_material desde control_materiales
+        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material";
+        $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
+        $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e";
+        if (!empty($search)) {
+            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
+            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $params[] = "%$search%";
+        }
+        $countResult = empty($params)
+            ? pg_query($conexion, $countSql)
+            : pg_query_params($conexion, $countSql, $params);
+        if ($countResult) {
+            $countRow = pg_fetch_assoc($countResult);
+            $total = (int)$countRow['total'];
+        }
+        $sqlParams = $params;
+        $selectSql .= " ORDER BY e.id_entrada DESC LIMIT $limit OFFSET $offset";
+        $result = empty($sqlParams)
+            ? pg_query($conexion, $selectSql)
+            : pg_query_params($conexion, $selectSql, $sqlParams);
+    } elseif ($tipo === 'salidas') {
+        // Mostrar los movimientos de entradas_materiales con JOIN al catálogo para descripción (igual que entradas)
+        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material";
+        $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
+        $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e";
+        if (!empty($search)) {
+            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
+            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $params[] = "%$search%";
+        }
+        $countResult = empty($params)
+            ? pg_query($conexion, $countSql)
+            : pg_query_params($conexion, $countSql, $params);
+        if ($countResult) {
+            $countRow = pg_fetch_assoc($countResult);
+            $total = (int)$countRow['total'];
+        }
+        $sqlParams = $params;
+        $selectSql .= " ORDER BY e.id_entrada DESC LIMIT $limit OFFSET $offset";
+        $result = empty($sqlParams)
+            ? pg_query($conexion, $selectSql)
+            : pg_query_params($conexion, $selectSql, $sqlParams);
     } else {
-        throw new Exception("Tipo de modal no válido: $tipo. Use 'trabajadores' o 'materiales'");
+        throw new Exception("Tipo de modal no válido: $tipo. Use 'trabajadores', 'materiales', 'entradas' o 'salidas'");
     }
 
     if (!$result) {

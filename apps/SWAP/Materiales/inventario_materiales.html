@@ -41,14 +41,47 @@
                                 </div>
                                 <div class="col-md-9">
                                     <label class="form-label fw-bold">Descripción del Material</label>
-                                    <div class="input-group">
+                                    <div class="input-group align-items-center">
                                         <input type="text" class="form-control" id="descripcion" name="descripcion"
                                             oninput="this.value = this.value.toUpperCase()" required>
                                         <button class="btn btn-primary" type="button" id="modal-material"
                                             data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
                                             <i class="bi bi-search"></i>
                                         </button>
+                                        <button type="button" class="btn p-0 ms-2" id="ayuda-inventario" style="background: none; border: none; outline: none;">
+                                            <i class="bi bi-question-circle-fill text-warning fs-4" title="Ayuda"></i>
+                                        </button>
                                     </div>
+                                    <!-- Modal de ayuda inventario -->
+                                    <div class="modal fade" id="modalAyudaInventario" tabindex="-1" aria-labelledby="modalAyudaInventarioLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-warning-subtle">
+                                                    <h5 class="modal-title" id="modalAyudaInventarioLabel"><i class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda para inventario</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <ul>
+                                                        <li>Consulta el inventario de materiales disponibles y agotados.</li>
+                                                        <li>Usa el buscador para filtrar materiales por descripción o código.</li>
+                                                        <li>Los materiales agotados se muestran resaltados en rojo.</li>
+                                                        <li>Puedes registrar nuevas entradas o salidas desde los formularios correspondientes.</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            var ayudaBtn = document.getElementById('ayuda-inventario');
+                                            if (ayudaBtn) {
+                                                ayudaBtn.addEventListener('click', function () {
+                                                    var modal = new bootstrap.Modal(document.getElementById('modalAyudaInventario'));
+                                                    modal.show();
+                                                });
+                                            }
+                                        });
+                                    </script>
                                 </div>
 <!-- 
 

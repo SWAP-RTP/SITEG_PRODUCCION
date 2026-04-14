@@ -244,7 +244,6 @@ function obtenerRegistrosMateriales($tipo, $limite = 20, $pagina = 1, $search = 
                     LEFT JOIN unidades_materiales u ON r.id_unidad = u.id_unidad
                     LEFT JOIN categorias_materiales cat ON r.id_categoria_material = cat.id_categoria_material
                     LEFT JOIN estados_materiales es ON r.id_estado_material = es.id_estado_material
-                    WHERE COALESCE(r.stock_actual, 0) <> 0
                     ORDER BY c.descripcion_material ASC, COALESCE(u.descripcion_unidad, 'N/A') ASC";
         } else {
             $sql = "SELECT
