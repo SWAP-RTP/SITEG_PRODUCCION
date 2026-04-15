@@ -3,20 +3,28 @@ document.addEventListener('DOMContentLoaded', () => {
     //es una expresion regular para validar el formato del codigo MA seguido de 8 digitos
     const CODIGO_MA_REGEX = /^MA\d{8}$/;
 
-    const materialForm = FormularioMateriales({formId: 'form-salida-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
-        unidadSelectId: 'unidad',estadoSelectId: 'estado',categoriaSelectId: 'id_categoria',modalMaterialId: 'modalMaterial',
-        modalMaterialContenedorId: 'contenedor-materiales-modal-salida',modalMaterialInputId: 'buscar-material-modal-salida',navPaginacionMaterialId: 'nav-paginacion-materiales-salida',
-        ulPaginacionMaterialId: 'ul-paginacion-materiales-salida',contenedorTablaId: 'contenedor-tabla-salidas',
-        tablaId: 'tabla-salidas',btnLimpiarId: 'btn-limpiar-entrada',
-        columnasMaterial: [
-            { header: 'Código', key: 'codigo_material' },
-            { header: 'Descripción', key: 'descripcion_material' }
+    const materialForm = FormularioMateriales({
+        formId: 'form-salida-material', codigoInputId: 'codigo', descripcionInputId: 'descripcion', cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad', estadoSelectId: 'estado', categoriaSelectId: 'id_categoria', modalMaterialId: 'modalMaterial',
+        modalMaterialContenedorId: 'contenedor-materiales-modal-salida', modalMaterialInputId: 'buscar-material-modal-salida', navPaginacionMaterialId: 'nav-paginacion-materiales-salida',
+        ulPaginacionMaterialId: 'ul-paginacion-materiales-salida', contenedorTablaId: 'contenedor-tabla-salidas',
+        tablaId: 'tabla-salidas', btnLimpiarId: 'btn-limpiar-entrada',
+        columnasMaterial: [{ header: 'Código', key: 'codigo_material' }, { header: 'Descripción', key: 'descripcion_material' }
         ],
         alElegirMaterial: (item) => {
             const codigoInput = document.getElementById('codigo');
             const descripcionInput = document.getElementById('descripcion');
             if (codigoInput) codigoInput.value = item.codigo_material;
-            if (descripcionInput) descripcionInput.value = item.descripcion_material;
+            if (descripcionInput) {
+                descripcionInput.value = item.descripcion_material;
+                descripcionInput.readOnly = true;
+            }
+            bloquearCatalogos({
+                unidad: materialForm.unidadSelect,
+                estado: materialForm.estadoSelect,
+                categoria: materialForm.categoriaSelect
+            }, true);
+
             autoCompletarMaterialPorCodigo(
                 item.codigo_material,
                 descripcionInput,
@@ -66,6 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
             materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
             const codigo = materialForm.codigoInput.value.trim();
             if (/^MA\d{8}$/.test(codigo)) {
+                materialForm.descripcionInput.readOnly = true; // Bloqueamos el campo de descripción para evitar cambios manuales
+                bloquearCatalogos({
+                    unidad: materialForm.unidadSelect,
+                    estado: materialForm.estadoSelect,
+                    categoria: materialForm.categoriaSelect
+                }, true); // para bloquear
                 autoCompletarMaterialPorCodigo(
                     codigo,
                     materialForm.descripcionInput,
@@ -80,6 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Si el código no es válido, limpiar y cerrar catálogos
                 materialForm.descripcionInput.value = '';
+                materialForm.descripcionInput.readOnly = false; //aqui se desbloquea
+                bloquearCatalogos({
+                    unidad: materialForm.unidadSelect,
+                    estado: materialForm.estadoSelect,
+                    categoria: materialForm.categoriaSelect
+                }, false);
                 if (materialForm.unidadSelect) materialForm.unidadSelect.value = '';
                 if (materialForm.estadoSelect) materialForm.estadoSelect.value = '';
                 if (materialForm.categoriaSelect) materialForm.categoriaSelect.value = '';

@@ -106,14 +106,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return '<span class="badge bg-success">Disponible</span>';
     }
 
-    function checkStockPorCodigo(inventario, codigoBuscado) {
-        if (!Array.isArray(inventario) || !codigoBuscado) return 0;
+    function checkStockPorCodigo(inventario, folioBuscado) {
+        if (!Array.isArray(inventario) || !folioBuscado) return 0;
 
-        const codigo = codigoBuscado.trim().toUpperCase();
+        const folio = folioBuscado.trim().toUpperCase();
         return inventario.reduce((total, item) => {
-            const codigoItem = String(item?.codigo_material || '').trim().toUpperCase();
+            const folioItem = String(item?.folio_material || '').trim().toUpperCase();
             const stock = Number(item?.stock_actual) || 0;
-            return codigoItem === codigo ? total + stock : total;
+            return folioItem === folio ? total + stock : total;
         }, 0);
     }
 
@@ -158,8 +158,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     return `<li class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="fw-semibold">${item.descripcion_material || item.codigo_material || 'Material'}</div>
-                            <small class="text-muted">${item.codigo_material || ''} - Stock: ${item.stock_actual || 0} / Min: ${item.stock_minimo || 0}</small>
+                            <div class="fw-semibold">${item.descripcion_material || item.folio_material || 'Material'}</div>
+                            <small class="text-muted">${item.folio_material || ''} - Stock: ${item.stock_actual || 0} / Min: ${item.stock_minimo || 0}</small>
                         </div>
                         ${etiqueta}
                     </li>`;

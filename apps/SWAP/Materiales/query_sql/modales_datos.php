@@ -65,12 +65,12 @@ try {
 
     } elseif ($tipo === 'materiales') {
         $baseSql = "FROM control_materiales";
-        $selectSql = "SELECT codigo_material, descripcion_material $baseSql";
+        $selectSql = "SELECT folio_material, descripcion_material $baseSql";
         $countSql = "SELECT COUNT(*) as total $baseSql";
         
         if (!empty($search)) {
-            $baseSql .= " WHERE descripcion_material ILIKE $1 OR codigo_material ILIKE $1";
-            $selectSql = "SELECT codigo_material, descripcion_material $baseSql";
+            $baseSql .= " WHERE descripcion_material ILIKE $1 OR folio_material ILIKE $1";
+            $selectSql = "SELECT folio_material, descripcion_material $baseSql";
             $countSql = "SELECT COUNT(*) as total $baseSql";
             $params[] = "%$search%";
         }
@@ -87,7 +87,7 @@ try {
 
         // Construir query con paginación
         $sqlParams = $params;
-        $selectSql .= " ORDER BY codigo_material ASC, descripcion_material ASC LIMIT $limit OFFSET $offset";
+        $selectSql .= " ORDER BY folio_material ASC, descripcion_material ASC LIMIT $limit OFFSET $offset";
         
         $result = empty($sqlParams)
             ? pg_query($conexion, $selectSql)
@@ -95,13 +95,13 @@ try {
 
     } elseif ($tipo === 'entradas') {
         // JOIN para obtener descripcion_material desde control_materiales
-        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material";
-        $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
+        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.folio_material = c.folio_material";
+        $selectSql = "SELECT e.folio_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
         $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e";
         if (!empty($search)) {
-            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
-            $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
-            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.folio_material ILIKE $1)";
+            $selectSql = "SELECT e.folio_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion $baseSql";
+            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.folio_material = c.folio_material WHERE (c.descripcion_material ILIKE $1 OR e.folio_material ILIKE $1)";
             $params[] = "%$search%";
         }
         $countResult = empty($params)
@@ -118,13 +118,13 @@ try {
             : pg_query_params($conexion, $selectSql, $sqlParams);
     } elseif ($tipo === 'salidas') {
         // Mostrar los movimientos de entradas_materiales con JOIN al catálogo para descripción (igual que entradas)
-        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material";
-        $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
+        $baseSql = "FROM entradas_materiales e JOIN control_materiales c ON e.folio_material = c.folio_material";
+        $selectSql = "SELECT e.folio_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
         $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e";
         if (!empty($search)) {
-            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
-            $selectSql = "SELECT e.codigo_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
-            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.codigo_material = c.codigo_material WHERE (c.descripcion_material ILIKE $1 OR e.codigo_material ILIKE $1)";
+            $baseSql .= " WHERE (c.descripcion_material ILIKE $1 OR e.folio_material ILIKE $1)";
+            $selectSql = "SELECT e.folio_material, c.descripcion_material, e.cantidad, e.id_unidad, e.id_estado_material, e.id_categoria_material, e.adscripcion, e.fecha_registro $baseSql";
+            $countSql = "SELECT COUNT(*) as total FROM entradas_materiales e JOIN control_materiales c ON e.folio_material = c.folio_material WHERE (c.descripcion_material ILIKE $1 OR e.folio_material ILIKE $1)";
             $params[] = "%$search%";
         }
         $countResult = empty($params)

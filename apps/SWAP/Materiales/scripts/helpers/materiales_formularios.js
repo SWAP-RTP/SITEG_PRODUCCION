@@ -17,10 +17,10 @@
     }
 
 
-    function autoCompletarMaterialPorCodigo(codigo, descripcionInput, estadoDivId, callback, selects = {}) {
+    function autoCompletarMaterialPorCodigo(folio, descripcionInput, estadoDivId, callback, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
         // Solo continuar si el código es MA+8 dígitos
-        if (!/^MA\d{8}$/.test(codigo)) {
+        if (!/^MA\d{8}$/.test(folio)) {
             descripcionInput.value = '';
             delete descripcionInput.dataset.autodescripcion;
             if (unidadSelect) unidadSelect.value = '';
@@ -31,7 +31,7 @@
             return;
         }
 
-        fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(codigo))
+        fetch('query_sql/buscar_datos.php?tipo=material&folio_materiales=' + encodeURIComponent(folio))
             .then(res => res.json())
             .then(data => {
                 // Obtener el input de cantidad si está disponible
@@ -84,7 +84,7 @@
     }
 
 
-    function buscarMaterialParaInventario(codigo, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId, selects = {}) {
+    function buscarMaterialParaInventario(folio, descripcionInput, existenciaInput, stockMinimoInput, estadoDivId, selects = {}) {
         const { unidadSelect = null, estadoSelect = null, categoriaSelect = null } = selects;
 
         const bloquearCatalogosInventario = (bloqueados) => {
@@ -102,7 +102,7 @@
         };
 
         // Solo continuar si el código es MA+8 dígitos
-        if (!/^MA\d{8}$/.test(codigo)) {
+        if (!/^MA\d{8}$/.test(folio)) {
             descripcionInput.value = '';
             existenciaInput.value = 0;
             if (stockMinimoInput) stockMinimoInput.value = '';
@@ -115,7 +115,7 @@
             return;
         }
 
-        fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(codigo))
+        fetch('query_sql/buscar_datos.php?tipo=material&codigo=' + encodeURIComponent(folio))
             .then(res => res.json())
             .then(data => {
                 if (data && data.descripcion_material) {
@@ -225,7 +225,7 @@
         if (codigoInput && descripcionInput) {
             const autoCompletar = global.MaterialesUtils.debounce(() => {
                 const codigo = codigoInput.value.trim();
-                autoCompletarMaterialPorCodigo(codigo, descripcionInput, 'estado-material', null, {
+                autoCompletarMaterialPorCodigo(folio, descripcionInput, 'estado-material', null, {
                     unidadSelect,
                     estadoSelect,
                     categoriaSelect

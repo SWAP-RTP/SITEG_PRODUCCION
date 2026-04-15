@@ -61,12 +61,21 @@
                 });
             });
     }
-
+    function bloquearCatalogos(selects, bloquear) {
+        if (selects.unidad) selects.unidad.disabled = bloquear;
+        if (selects.estado) selects.estado.disabled = bloquear;
+        if (selects.categoria) selects.categoria.disabled = bloquear;
+    }
+    global.bloquearCatalogos = bloquearCatalogos;
+    if (global.MaterialesCatalogos) {
+        global.MaterialesCatalogos.bloquearCatalogos = bloquearCatalogos;
+    }
     global.MaterialesCatalogos = {
         llenarSelect,
         cargarCatalogosMateriales,
         cargarYLlenarSelects
     };
+
 
     global.llenarSelect = llenarSelect;
     global.cargarCatalogosMateriales = cargarCatalogosMateriales;

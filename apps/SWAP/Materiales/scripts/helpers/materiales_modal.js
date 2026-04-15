@@ -187,6 +187,8 @@
         ulPag.appendChild(nextLi);
     }
 
+
+
     function BuscarModal(modalId, contenedorId, tipo, inputBusquedaId, columnas, onSelect, navPaginacionId, ulPaginacionId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
@@ -211,8 +213,9 @@
             tabla.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>';
 
             const cargarPagina = (pagina = 1) => {
-                const limit = tipo === 'trabajadores' ? 10 : 5;
-                const textoAccion = tipo === 'trabajadores' ? 'Agregar trabajador' : 'Agregar material';
+                const limit = 5;
+                //se hizo un cambio de trabajador a agregar material
+                const textoAccion = 'Agregar material';
                 fetch(`query_sql/modales_datos.php?tipo=${tipo}&pagina=${pagina}&limit=${limit}&search=${encodeURIComponent(terminoBusqueda)}`)
                     .then(res => res.json())
                     .then(respuesta => {
@@ -222,7 +225,6 @@
                         tabla.innerHTML = '<p class="text-danger">Error al cargar los datos.</p>';
                     });
             };
-
             const buscarConDebounce = global.MaterialesUtils.debounce(() => {
                 terminoBusqueda = normalizarBusqueda();
                 cargarPagina(1);

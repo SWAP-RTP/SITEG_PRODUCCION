@@ -1,22 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
     const adscripcionSelect = document.getElementById('adscripcion');
-     //es una expresion regular para validar el formato del codigo MA seguido de 8 digitos
-    const CODIGO_MA_REGEX = /^MA\d{8}$/;
+    // Expresión regular para validar el formato del folio MA seguido de 8 dígitos
+    const FOLIO_MA_REGEX = /^MA\d{8}$/;
 
-    const materialForm = FormularioMateriales({formId: 'form-entrada-material',codigoInputId: 'codigo',descripcionInputId: 'descripcion',cantidadInputId: 'cantidad',
-        unidadSelectId: 'unidad',estadoSelectId: 'estado',categoriaSelectId: 'id_categoria',modalMaterialId: 'exampleModalCenter',modalMaterialContenedorId: 'contenedor-materiales-modal',
-        modalMaterialInputId: 'buscar-material-modal-entrada',navPaginacionMaterialId: 'nav-paginacion-materiales',ulPaginacionMaterialId: 'ul-paginacion-materiales',
+    const materialForm = FormularioMateriales({
+        formId: 'form-entrada-material', codigoInputId: 'folio', descripcionInputId: 'descripcion', cantidadInputId: 'cantidad',
+        unidadSelectId: 'unidad', estadoSelectId: 'estado', categoriaSelectId: 'id_categoria', modalMaterialId: 'exampleModalCenter', modalMaterialContenedorId: 'contenedor-materiales-modal',
+        modalMaterialInputId: 'buscar-material-modal-entrada', navPaginacionMaterialId: 'nav-paginacion-materiales', ulPaginacionMaterialId: 'ul-paginacion-materiales',
         contenedorTablaId: 'contenedor-tabla-registros',
-        tablaId: 'tabla-registros',btnLimpiarId: 'btn-limpiar-entrada',
-        columnasMaterial: [{ header: 'Código', key: 'codigo_material' },{ header: 'Descripción', key: 'descripcion_material' }
+        tablaId: 'tabla-registros', btnLimpiarId: 'btn-limpiar-entrada',
+        columnasMaterial: [
+            { header: 'Folio', key: 'folio_material' },
+            { header: 'Descripción', key: 'descripcion_material' }
         ],
+        // Aquí se define la función alElegirMaterial para que sea accesible desde el modal de selección de materiales
         alElegirMaterial: (item) => {
-            const codigoInput = document.getElementById('codigo');
+            const folioInput = document.getElementById('folio');
             const descripcionInput = document.getElementById('descripcion');
-            if (codigoInput) codigoInput.value = item.codigo_material;
-            if (descripcionInput) descripcionInput.value = item.descripcion_material;
+            if (folioInput) folioInput.value = item.folio_material;
+            if (descripcionInput) {
+                descripcionInput.value = item.descripcion_material;
+                descripcionInput.readOnly = true; // Bloqueamos el campo de descripción para evitar cambios manuales
+            }
+
+            bloquearCatalogos({
+                unidad: materialForm.unidadSelect,
+                estado: materialForm.estadoSelect,
+                categoria: materialForm.categoriaSelect
+            }, true);
+
             autoCompletarMaterialPorCodigo(
-                item.codigo_material,
+                item.folio_material,
                 descripcionInput,
                 'estado-material',
                 null,
@@ -24,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     unidadSelect: materialForm.unidadSelect,
                     estadoSelect: materialForm.estadoSelect,
                     categoriaSelect: materialForm.categoriaSelect,
-                    cantidadInput: materialForm.cantidadInput
+                    //cantidadInput: materialForm.cantidadInput
                 }
             );
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
@@ -32,15 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const obtenerDatosFormulario = () => ({codigo: materialForm.codigoInput.value.trim(),descripcion: materialForm.descripcionInput.value.trim(),
-        unidad: materialForm.unidadSelect.value,estado: materialForm.estadoSelect.value,cantidad: materialForm.cantidadInput.value.trim(),
-        id_categoria: materialForm.categoriaSelect.value,adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
+    const obtenerDatosFormulario = () => ({
+        folio_material: materialForm.codigoInput.value.trim(),
+        descripcion: materialForm.descripcionInput.value.trim(),
+        unidad: materialForm.unidadSelect.value,
+        estado: materialForm.estadoSelect.value,
+        cantidad: materialForm.cantidadInput.value.trim(),
+        id_categoria: materialForm.categoriaSelect.value,
+        adscripcion: adscripcionSelect ? adscripcionSelect.value : ''
     });
 
-    const normalizarCodigoMA = (valor = '') => {
+    const normalizarFolioMA = (valor = '') => {
         const limpio = String(valor).toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-        // Permite borrar completamente el campo sin que se reponga automaticamente.
+        // Permite borrar completamente el campo sin que se reponga automáticamente.
         if (limpio === '') return '';
 
         // Permite estados parciales de escritura/borrado del prefijo.
@@ -50,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (limpio.startsWith('MA')) {
             digitos = limpio.slice(2).replace(/\D/g, '');
         } else {
-            // Si pega solo numeros, autocompleta prefijo MA.
+            // Si pega solo números, autocompleta prefijo MA.
             digitos = limpio.replace(/\D/g, '');
         }
 
@@ -59,11 +78,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (materialForm.codigoInput) {
         materialForm.codigoInput.addEventListener('input', () => {
-            materialForm.codigoInput.value = normalizarCodigoMA(materialForm.codigoInput.value);
-            const codigo = materialForm.codigoInput.value.trim();
-            if (/^MA\d{8}$/.test(codigo)) {
+            materialForm.codigoInput.value = normalizarFolioMA(materialForm.codigoInput.value);
+            const folio = materialForm.codigoInput.value.trim();
+            if (/^MA\d{8}$/.test(folio)) {
+                materialForm.descripcionInput.readOnly = true; // Bloqueamos el campo de descripción para evitar cambios manuales
+                bloquearCatalogos({
+                    unidad: materialForm.unidadSelect,
+                    estado: materialForm.estadoSelect,
+                    categoria: materialForm.categoriaSelect
+                }, true); // para bloquear
                 autoCompletarMaterialPorCodigo(
-                    codigo,
+                    folio,
                     materialForm.descripcionInput,
                     'estado-material',
                     null,
@@ -71,11 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         unidadSelect: materialForm.unidadSelect,
                         estadoSelect: materialForm.estadoSelect,
                         categoriaSelect: materialForm.categoriaSelect,
-                        cantidadInput: materialForm.cantidadInput
+                        // cantidadInput: materialForm.cantidadInput, se comenta para permitir editar cantidad aunque el material exista
                     }
                 );
             } else {
-                // Si el código no es válido, limpiar y cerrar catálogos
+                // Si el folio no es válido, limpiar y cerrar catálogos
+                materialForm.descripcionInput.readOnly = false; //aqui se desbloquea
+                bloquearCatalogos({
+                    unidad: materialForm.unidadSelect,
+                    estado: materialForm.estadoSelect,
+                    categoria: materialForm.categoriaSelect
+                }, false);
                 materialForm.descripcionInput.value = '';
                 if (materialForm.unidadSelect) materialForm.unidadSelect.value = '';
                 if (materialForm.estadoSelect) materialForm.estadoSelect.value = '';
@@ -125,15 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         })).json();
-//VALIDACIONES Y ENVÍO DE FORMULARIO
+
+    // VALIDACIONES Y ENVÍO DE FORMULARIO
     materialForm.formulario.addEventListener('submit', async (e) => {
         e.preventDefault();
         const datos = obtenerDatosFormulario();
 
-        // Permitir código vacío o válido
-        const datosSinCodigo = Object.assign({}, datos);
-        delete datosSinCodigo.codigo;
-        if (!camposRequeridosCompletos(datosSinCodigo)) {
+        // Permitir folio vacío o válido
+        const datosSinFolio = Object.assign({}, datos);
+        delete datosSinFolio.folio_material;
+        if (!camposRequeridosCompletos(datosSinFolio)) {
             mostrarAlerta({
                 icon: 'warning',
                 title: 'Campos incompletos',
@@ -144,11 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (datos.codigo && !CODIGO_MA_REGEX.test(datos.codigo)) {
+        if (datos.folio_material && !FOLIO_MA_REGEX.test(datos.folio_material)) {
             mostrarAlerta({
                 icon: 'warning',
-                title: 'Código inválido',
-                text: 'El código debe tener el formato MA00000001 (MA + 8 dígitos).',
+                title: 'Folio inválido',
+                text: 'El folio debe tener el formato MA00000001 (MA + 8 dígitos).',
                 confirmButtonColor: '#f39c12'
             });
             materialForm.codigoInput.focus();
