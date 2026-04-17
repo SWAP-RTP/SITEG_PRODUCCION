@@ -42,13 +42,13 @@
         return cargarCatalogosMateriales(url)
             .then(catalogos => {
                 if (selectors.unidad) {
-                    llenarSelect(selectors.unidad, catalogos.unidades, 'id_unidad', 'descripcion_unidad');
+                    llenarSelect(selectors.unidad, catalogos.unidades, 'id_unidad_material', 'descripcion_unidad_material');
                 }
                 if (selectors.estado) {
                     llenarSelect(selectors.estado, catalogos.estados, 'id_estado_material', 'descripcion_estado_material');
                 }
                 if (selectors.categoria) {
-                    llenarSelect(selectors.categoria, catalogos.categorias, 'id_categoria_material', 'nombre_categoria_material');
+                    llenarSelect(selectors.categoria, catalogos.categorias, 'id_categoria_material', 'descripcion_categoria_material');
                 }
             })
             .catch(error => {
