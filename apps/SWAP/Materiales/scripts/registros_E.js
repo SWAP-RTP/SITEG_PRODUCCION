@@ -18,6 +18,7 @@ async function cargarCatalogos() {
             estadoSelect.innerHTML += `<option value="${e.id_estado_material}">${e.descripcion_estado_material}</option>`;
         });
 
+
         // Categoría
         const categoriaSelect = document.getElementById('id_categoria');
         categoriaSelect.innerHTML = '<option value="" selected disabled>Selecciona una categoría</option>';
@@ -25,6 +26,15 @@ async function cargarCatalogos() {
             categoriaSelect.innerHTML += `<option value="${c.id_categoria_material}">${c.descripcion_categoria_material}</option>`;
         });
 
+        // Adscripción (llenado dinámico)
+        const adscripcionSelect = document.getElementById('adscripcion');
+        adscripcionSelect.innerHTML = '<option value="" selected disabled>Selecciona una adscripción</option>';
+        if (data.adscripciones) {
+            data.adscripciones.forEach(a => {
+                adscripcionSelect.innerHTML += `<option value="${a.valor}">${a.texto}</option>`;
+            });
+        
+        }
     } catch (error) {
         // Si hay error, muestra mensaje en los selects
         ['unidad', 'estado', 'id_categoria'].forEach(id => {
@@ -199,7 +209,11 @@ async function autocompletarFormulario(folio) {
             document.getElementById('folio').value = d.folio_material || '';
             document.getElementById('descripcion').value = d.descripcion_material_entrada || '';
             document.getElementById('cantidad').value = d.cantidad_material_entrada || '';
-            document.getElementById('adscripcion').value = d.adscripcion_modulo || '';
+            // Seleccionar adscripción por valor (si existe en el select)
+            const adsInput = document.getElementById('adscripcion');
+            if (adsInput && d.adscripcion_modulo) {
+                adsInput.value = d.adscripcion_modulo;
+            }
             document.getElementById('estado').value = d.id_estado_material_entrada || '';
             document.getElementById('unidad').value = d.id_unidad_material || '';
             document.getElementById('id_categoria').value = d.id_categoria_material || '';
@@ -231,11 +245,11 @@ async function autocompletarFormulario(folio) {
     }
 }
 
-// Bloquear o desbloquear campos del formulario de materiales
+//Bloquear o desbloquear campos del formulario de materiales
 function bloquearCamposMaterial(bloquear) {
     document.getElementById('folio').readOnly = bloquear;
     document.getElementById('descripcion').readOnly = bloquear;
-    document.getElementById('cantidad').readOnly = bloquear;
+    document.getElementById('cantidad').readOnly = false; // Siempre editable
     document.getElementById('adscripcion').disabled = bloquear;
     document.getElementById('estado').disabled = bloquear;
     document.getElementById('unidad').disabled = bloquear;
@@ -305,23 +319,27 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-        
             const folioDiv = document.getElementById('folio').closest('.col-md-3');
-            if (folioDiv.style.display === 'none') {
-                datos.set('descripcion_material_entrada', datos.get('descripcion'));
-                datos.set('id_unidad_material', datos.get('unidad'));
-                datos.set('id_categoria_material', datos.get('id_categoria'));
-                datos.set('id_estado_material_entrada', datos.get('estado'));
-                datos.set('cantidad_material_entrada', datos.get('cantidad'));
-                datos.set('adscripcion_modulo', datos.get('adscripcion'));
-                datos.delete('descripcion');
-                datos.delete('unidad');
-                datos.delete('id_categoria');
-                datos.delete('estado');
-                datos.delete('cantidad');
-                datos.delete('adscripcion');
-                datos.delete('folio');
+                if (folioDiv.style.display === 'none') {
+                    // Transformar los nombres de los campos para el backend
+                    datos.set('descripcion_material_entrada', datos.get('descripcion'));
+                    datos.set('id_unidad_material', datos.get('unidad'));
+                    datos.set('id_categoria_material', datos.get('id_categoria'));
+                    datos.set('id_estado_material_entrada', datos.get('estado'));
+                    datos.set('cantidad_material_entrada', datos.get('cantidad'));
+                    datos.set('adscripcion_modulo', datos.get('adscripcion_modulo'));
+                    // Eliminar los campos viejos
+                    datos.delete('descripcion');
+                    datos.delete('unidad');
+                    datos.delete('id_categoria');
+                    datos.delete('estado');
+                    datos.delete('cantidad');
+                    datos.delete('adscripcion_modulo');
+                    datos.delete('folio');
             }
+            // Depuración: mostrar datos enviados
+            const plainData = Object.fromEntries(datos.entries());
+            console.log('Datos enviados al backend:', plainData);
             registrar(datos);
         } else if (result.isDenied) {
             Swal.fire({

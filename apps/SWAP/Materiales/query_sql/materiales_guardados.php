@@ -12,31 +12,27 @@ function guardarEntradaMaterial() {
 
     $data = json_decode(file_get_contents('php://input'), true);
 
-    // Si NO hay folio, primero crea el material en la tabla maestra y obtén el folio generado
+    // 1. SI NO HAY FOLIO, CREAMOS EL MATERIAL PRIMERO
     if (empty($data['folio_material'])) {
-        // Validar campos requeridos para crear material
-        if (
-            empty($data['descripcion_material_entrada']) ||
-            empty($data['id_unidad_material']) ||
-            empty($data['id_categoria_material']) ||
-            empty($data['adscripcion_modulo'])
-        ) {
+        if (empty($data['descripcion_material_entrada']) || empty($data['id_unidad_material']) || 
+            empty($data['id_categoria_material']) || empty($data['adscripcion_modulo'])) {
+            
             http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'Faltan datos para crear el material.']);
+            echo json_encode(['status' => 'error', 'message' => 'Faltan datos para crear el material nuevo.']);
             pg_close($conexion);
             exit;
         }
 
-        // 1. Insertar en control_materiales y obtener folio generado
-        $sql_control = "INSERT INTO control_materiales (descripcion_material, id_unidad_material, id_categoria_material, adscripcion)
-            VALUES ($1, $2, $3, $4) RETURNING folio_material";
-        $params_control = [
+        $sql_control = "INSERT INTO control_materiales (descripcion_material, id_unidad_material, id_categoria_material, adscripcion_modulo)
+                        VALUES ($1, $2, $3, $4) RETURNING folio_material";
+        
+        $res_control = pg_query_params($conexion, $sql_control, [
             $data['descripcion_material_entrada'],
             $data['id_unidad_material'],
             $data['id_categoria_material'],
             $data['adscripcion_modulo']
-        ];
-        $res_control = pg_query_params($conexion, $sql_control, $params_control);
+        ]);
+
         if (!$res_control) {
             http_response_code(500);
             echo json_encode(['status' => 'error', 'message' => 'Error al crear material: ' . pg_last_error($conexion)]);
@@ -47,24 +43,20 @@ function guardarEntradaMaterial() {
         $data['folio_material'] = $row_control['folio_material'];
     }
 
-    // Validar datos para la entrada
-    if (
-        empty($data['folio_material']) ||
-        empty($data['descripcion_material_entrada']) ||
-        empty($data['id_estado_material_entrada']) ||
-        empty($data['cantidad_material_entrada']) ||
-        empty($data['adscripcion_modulo'])
-    ) {
+    // 2. VALIDACIÓN FINAL PARA LA ENTRADA
+    if (empty($data['folio_material']) || empty($data['cantidad_material_entrada']) || empty($data['id_estado_material_entrada'])) {
         http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios para la entrada.']);
         pg_close($conexion);
         exit;
     }
 
-    // Insertar en entradas_materiales
+    // 3. REGISTRAR LA ENTRADA 
+    // Al ejecutar este INSERT, el Trigger de la BD sumará el stock automáticamente.
     $sql = "INSERT INTO entradas_materiales 
-        (folio_material, descripcion_material_entrada, id_estado_material_entrada, cantidad_material_entrada, adscripcion_modulo)
-        VALUES ($1, $2, $3, $4, $5)";
+            (folio_material, descripcion_material_entrada, id_estado_material_entrada, cantidad_material_entrada, adscripcion_modulo)
+            VALUES ($1, $2, $3, $4, $5)";
+    
     $params = [
         $data['folio_material'],
         $data['descripcion_material_entrada'],
@@ -72,13 +64,18 @@ function guardarEntradaMaterial() {
         $data['cantidad_material_entrada'],
         $data['adscripcion_modulo']
     ];
-    $result = @pg_query_params($conexion, $sql, $params);
+
+    $result = pg_query_params($conexion, $sql, $params);
 
     if ($result) {
-        echo json_encode(['status' => 'ok', 'message' => 'Entrada registrada correctamente.', 'folio_generado' => $data['folio_material']]);
+        echo json_encode([
+            'status' => 'ok', 
+            'message' => 'Entrada registrada y stock actualizado automáticamente.', 
+            'folio' => $data['folio_material']
+        ]);
     } else {
         http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Error al guardar: ' . pg_last_error($conexion)]);
+        echo json_encode(['status' => 'error', 'message' => 'Error al guardar entrada: ' . pg_last_error($conexion)]);
     }
 
     pg_close($conexion);

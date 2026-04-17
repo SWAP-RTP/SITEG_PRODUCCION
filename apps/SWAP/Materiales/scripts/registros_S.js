@@ -227,7 +227,7 @@ async function autocompletarFormularioSalida(fsiolio) {
 function bloquearCamposMaterialSalida(bloquear) {
     document.getElementById('fsiolio').readOnly = bloquear;
     document.getElementById('descripcion').readOnly = bloquear;
-    document.getElementById('cantidad').readOnly = bloquear;
+    document.getElementById('cantidad').readOnly = false;
     document.getElementById('adscripcion').disabled = bloquear;
     document.getElementById('estado').disabled = bloquear;
     document.getElementById('unidad').disabled = bloquear;
