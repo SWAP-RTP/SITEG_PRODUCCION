@@ -49,7 +49,7 @@
                                 <div class="col-md-9 position-relative">
                                     <label class="form-label fw-bold">Descripción del Material</label>
                                     <div class="input-group align-items-center">
-                                        <input type="text" class="form-control" id="descripcion" name="descripcion"
+                                        <input type="text" class="form-control" id="descripcion" name="descripcion_material_entrada"
                                             oninput="this.value = this.value.toUpperCase()" required >
                                         <button class="btn btn-primary" type="button" id="modal">
                                             <i class="bi bi-search"></i>
@@ -62,21 +62,21 @@
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Unidad de Medida</label>
-                                    <select class="form-select" id="unidad" name="unidad" required>
+                                    <select class="form-select" id="unidad" name="id_unidad_material" required>
                                         <option value="" selected disabled>Selecciona una unidad</option>
                                       
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Estado Físico Material</label>
-                                    <select class="form-select" id="estado" name="estado" required>
+                                    <select class="form-select" id="estado" name="id_estado_material_entrada" required>
                                         <option value="" selected disabled>Selecciona un estado</option>
                                     
                                     </select>
                                 </div>
                                   <div class="col-md-4">
                                     <label class="form-label fw-bold">Categoría</label>
-                                    <select class="form-select" id="id_categoria" name="id_categoria" required>
+                                    <select class="form-select" id="id_categoria" name="id_categoria_material" required>
                                         <option value="" selected disabled>Selecciona una categoría</option>
                                        
                                     </select>
@@ -129,8 +129,11 @@
                                 <div class="modal-body">
                                     <ul>
                                         <li>Llena todos los campos obligatorios del formulario.</li>
-                                        <li>Usa el botón de búsqueda <i class='bi bi-search'></i> para seleccionar materiales existentes (los datos se llenan automáticamente) o, si el material no existe, puedes ingresar uno nuevo manualmente.El codigo se va a generar automáticamente.</li>
-                                        <li>Guarda para registrar la entrada.</li>
+                                        <li>Si el material ya existe, puedes buscarlo usando el botón <i class='bi bi-search'></i> y filtrar por código o descripción. Al seleccionar un material, los datos se llenan automáticamente y solo debes capturar la cantidad a ingresar.</li>
+                                        <li>Si el material no existe, ingresa la descripción y los datos requeridos. El código se generará automáticamente al guardar.</li>
+                                        <li>La cantidad debe ser un número entero mayor a cero.</li>
+                                        <li>Puedes limpiar el formulario y la consulta de registros con el botón <b>Limpiar</b>.</li>
+                                        <li>Guarda para registrar la entrada. El sistema sumará la cantidad si el material ya existe.</li>
                                     </ul>
                                 </div>
                             </div>

@@ -1,73 +1,69 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+require '/var/www/login_shared/conf/conexion.php';
 
-
-
-function respuesta(int $statusCode, array $payload): array {
-    return ['statusCode' => $statusCode, 'payload' => $payload];
+function respuesta($code, $data) {
+    http_response_code($code);
+    echo json_encode($data);
+    exit;
 }
 
-function buscarMaterial($conexion, string $folio): array {
-    if ($folio === '') {
-        return respuesta(400, ['error' => 'Folio vacío']);
+try {
+    $conexion = Database::conectar();
+
+    if (!$conexion) {
+        respuesta(500, ['error' => 'Error de conexión']);
+    }
+
+    $folio = strtoupper(trim($_GET['folio_material'] ?? ''));
+
+    if (!$folio) {
+        respuesta(400, ['error' => 'Folio vacío']);
     }
 
     $sql = "SELECT 
-                c.folio_material,
-                c.descripcion_material,
-                c.id_unidad_material,
-                u.descripcion_unidad_material,
-                c.id_categoria_material,
-                cat.descripcion_categoria_material,
-                c.id_estado_material,
-                est.descripcion_estado_material,
-                c.stock_actual,
-                c.stock_minimo,
-                c.adscripcion
-            FROM control_materiales c
-            LEFT JOIN unidades_materiales u ON c.id_unidad_material = u.id_unidad_material
-            LEFT JOIN categorias_materiales cat ON c.id_categoria_material = cat.id_categoria_material
-            LEFT JOIN estados_materiales est ON c.id_estado_material = est.id_estado_material
-            WHERE c.folio_material = $1";
+        c.folio_material,
+        c.descripcion_material,
+        c.id_unidad_material,
+        c.id_categoria_material,
+        c.adscripcion_modulo,
 
-    $qry = pg_query_params($conexion, $sql, [$folio]);
-    if (!$qry) {
-        throw new Exception('Error en la consulta de material: ' . pg_last_error($conexion));
+        COALESCE(ult_salida.estado, ult_entrada.estado) AS id_estado_material
+
+    FROM control_materiales c
+
+    LEFT JOIN LATERAL (
+        SELECT id_estado_material_entrada AS estado
+        FROM entradas_materiales
+        WHERE folio_material = c.folio_material
+        ORDER BY fecha_registro_entrada DESC
+        LIMIT 1
+    ) ult_entrada ON true
+
+    LEFT JOIN LATERAL (
+        SELECT id_estado_material_salida AS estado
+        FROM salidas_materiales
+        WHERE folio_material = c.folio_material
+        ORDER BY fecha_registro_salida DESC
+        LIMIT 1
+    ) ult_salida ON true
+
+    WHERE c.folio_material = $1";
+
+    $res = pg_query_params($conexion, $sql, [$folio]);
+
+    if (!$res) {
+        respuesta(500, ['error' => pg_last_error($conexion)]);
     }
 
-    $res = pg_fetch_assoc($qry);
-    return respuesta(200, $res ? $res : ['error' => 'No encontrado']);
-}
+    $data = pg_fetch_assoc($res);
 
-$conexion = null;
-$resultado = respuesta(500, ['error' => 'Excepcion PHP', 'detalle' => 'Error no controlado']);
-
-try {
-    require '/var/www/login_shared/conf/conexion.php';
-
-    if (!class_exists('Database')) {
-        throw new Exception('Clase Database no encontrada');
+    if (!$data) {
+        respuesta(404, ['error' => 'Material no encontrado']);
     }
 
-    $conexion = Database::conectar();
-    if (!$conexion) {
-        throw new Exception('Error de conexion a la base de datos');
-    }
+    respuesta(200, $data);
 
-    $tipo = strtolower(trim($_GET['tipo'] ?? ''));
-
-    if ($tipo === 'material') {
-        // Permitir recibir folio_material por GET (folio_materiales o folio_material)
-        $folio = isset($_GET['folio_materiales']) ? strtoupper(trim($_GET['folio_materiales'])) : (isset($_GET['folio_material']) ? strtoupper(trim($_GET['folio_material'])) : '');
-        $resultado = buscarMaterial($conexion, $folio);
-    }
 } catch (Exception $e) {
-    $resultado = respuesta(500, ['error' => 'Excepcion PHP', 'detalle' => $e->getMessage()]);
+    respuesta(500, ['error' => $e->getMessage()]);
 }
-
-if ($conexion) {
-    pg_close($conexion);
-}
-
-http_response_code($resultado['statusCode']);
-echo json_encode($resultado['payload']);
