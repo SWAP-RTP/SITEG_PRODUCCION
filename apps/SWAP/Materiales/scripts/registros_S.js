@@ -24,13 +24,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.getElementById('btn-consultar-salidas')?.addEventListener('click', mostrarRegistrosSalidas);
+    document.getElementById('btn-consultar-salidas')?.addEventListener('click', function() {
+        paginaActualSalidas = 1;
+        mostrarRegistrosSalidas(paginaActualSalidas, limitePorPaginaSalidas);
+    });
 
     document.getElementById('btn-limpiar-entrada')?.addEventListener('click', function () {
         document.getElementById('form-salida-material').reset();
         limpiarFormularioMaterial();
         document.getElementById('tabla-salidas').innerHTML = '';
         document.getElementById('contenedor-tabla-salidas').style.display = 'none';
+        document.getElementById('paginacion-salidas').innerHTML = '';
     });
 
     document.getElementById('modal-material')?.addEventListener('click', mostrarModal);
@@ -76,7 +80,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-
 // ================= CATALOGOS =================
 async function cargarCatalogos() {
     try {
@@ -102,7 +105,6 @@ function llenarSelect(id, datos, value, text) {
     });
 }
 
-
 // ================= MODAL =================
 async function mostrarModal() {
     const modal = new bootstrap.Modal(document.getElementById('modalMaterial'));
@@ -111,7 +113,7 @@ async function mostrarModal() {
     const contenedor = document.getElementById('contenedor-materiales-modal-salida');
 
     try {
-        const res = await fetch('query_sql/modales_datos.php');
+        const res = await fetch('query_sql/modales_datos.php?tipo=material');
         const data = await res.json();
 
         let html = `<table class="table">
@@ -127,7 +129,7 @@ async function mostrarModal() {
             html += `
                 <tr>
                     <td>${reg.folio_material}</td>
-                    <td>${reg.descripcion_material_entrada}</td>
+                    <td>${reg.descripcion_material}</td>
                     <td>
                         <button class="btn btn-sm btn-primary"
                         onclick="autocompletarFormulario('${reg.folio_material}')">
@@ -144,7 +146,6 @@ async function mostrarModal() {
         contenedor.innerHTML = "Error al cargar";
     }
 }
-
 
 // ================= AUTOCOMPLETE =================
 async function autocompletarFormulario(folio) {
@@ -169,23 +170,22 @@ async function autocompletarFormulario(folio) {
             throw new Error(data?.error || "No encontrado");
         }
 
-        // 🔥 LLENADO
         document.getElementById('folio').value = data.folio_material || '';
         document.getElementById('descripcion').value = data.descripcion_material || '';
         document.getElementById('unidad').value = data.id_unidad_material || '';
         document.getElementById('id_categoria').value = data.id_categoria_material || '';
         document.getElementById('adscripcion').value = data.adscripcion_modulo || '';
 
-        // 🔥 ESTADO (AUTO PERO EDITABLE)
         if (data.id_estado_material) {
             document.getElementById('estado').value = data.id_estado_material;
         } else {
             document.getElementById('estado').value = '';
         }
 
-        // 🔥 IMPORTANTE: NO bloquees estado
         bloquearCamposMaterial(true);
         document.getElementById('estado').disabled = false;
+        var modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
+        if (modal) modal.hide();
 
     } catch (error) {
         console.error("ERROR AUTOCOMPLETE:", error);
@@ -199,17 +199,20 @@ async function autocompletarFormulario(folio) {
         });
     }
 }
+
 // ================= REGISTRAR =================
 async function registrarSalida(formData) {
+    // Convierte FormData a objeto plano
+    const plainData = Object.fromEntries(formData.entries());
     try {
         const response = await fetch('query_sql/materiales_salida_guardados.php', {
             method: 'POST',
-            body: formData //
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(plainData)
         });
 
         const text = await response.text();
 
-        // Validación anti-crash
         if (!text) {
             throw new Error("Respuesta vacía del servidor");
         }
@@ -236,33 +239,91 @@ async function registrarSalida(formData) {
     }
 }
 
+// ================= PAGINACIÓN Y CONSULTA =================
+let paginaActualSalidas = 1;
+const limitePorPaginaSalidas = 5; 
 
-// ================= CONSULTAR =================
-async function mostrarRegistrosSalidas() {
-    const res = await fetch('query_sql/consultas_materiales.php?tipo=salidas');
-    const data = await res.json();
+async function mostrarRegistrosSalidas(page = 1, limit = limitePorPaginaSalidas) {
+    try {
+        const response = await fetch(`query_sql/consultas_materiales.php?tipo=salidas&page=${page}&limit=${limit}`);
+        const resultado = await response.json();
 
-    const tabla = document.getElementById('tabla-salidas');
-    const contenedor = document.getElementById('contenedor-tabla-salidas');
+        const tabla = document.getElementById('tabla-salidas');
+        const contenedor = document.getElementById('contenedor-tabla-salidas');
 
-    let html = '';
+        let html = '';
 
-    data.datos.forEach(r => {
-        html += `
-        <tr>
-            <td>${r.folio_material}</td>
-            <td>${r.descripcion_material_salida}</td>
-            <td>${r.descripcion_unidad_material}</td>
-            <td>${r.descripcion_estado_material}</td>
-            <td>${r.cantidad_material_salida}</td>
-            <td>${r.fecha_registro_salida}</td>
-        </tr>`;
-    });
+        if (!resultado.datos || resultado.datos.length === 0) {
+            html = `<tr><td colspan="6" class="text-center">No hay registros.</td></tr>`;
+            renderPaginacionSalidas(1, 1);
+        } else {
+            resultado.datos.forEach(r => {
+                html += `
+                <tr>
+                    <td>${r.folio_material}</td>
+                    <td>${r.descripcion_material_salida}</td>
+                    <td>${r.descripcion_unidad_material}</td>
+                    <td>${r.descripcion_estado_material}</td>
+                    <td>${r.cantidad_material_salida}</td>
+                    <td>${r.fecha_registro_salida}</td>
+                </tr>`;
+            });
+            const totalPaginas = Math.ceil(resultado.total / limit);
+            renderPaginacionSalidas(page, totalPaginas);
+        }
 
-    tabla.innerHTML = html;
-    contenedor.style.display = 'block';
+        tabla.innerHTML = html;
+        contenedor.style.display = 'block';
+
+    } catch (error) {
+        document.getElementById('tabla-salidas').innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar los registros.</td></tr>';
+        document.getElementById('contenedor-tabla-salidas').style.display = 'block';
+        renderPaginacionSalidas(1, 1);
+    }
 }
 
+function renderPaginacionSalidas(pagina, totalPaginas) {
+    const contenedor = document.getElementById('paginacion-salidas');
+    if (!contenedor) return;
+
+    if (totalPaginas <= 1) {
+        contenedor.innerHTML = '';
+        return;
+    }
+
+    let html = `<nav aria-label="Paginación de salidas">
+        <ul class="pagination justify-content-center">`;
+
+    html += `
+        <li class="page-item${pagina === 1 ? ' disabled' : ''}">
+            <button class="page-link" ${pagina === 1 ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaSalidas(${pagina - 1})">Anterior</button>
+        </li>`;
+
+    let start = Math.max(1, pagina - 2);
+    let end = Math.min(totalPaginas, pagina + 2);
+    if (pagina <= 3) end = Math.min(5, totalPaginas);
+    if (pagina >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
+
+    for (let i = start; i <= end; i++) {
+        html += `
+            <li class="page-item${i === pagina ? ' active' : ''}">
+                <button class="page-link" onclick="cambiarPaginaSalidas(${i})">${i}</button>
+            </li>`;
+    }
+
+    html += `
+        <li class="page-item${pagina === totalPaginas ? ' disabled' : ''}">
+            <button class="page-link" ${pagina === totalPaginas ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaSalidas(${pagina + 1})">Siguiente</button>
+        </li>`;
+
+    html += `</ul></nav>`;
+    contenedor.innerHTML = html;
+}
+
+window.cambiarPaginaSalidas = function(nuevaPagina) {
+    paginaActualSalidas = nuevaPagina;
+    mostrarRegistrosSalidas(paginaActualSalidas, limitePorPaginaSalidas);
+}
 
 // ================= UTIL =================
 function bloquearCamposMaterial(bloquear) {

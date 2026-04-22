@@ -18,7 +18,6 @@ async function cargarCatalogos() {
             estadoSelect.innerHTML += `<option value="${e.id_estado_material}">${e.descripcion_estado_material}</option>`;
         });
 
-
         // Categoría
         const categoriaSelect = document.getElementById('id_categoria');
         categoriaSelect.innerHTML = '<option value="" selected disabled>Selecciona una categoría</option>';
@@ -33,10 +32,8 @@ async function cargarCatalogos() {
             data.adscripciones.forEach(a => {
                 adscripcionSelect.innerHTML += `<option value="${a.valor}">${a.texto}</option>`;
             });
-        
         }
     } catch (error) {
-        // Si hay error, muestra mensaje en los selects
         ['unidad', 'estado', 'id_categoria'].forEach(id => {
             const select = document.getElementById(id);
             if (select) select.innerHTML = '<option value="">Error al cargar</option>';
@@ -44,27 +41,21 @@ async function cargarCatalogos() {
     }
 }
 
-// Llama cargarCatalogos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     cargarCatalogos();
 });
 
 // Autocompletar al escribir folio manualmente en el formulario principal
 const folioInput = document.getElementById('folio');
-// Función para validar formato de folio
 function folioValido(folio) {
     return /^MA-\d{8}$/.test(folio);
 }
-
-// Autocompletar al salir del campo (blur)
 folioInput.addEventListener('blur', function() {
     const folio = this.value.trim();
     if (folioValido(folio)) {
         autocompletarFormulario(folio);
     }
 });
-
-// Autocompletar al escribir si el formato es válido
 folioInput.addEventListener('input', function() {
     const folio = this.value.trim();
     if (folioValido(folio)) {
@@ -75,25 +66,31 @@ folioInput.addEventListener('input', function() {
 
 async function mostrarModal() {
     let datosMateriales = [];
+
     async function cargarMaterialesModal(filtro = '') {
-        const url = 'query_sql/modales_datos.php';
         try {
-            const response = await fetch(url);
-            const resultado = await response.json();
-            datosMateriales = resultado.datos || [];
+            const res = await fetch('query_sql/modales_datos.php?tipo=material');
+            const data = await res.json();
+
+            datosMateriales = data.datos || [];
+
             let filtrados = datosMateriales;
+
             if (filtro) {
                 const f = filtro.trim().toUpperCase();
+
                 filtrados = datosMateriales.filter(reg =>
                     (reg.folio_material && reg.folio_material.toUpperCase().includes(f)) ||
-                    (reg.descripcion_material_entrada && reg.descripcion_material_entrada.toUpperCase().includes(f))
+                    (reg.descripcion_material && reg.descripcion_material.toUpperCase().includes(f))
                 );
             }
-            let tabla = '';
+
+            let html = '';
+
             if (!filtrados.length) {
-                tabla = '<p>No hay registros.</p>';
+                html = '<p class="text-center text-muted">No hay registros.</p>';
             } else {
-                tabla = `
+                html = `
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -104,38 +101,48 @@ async function mostrarModal() {
                         </thead>
                         <tbody>
                 `;
+
                 filtrados.forEach(reg => {
-                    tabla += `
+                    html += `
                         <tr>
-                            <td>${reg.folio_material || ''}</td>
-                            <td>${reg.descripcion_material_entrada || ''}</td>
+                            <td>${reg.folio_material}</td>
+                            <td>${reg.descripcion_material}</td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="autocompletarFormulario('${reg.folio_material}')">Seleccionar</button>
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="autocompletarFormulario('${reg.folio_material}')">
+                                    Seleccionar
+                                </button>
                             </td>
                         </tr>
                     `;
                 });
-                tabla += `
-                        </tbody>
-                    </table>
-                `;
+
+                html += `</tbody></table>`;
             }
-            document.getElementById('contenedor-materiales-modal').innerHTML = tabla;
+
+          
+            document.getElementById('contenedor-materiales-modal').innerHTML = html;
+
         } catch (error) {
-            document.getElementById('contenedor-materiales-modal').innerHTML = '<p>Error al cargar los registros.</p>';
+            console.error(error);
+            document.getElementById('contenedor-materiales-modal').innerHTML =
+                '<p class="text-danger">Error al cargar los registros.</p>';
         }
     }
 
-    // Mostrar modal y cargar materiales
-    var modal = new bootstrap.Modal(document.getElementById('exampleModalCenter'));
+
+    const modal = new bootstrap.Modal(document.getElementById('exampleModalCenter'));
     modal.show();
+
     await cargarMaterialesModal();
 
-    // Buscar en tiempo real
+    
     const inputBuscar = document.getElementById('buscar-material-modal-entrada');
+
     if (inputBuscar) {
         inputBuscar.value = '';
-        inputBuscar.oninput = function() {
+
+        inputBuscar.oninput = function () {
             cargarMaterialesModal(this.value);
         };
     }
@@ -150,7 +157,6 @@ function seleccionarRegistro(folio, descripcion) {
 
 async function registrar(EnviarDAtos) {
     try {
-        // Convertir FormData a objeto plano
         const plainData = Object.fromEntries(EnviarDAtos.entries());
         console.log('%cDatos enviados al backend:', 'color: #1976d2; font-weight: bold;', plainData);
         const response = await fetch('query_sql/materiales_guardados.php', {
@@ -159,31 +165,28 @@ async function registrar(EnviarDAtos) {
             body: JSON.stringify(plainData)
         });
 
-            if (response.ok) {
-                const data = await response.json();
-                Swal.fire({
-                    title: "¡Material registrado con éxito!",
-                    text: "¿Deseas agregar otro material?",
-                    icon: "success",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, agregar otro",
-                    cancelButtonText: "No, salir",
-                    draggable: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Limpiar y desbloquear antes y después del reset para asegurar estado limpio
-                        limpiarFormularioMaterial();
-                        document.getElementById('form-entrada-material').reset();
-                        limpiarFormularioMaterial();
-                    } else {
-                        // Redirigir o cerrar modal, aquí solo limpiamos y podrías agregar lógica extra si lo deseas
-                        limpiarFormularioMaterial();
-                        document.getElementById('form-entrada-material').reset();
-                        limpiarFormularioMaterial();
-                        // window.location.href = '/ruta/deseada'; // Descomenta y ajusta si quieres redirigir
-                    }
-                });
-            } else {
+        if (response.ok) {
+            const data = await response.json();
+            Swal.fire({
+                title: "¡Material registrado con éxito!",
+                text: "¿Deseas agregar otro material?",
+                icon: "success",
+                showCancelButton: true,
+                confirmButtonText: "Sí, agregar otro",
+                cancelButtonText: "No, salir",
+                draggable: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    limpiarFormularioMaterial();
+                    document.getElementById('form-entrada-material').reset();
+                    limpiarFormularioMaterial();
+                } else {
+                    limpiarFormularioMaterial();
+                    document.getElementById('form-entrada-material').reset();
+                    limpiarFormularioMaterial();
+                }
+            });
+        } else {
             Swal.fire({
                 title: "Error",
                 text: "No se pudo guardar el material.",
@@ -201,14 +204,19 @@ async function registrar(EnviarDAtos) {
     }
 }
 
-async function mostrarRegistrosEntradas() {
+// ================= PAGINACIÓN =================
+let paginaActualEntradas = 1;
+const limitePorPaginaEntradas = 5; 
+
+async function mostrarRegistrosEntradas(page = 1, limit = limitePorPaginaEntradas) {
     try {
-        const response = await fetch('query_sql/consultas_materiales.php?tipo=entradas');
+        const response = await fetch(`query_sql/consultas_materiales.php?tipo=entradas&page=${page}&limit=${limit}`);
         const resultado = await response.json();
 
         if (!resultado.datos || resultado.datos.length === 0) {
             document.getElementById('tabla-registros').innerHTML = '<tr><td colspan="6" class="text-center">No hay registros.</td></tr>';
             document.getElementById('contenedor-tabla-registros').style.display = 'block';
+            renderPaginacionEntradas(1, 1);
             return;
         }
 
@@ -230,11 +238,64 @@ async function mostrarRegistrosEntradas() {
 
         document.getElementById('tabla-registros').innerHTML = filas;
         document.getElementById('contenedor-tabla-registros').style.display = 'block';
+
+        const totalPaginas = Math.ceil(resultado.total / limit);
+        renderPaginacionEntradas(page, totalPaginas);
+
     } catch (error) {
         document.getElementById('tabla-registros').innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar los registros.</td></tr>';
         document.getElementById('contenedor-tabla-registros').style.display = 'block';
+        renderPaginacionEntradas(1, 1);
     }
 }
+
+function renderPaginacionEntradas(pagina, totalPaginas) {
+    const contenedor = document.getElementById('paginacion-entradas');
+    if (!contenedor) return;
+
+    if (totalPaginas <= 1) {
+        contenedor.innerHTML = '';
+        return;
+    }
+
+    let html = `<nav aria-label="Paginación de registros">
+        <ul class="pagination justify-content-center">`;
+
+    // Botón anterior
+    html += `
+        <li class="page-item${pagina === 1 ? ' disabled' : ''}">
+            <button class="page-link" ${pagina === 1 ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaEntradas(${pagina - 1})">Anterior</button>
+        </li>`;
+
+    // Números de página (máximo 5 visibles)
+    let start = Math.max(1, pagina - 2);
+    let end = Math.min(totalPaginas, pagina + 2);
+    if (pagina <= 3) end = Math.min(5, totalPaginas);
+    if (pagina >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
+
+    for (let i = start; i <= end; i++) {
+        html += `
+            <li class="page-item${i === pagina ? ' active' : ''}">
+                <button class="page-link" onclick="cambiarPaginaEntradas(${i})">${i}</button>
+            </li>`;
+    }
+
+    // Botón siguiente
+    html += `
+        <li class="page-item${pagina === totalPaginas ? ' disabled' : ''}">
+            <button class="page-link" ${pagina === totalPaginas ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaEntradas(${pagina + 1})">Siguiente</button>
+        </li>`;
+
+    html += `</ul></nav>`;
+    contenedor.innerHTML = html;
+}
+
+window.cambiarPaginaEntradas = function(nuevaPagina) {
+    paginaActualEntradas = nuevaPagina;
+    mostrarRegistrosEntradas(paginaActualEntradas, limitePorPaginaEntradas);
+}
+
+// ================= FIN PAGINACIÓN =================
 
 async function autocompletarFormulario(folio) {
     try {
@@ -244,10 +305,8 @@ async function autocompletarFormulario(folio) {
             const d = result.datos;
             document.getElementById('folio').value = d.folio_material || '';
             document.getElementById('descripcion').value = d.descripcion_material_entrada || '';
-            // Mostrar cantidad como entero en el input
             let cantidad = Number(d.cantidad_material_entrada);
             document.getElementById('cantidad').value = (Number.isInteger(cantidad) ? cantidad : cantidad.toFixed(0)) || '';
-            // Seleccionar adscripción por valor (si existe en el select)
             const adsInput = document.getElementById('adscripcion');
             if (adsInput && d.adscripcion_modulo) {
                 adsInput.value = d.adscripcion_modulo;
@@ -255,15 +314,13 @@ async function autocompletarFormulario(folio) {
             document.getElementById('estado').value = d.id_estado_material_entrada || '';
             document.getElementById('unidad').value = d.id_unidad_material || '';
             document.getElementById('id_categoria').value = d.id_categoria_material || '';
-            // Bloquear campos solo si hay datos
             bloquearCamposMaterial(true);
-            // Cierra el modal si está abierto
             var modal = bootstrap.Modal.getInstance(document.getElementById('exampleModalCenter'));
             if (modal) modal.hide();
         } else {
             limpiarFormularioMaterial();
             bloquearCamposMaterial(false);
-            mostrarCampoFolio(false); // <-- Esto es lo importante
+            mostrarCampoFolio(false);
             Swal.fire({
                 icon: 'warning',
                 title: 'No encontrado',
@@ -283,17 +340,15 @@ async function autocompletarFormulario(folio) {
     }
 }
 
-//Bloquear o desbloquear campos del formulario de materiales
 function bloquearCamposMaterial(bloquear) {
     document.getElementById('folio').readOnly = bloquear;
     document.getElementById('descripcion').readOnly = bloquear;
-    document.getElementById('cantidad').readOnly = false; // Siempre editable
+    document.getElementById('cantidad').readOnly = false;
     document.getElementById('adscripcion').disabled = bloquear;
     document.getElementById('estado').disabled = bloquear;
     document.getElementById('unidad').disabled = bloquear;
     document.getElementById('id_categoria').disabled = bloquear;
 }
-
 
 function mostrarCampoFolio(mostrar) {
     const folioDiv = document.getElementById('folio').closest('.col-md-3');
@@ -316,7 +371,6 @@ function limpiarFormularioMaterial() {
     document.getElementById('estado').value = '';
     document.getElementById('unidad').value = '';
     document.getElementById('id_categoria').value = '';
-    // Desbloquear todos los campos manualmente para evitar bloqueos residuales
     document.getElementById('folio').readOnly = false;
     document.getElementById('descripcion').readOnly = false;
     document.getElementById('cantidad').readOnly = false;
@@ -324,24 +378,22 @@ function limpiarFormularioMaterial() {
     document.getElementById('estado').disabled = false;
     document.getElementById('unidad').disabled = false;
     document.getElementById('id_categoria').disabled = false;
-    // Si existe aviso de folio, mostrarlo
     let aviso = document.getElementById('aviso-folio-auto');
     if (aviso) aviso.style.display = 'none';
 }
 
+document.getElementById('btn-consultar-entradas').addEventListener('click', function() {
+    paginaActualEntradas = 1;
+    mostrarRegistrosEntradas(paginaActualEntradas, limitePorPaginaEntradas);
+});
 
-
-document.getElementById('btn-consultar-entradas').addEventListener('click', mostrarRegistrosEntradas);
-
-// Funcionalidad para el botón Limpiar
 document.getElementById('btn-limpiar-entrada').addEventListener('click', function() {
     document.getElementById('form-entrada-material').reset();
     limpiarFormularioMaterial();
-    // Limpiar la tabla de registros y ocultarla
     document.getElementById('tabla-registros').innerHTML = '';
     document.getElementById('contenedor-tabla-registros').style.display = 'none';
+    document.getElementById('paginacion-entradas').innerHTML = '';
 });
-
 
 document.getElementById('form-entrada-material').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -359,7 +411,6 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
     const form = this;
     const datos = new FormData(form);
 
-    // Validación de cantidad
     const cantidad = Number(datos.get('cantidad'));
     if (isNaN(cantidad) || cantidad <= 0) {
         Swal.fire({
@@ -378,7 +429,6 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
         denyButtonText: "No guardar",
         cancelButtonText: "Cancelar"
     }).then((result) => {
-
         if (!result.isConfirmed) {
             if (result.isDenied) {
                 Swal.fire({
@@ -391,9 +441,7 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
             return;
         }
 
-        //  NORMALIZACIÓN DE DATOS (CLAVE)
         const dataLimpia = new FormData();
-
         dataLimpia.set('folio_material', document.getElementById('folio').value || '');
         dataLimpia.set('descripcion_material_entrada', document.getElementById('descripcion').value);
         dataLimpia.set('id_unidad_material', document.getElementById('unidad').value);
@@ -402,7 +450,6 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
         dataLimpia.set('cantidad_material_entrada', document.getElementById('cantidad').value);
         dataLimpia.set('adscripcion_modulo', document.getElementById('adscripcion').value);
 
-        //  DEBUG REAL
         const plainData = Object.fromEntries(dataLimpia.entries());
         console.log('%cDatos enviados al backend:', 'color: green; font-weight: bold;', plainData);
 
@@ -410,11 +457,8 @@ document.getElementById('form-entrada-material').addEventListener('submit', asyn
     });
 });
 
-
-
 document.getElementById('modal').addEventListener('click', mostrarModal);
 
-// Forzar mayúsculas en el input de adscripcion al escribir
 document.getElementById('adscripcion').addEventListener('input', function() {
     this.value = this.value.toUpperCase();
 });

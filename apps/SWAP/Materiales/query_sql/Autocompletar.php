@@ -17,7 +17,7 @@ $sql = "
         e.descripcion_material_entrada,
         e.cantidad_material_entrada,
         e.adscripcion_modulo,
-        e.id_estado_material_entrada,
+        e.id_estado_material_entrada AS id_estado_material,
         cm.id_unidad_material,
         cm.id_categoria_material
     FROM entradas_materiales e

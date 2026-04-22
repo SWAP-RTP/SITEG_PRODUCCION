@@ -60,44 +60,42 @@
                             </div>
 
 
-                               <div class="col-md-3">
-                                    <label class="form-label fw-bold">Unidad de Medida</label>
-                                    <select class="form-select" id="unidad" name="unidad" required>
-                                        <option value="" selected disabled>Selecciona una unidad</option>
-                                      
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold">Estado Físico Material</label>
-                                    <select class="form-select" id="estado" name="estado" required>
-                                        <option value="" selected disabled>Selecciona un estado</option>
-                                    
-                                    </select>
-                                </div>
-                                  <div class="col-md-4">
-                                    <label class="form-label fw-bold">Categoría</label>
-                                    <select class="form-select" id="id_categoria" name="id_categoria" required>
-                                        <option value="" selected disabled>Selecciona una categoría</option>
-                                       
-                                    </select>
-                                </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Unidad de Medida</label>
+                                <select class="form-select" id="unidad" name="unidad" required>
+                                    <option value="" selected disabled>Selecciona una unidad</option>
+
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Estado Físico Material</label>
+                                <select class="form-select" id="estado" name="estado" required>
+                                    <option value="" selected disabled>Selecciona un estado</option>
+
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Categoría</label>
+                                <select class="form-select" id="id_categoria" name="id_categoria" required>
+                                    <option value="" selected disabled>Selecciona una categoría</option>
+
+                                </select>
+                            </div>
 
 
+                           
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Adscripcion</label>
-                                    <select class="form-select" id="adscripcion" name="adscripcion" required>
-                                        <option value="" selected disabled>Selecciona una adscripción</option>
-                                        <option value="ALMACEN CENTRAL">ALMACEN</option>
-                                        <option value="TALLER MECÁNICO">MODULO 4</option>
-                                    </select>
+                                    <input type="text" class="form-control" id="adscripcion" name="adscripcion_modulo"
+                                        required placeholder="Ej: ALMACEN CENTRAL o MODULO 4">
                                 </div>
 
 
-                                <div class="col-md-2">
-                                    <label class="form-label fw-bold">Cantidad</label>
-                                    <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"
-                                        required>
-                                </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Cantidad</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"
+                                    required>
+                            </div>
 
                             <div class="d-flex gap-2 justify-content-center">
                                 <button class="btn btn-success fw-bold px-4">
@@ -149,6 +147,7 @@
                     finalizar.</span>
 
             </div>
+
         </div>
 
         <!--tabla para consultar registros de salida-->
@@ -171,6 +170,7 @@
                             <!--aqui se insertaran los registros-->
                         </tbody>
                     </table>
+                    <div id="paginacion-salidas" class="mt-3"></div>
                 </div>
             </div>
         </div>
@@ -210,48 +210,62 @@
             });
         </script>
     </main>
-    <!-- Modal de trabajadores desactivado temporalmente por solicitud -->
 
-    <!-- Modal Bootstrap 5 para buscar materiales -->
+
+
+    <!-- Modal Bootstrap-5 de materiales (SALIDA) -->
     <div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="modalMaterialTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-              <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="modalMaterialTitle">
-                  <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Cerrar"></button>
-              </div>
-              <div class="modal-body">
-                <div id="contenedor-materiales-modal-salida">
-                  <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalMaterialTitle">
+                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
                 </div>
-                <!-- PAGINACIÓN FUNCIONAL -->
-                <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales-salida"
-                    style="display: none;">
-                  <ul class="pagination justify-content-end" id="ul-paginacion-materiales-salida">
-                    <!-- Se generará dinámicamente -->
-                  </ul>
-                </nav>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  <i class="bi bi-x-circle me-2"></i>Cerrar
-                </button>
-              </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="buscar-material-modal-salida"
+                            placeholder="Buscar por código o descripción...">
+                    </div>
+
+                    <!-- CONTENIDO -->
+                    <div id="contenedor-materiales-modal-salida">
+                        <p class="text-center text-muted">
+                            Escriba en descripción para filtrar o presione buscar...
+                        </p>
+                    </div>
+
+                    <!-- PAGINACIÓN -->
+                    <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales-salida"
+                        style="display: none;">
+                        <ul class="pagination justify-content-end" id="ul-paginacion-materiales-salida">
+                        </ul>
+                    </nav>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cerrar
+                    </button>
+                </div>
+
             </div>
         </div>
+    </div>
 
-        <?php include './components/pie.html'; ?>
+    <?php include './components/pie.html'; ?>
 
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-        <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script type="text/javascript" src="../includes/utils/menu.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="../includes/utils/menu.js"></script>
 
-      
-        <script src="scripts/registros_S.js"></script>
+
+    <script src="scripts/registros_S.js"></script>
 </body>
 
 </html>

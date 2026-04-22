@@ -13,7 +13,7 @@ if (!$data) {
     exit;
 }
 
-// 🔹 DETECTAR OPERACIÓN
+//  DETECTAR OPERACIÓN
 if (isset($data['cantidad_material_entrada'])) {
     guardarEntradaMaterial($data);
 } elseif (isset($data['cantidad_material_salida'])) {
@@ -38,7 +38,7 @@ function guardarEntradaMaterial($data) {
         exit;
     }
 
-    // 🔹 VALIDAR EXISTENCIA DEL MATERIAL
+    //  VALIDAR EXISTENCIA DEL MATERIAL
     $folioValido = false;
 
     if (!empty($data['folio_material'])) {
@@ -53,7 +53,7 @@ function guardarEntradaMaterial($data) {
         }
     }
 
-    // 🔹 CREAR MATERIAL SI NO EXISTE
+    //  CREAR MATERIAL SI NO EXISTE
     if (!$folioValido) {
 
         if (
@@ -92,7 +92,7 @@ function guardarEntradaMaterial($data) {
         $data['folio_material'] = $row_control['folio_material'];
     }
 
-    // 🔹 VALIDACIÓN FINAL
+    //  VALIDACIÓN FINAL
     if (
         empty($data['folio_material']) ||
         empty($data['cantidad_material_entrada']) ||
@@ -126,23 +126,24 @@ function guardarEntradaMaterial($data) {
         exit;
     }
 
-    // 🔹 SUMAR STOCK
-    $update = pg_query_params(
-        $conexion,
-        "UPDATE control_materiales 
-         SET stock_actual = stock_actual + $1
-         WHERE folio_material = $2",
-        [
-            $data['cantidad_material_entrada'],
-            $data['folio_material']
-        ]
-    );
+    //  SUMAR STOCK
+    // error_log("Actualizando stock para folio: {$data['folio_material']} con cantidad: {$data['cantidad_material_entrada']}");
+    // $update = pg_query_params(
+    //     $conexion,
+    //     "UPDATE control_materiales 
+    //      SET stock_actual = stock_actual + $1
+    //      WHERE folio_material = $2",
+    //     [
+    //         $data['cantidad_material_entrada'],
+    //         $data['folio_material']
+    //     ]
+    // );
 
-    if (!$update) {
-        pg_query($conexion, "ROLLBACK");
-        echo json_encode(['status' => 'error', 'message' => 'Error al actualizar stock']);
-        exit;
-    }
+    // if (!$update) {
+    //     pg_query($conexion, "ROLLBACK");
+    //     echo json_encode(['status' => 'error', 'message' => 'Error al actualizar stock']);
+    //     exit;
+    // }
 
     pg_query($conexion, "COMMIT");
 
@@ -181,7 +182,7 @@ function guardarSalidaMaterial($data) {
 
     $cantidadSalida = (float)$data['cantidad_material_salida'];
 
-    // 🔹 OBTENER STOCK REAL
+    //  OBTENER STOCK REAL
     $resStock = pg_query_params(
         $conexion,
         "SELECT stock_actual FROM control_materiales WHERE folio_material = $1",
@@ -209,7 +210,7 @@ function guardarSalidaMaterial($data) {
 
     pg_query($conexion, "BEGIN");
 
-    // 🔹 INSERT SALIDA
+    // INSERT SALIDA
     $result = pg_query_params($conexion, "
         INSERT INTO salidas_materiales 
         (folio_material, descripcion_material_salida, id_estado_material_salida, cantidad_material_salida, adscripcion_modulo)
@@ -231,7 +232,7 @@ function guardarSalidaMaterial($data) {
         exit;
     }
 
-    // 🔹 RESTAR STOCK
+    //  RESTAR STOCK
     $update = pg_query_params(
         $conexion,
         "UPDATE control_materiales 
