@@ -50,7 +50,7 @@ $movimientos = pg_fetch_result($resMov, 0, 0);
 
 echo json_encode([
     'total_materiales' => (int)$total,
-    'stock_total' => (float)$stockTotal,
+    'stock_total' => (int)$stockTotal,
     'stock_bajo' => (int)$stockBajo,
     'movimientos_hoy' => (int)$movimientos,
     'materiales_bajo' => $materiales

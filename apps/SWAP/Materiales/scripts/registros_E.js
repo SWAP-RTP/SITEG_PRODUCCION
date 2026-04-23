@@ -1,3 +1,4 @@
+let timeoutFolio;
 async function cargarCatalogos() {
     try {
         const response = await fetch('query_sql/catalogo_listas.php');
@@ -6,28 +7,28 @@ async function cargarCatalogos() {
 
         // Unidad de Medida
         const unidadSelect = document.getElementById('unidad');
-        unidadSelect.innerHTML = '<option value="" selected disabled>Selecciona una unidad</option>';
+        unidadSelect.innerHTML = '<option value="" selected disabled>Selecciona</option>';
         data.unidades.forEach(u => {
             unidadSelect.innerHTML += `<option value="${u.id_unidad_material}">${u.descripcion_unidad_material}</option>`;
         });
 
         // Estado Físico Material
         const estadoSelect = document.getElementById('estado');
-        estadoSelect.innerHTML = '<option value="" selected disabled>Selecciona un estado</option>';
+        estadoSelect.innerHTML = '<option value="" selected disabled>Selecciona</option>';
         data.estados.forEach(e => {
             estadoSelect.innerHTML += `<option value="${e.id_estado_material}">${e.descripcion_estado_material}</option>`;
         });
 
         // Categoría
         const categoriaSelect = document.getElementById('id_categoria');
-        categoriaSelect.innerHTML = '<option value="" selected disabled>Selecciona una categoría</option>';
+        categoriaSelect.innerHTML = '<option value="" selected disabled>Selecciona</option>';
         data.categorias.forEach(c => {
             categoriaSelect.innerHTML += `<option value="${c.id_categoria_material}">${c.descripcion_categoria_material}</option>`;
         });
 
         // Adscripción (llenado dinámico)
         const adscripcionSelect = document.getElementById('adscripcion');
-        adscripcionSelect.innerHTML = '<option value="" selected disabled>Selecciona una adscripción</option>';
+        adscripcionSelect.innerHTML = '<option value="" selected disabled>Selecciona</option>';
         if (data.adscripciones) {
             data.adscripciones.forEach(a => {
                 adscripcionSelect.innerHTML += `<option value="${a.valor}">${a.texto}</option>`;
@@ -50,7 +51,7 @@ const folioInput = document.getElementById('folio');
 function folioValido(folio) {
     return /^MA-\d{8}$/.test(folio);
 }
-folioInput.addEventListener('blur', function() {
+folioInput.addEventListener('input', function() {
     const folio = this.value.trim();
     if (folioValido(folio)) {
         autocompletarFormulario(folio);
@@ -301,6 +302,7 @@ async function autocompletarFormulario(folio) {
     try {
         const response = await fetch(`query_sql/Autocompletar.php?folio=${encodeURIComponent(folio)}`);
         const result = await response.json();
+         console.log(result.datos);
         if (result.status === 'ok' && result.datos) {
             const d = result.datos;
             document.getElementById('folio').value = d.folio_material || '';
@@ -380,6 +382,9 @@ function limpiarFormularioMaterial() {
     document.getElementById('id_categoria').disabled = false;
     let aviso = document.getElementById('aviso-folio-auto');
     if (aviso) aviso.style.display = 'none';
+
+     // Mostrar el campo de folio
+    mostrarCampoFolio(true);
 }
 
 document.getElementById('btn-consultar-entradas').addEventListener('click', function() {

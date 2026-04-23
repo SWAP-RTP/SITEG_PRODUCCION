@@ -149,4 +149,8 @@
     background: linear-gradient(180deg, #7f9bae 0%, #5e798e 100%);
 }
 
+.oculto {
+    display: none !important;
+}
+
   

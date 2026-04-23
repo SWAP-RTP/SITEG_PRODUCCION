@@ -54,43 +54,7 @@
                                             <i class="bi bi-question-circle-fill text-warning fs-4" title="Ayuda"></i>
                                         </button>
                                     </div>
-                                    <!-- Modal de ayuda inventario -->
-                                    <div class="modal fade" id="modalAyudaInventario" tabindex="-1"
-                                        aria-labelledby="modalAyudaInventarioLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-warning-subtle">
-                                                    <h5 class="modal-title" id="modalAyudaInventarioLabel"><i
-                                                            class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda
-                                                        para inventario</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <ul>
-                                                        <li>Consulta el inventario de materiales disponibles y agotados.
-                                                        </li>
-                                                        <li>Usa el buscador para filtrar materiales por descripción o
-                                                            código.</li>
-                                                        <li>Los materiales agotados se muestran resaltados en rojo.</li>
-                                                        <li>Puedes registrar nuevas entradas o salidas desde los
-                                                            formularios correspondientes.</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            var ayudaBtn = document.getElementById('ayuda-inventario');
-                                            if (ayudaBtn) {
-                                                ayudaBtn.addEventListener('click', function () {
-                                                    var modal = new bootstrap.Modal(document.getElementById('modalAyudaInventario'));
-                                                    modal.show();
-                                                });
-                                            }
-                                        });
-                                    </script>
+
                                 </div>
 
 
@@ -126,28 +90,19 @@
                                                 id="stock-actual" name="stock-actual" readonly value="0">
                                         </div>
 
-                                        <!-- <div class="col-md-3">
-                                            <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock
-                                                Mínimo</label>
-                                            <input type="number" class="form-control form-control-sm" id="stock_minimo"
-                                                name="stock_minimo" min="0">
-                                        </div> -->
-
-
                                         <div class="col-md-3">
                                             <label class="form-label fw-bold">Adscripcion</label>
-                                            <select class="form-select" id="adscripcion" name="adscripcion" required>
-                                                <option value="MODULO 4" selected>MODULO 4</option>
-                                                <option value="ALMACEN CENTRAL">ALMACEN CENTRAL</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="adscripcion"
+                                                name="adscripcion_modulo" required
+                                                placeholder="Ej: ALMACEN CENTRAL o MODULO 4">
                                         </div>
-<!-- 
+                                        <!-- 
                                         <div class="col-md-2">
                                             <label class="form-label fw-bold">Cantidad</label>
                                             <input type="number" class="form-control bg-light" id="cantidad"
                                                 name="cantidad" min="1" readonly value="0">
-                                        </div>
- -->
+                                        </div> -->
+
 
                                     </div>
                                 </div>
@@ -167,47 +122,56 @@
 
 
                             </div>
-                            <div class="container mt-4">
 
-                                <h2 class="mb-4">Dashboard de Inventario</h2>
+                            <!--encapsular el contenido del dashboard-->
+                            <div class="container mt-5" id="dashboard-inventario" style="display: none;">
 
+                                <h3 class="mb-4 fw-bold text-center text-primary">
+                                    <i class="bi bi-graph-up-arrow me-2"></i>Dashboard de Inventario
+                                </h3>
+
+                                <!-- KPIs -->
                                 <div class="row g-4">
 
-                                    <!-- TOTAL MATERIALES -->
                                     <div class="col-md-3">
-                                        <div class="card text-white bg-primary shadow">
-                                            <div class="card-body">
-                                                <h6>Total Materiales</h6>
-                                                <h2 id="total-materiales">0</h2>
+                                        <div class="card border-0 shadow-lg text-white rounded-4"
+                                            style="background: linear-gradient(135deg, #0d6efd, #3d8bfd);">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-box-seam fs-1"></i>
+                                                <h6 class="mt-2">Total Materiales</h6>
+                                                <h2 id="total-materiales" class="fw-bold">0</h2>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- STOCK TOTAL -->
                                     <div class="col-md-3">
-                                        <div class="card text-white bg-success shadow">
-                                            <div class="card-body">
-                                                <h6>Stock Total</h6>
+                                        <div class="card border-0 shadow-lg text-white rounded-4"
+                                            style="background: linear-gradient(135deg, #198754, #3ecf8e);">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-stack fs-1"></i>
+                                                <h6 class="mt-2">Stock Total</h6>
                                                 <h2 id="stock-total">0</h2>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- STOCK BAJO -->
                                     <div class="col-md-3">
-                                        <div class="card text-white bg-danger shadow">
-                                            <div class="card-body">
-                                                <h6>Stock Bajo</h6>
+                                        <div class="card border-0 shadow-lg text-white rounded-4"
+                                            style="background: linear-gradient(135deg, #dc3545, #ff6b6b);">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                                                <h6 class="mt-2">Stock Bajo</h6>
                                                 <h2 id="stock-bajo">0</h2>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- MOVIMIENTOS HOY -->
                                     <div class="col-md-3">
-                                        <div class="card text-white bg-dark shadow">
-                                            <div class="card-body">
-                                                <h6>Movimientos Hoy</h6>
+                                        <div class="card border-0 shadow-lg text-white rounded-4"
+                                            style="background: linear-gradient(135deg, #212529, #495057);">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-clock-history fs-1"></i>
+                                                <h6 class="mt-2">Movimientos Hoy</h6>
                                                 <h2 id="movimientos-hoy">0</h2>
                                             </div>
                                         </div>
@@ -215,23 +179,34 @@
 
                                 </div>
 
-                                <!-- TABLA STOCK BAJO -->
-                                <div class="card mt-4 shadow">
-                                    <div class="card-header bg-warning">
-                                        Materiales con bajo stock
+                                <!-- TABLA -->
+                                <div class="card mt-5 border-0 shadow-lg rounded-4">
+
+                                    <div
+                                        class="card-header bg-warning fw-bold d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="bi bi-exclamation-circle me-2"></i>
+                                            Materiales con bajo stock
+                                        </span>
+                                        <span class="badge bg-dark">Atención</span>
                                     </div>
-                                    <div class="card-body">
-                                        <table class="table">
-                                            <thead>
+
+                                    <div class="card-body table-responsive">
+
+                                        <table class="table table-hover align-middle text-center">
+
+                                            <thead class="table-dark">
                                                 <tr>
                                                     <th>Folio</th>
                                                     <th>Descripción</th>
-                                                    <th>Stock actual</th>
-                                                    <th>Acción</th>
+                                                    <th>Stock</th>
                                                 </tr>
                                             </thead>
+
                                             <tbody id="tabla-stock-bajo"></tbody>
+
                                         </table>
+
                                     </div>
                                 </div>
 
@@ -295,12 +270,6 @@
         <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
         <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <!-- <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_utils.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_alertas.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_catalogos.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_modal.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_formularios.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script> -->
         <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script>
 
 

@@ -13,19 +13,33 @@ if (!$folio) {
 
 $sql = "
     SELECT 
-        e.folio_material,
-        e.descripcion_material_entrada,
-        e.cantidad_material_entrada,
-        e.adscripcion_modulo,
-        e.id_estado_material_entrada AS id_estado_material,
+        cm.folio_material,
+        cm.descripcion_material,
+        cm.stock_actual,
         cm.id_unidad_material,
-        cm.id_categoria_material
-    FROM entradas_materiales e
-    INNER JOIN control_materiales cm ON e.folio_material = cm.folio_material
-    WHERE e.folio_material = $1
+        cm.id_categoria_material,
+        cm.adscripcion_modulo,
+
+        e.id_estado_material_entrada
+
+    FROM control_materiales cm
+
+    LEFT JOIN LATERAL (
+        SELECT id_estado_material_entrada
+        FROM entradas_materiales
+        WHERE folio_material = cm.folio_material
+        ORDER BY fecha_registro_entrada DESC
+        LIMIT 1
+    ) e ON true
+
+    WHERE cm.folio_material = $1
     LIMIT 1
 ";
+
 $res = pg_query_params($conexion, $sql, [$folio]);
 $datos = pg_fetch_assoc($res);
 
-echo json_encode(['status' => 'ok', 'datos' => $datos]);
+echo json_encode([
+    'status' => 'ok',
+    'datos' => $datos
+]);

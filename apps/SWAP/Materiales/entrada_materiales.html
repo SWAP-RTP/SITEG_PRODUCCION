@@ -65,21 +65,21 @@
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Unidad de Medida</label>
                                     <select class="form-select" id="unidad" name="id_unidad_material" required>
-                                        <option value="" selected disabled>Selecciona una unidad</option>
+                                        <option value="" selected disabled>Selecciona...</option>
 
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Estado Físico Material</label>
                                     <select class="form-select" id="estado" name="id_estado_material_entrada" required>
-                                        <option value="" selected disabled>Selecciona un estado</option>
+                                        <option value="" selected disabled>Selecciona...</option>
 
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold">Categoría</label>
                                     <select class="form-select" id="id_categoria" name="id_categoria_material" required>
-                                        <option value="" selected disabled>Selecciona una categoría</option>
+                                        <option value="" selected disabled>Selecciona...</option>
 
                                     </select>
                                 </div>
@@ -121,78 +121,53 @@
                                 </div>
                             </div>
                         </form>
-                        <!-- Modal de ayuda -->
-                        <div class="modal fade" id="modalAyudaEntrada" tabindex="-1"
-                            aria-labelledby="modalAyudaEntradaLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-warning-subtle">
-                                        <h5 class="modal-title" id="modalAyudaEntradaLabel"><i
-                                                class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda para
-                                            registro de entrada</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Cerrar"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <ul>
-                                            <li>Llena todos los campos obligatorios del formulario.</li>
-                                            <li>Si el material ya existe, puedes buscarlo usando el botón <i
-                                                    class='bi bi-search'></i> y filtrar por código o descripción. Al
-                                                seleccionar un material, los datos se llenan automáticamente y solo
-                                                debes capturar la cantidad a ingresar.</li>
-                                            <li>Si el material no existe, ingresa la descripción y los datos requeridos.
-                                                El código se generará automáticamente al guardar.</li>
-                                            <li>La cantidad debe ser un número entero mayor a cero.</li>
-                                            <li>Puedes limpiar el formulario y la consulta de registros con el botón
-                                                <b>Limpiar</b>.
-                                            </li>
-                                            <li>Guarda para registrar la entrada. El sistema sumará la cantidad si el
-                                                material ya existe.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>
             <!--tabla para consultar registros de entrada-->
-            <div class="card mt-4 shadow" id="contenedor-tabla-registros" style="display: none;">
-                <div class="card-body">
-                    <h4 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>Últimos Registros Entrada</h4>
+            <div class="card mt-4 shadow-lg border-0 rounded-4 overflow-hidden" id="contenedor-tabla-registros"
+                style="display: none;">
+
+                <!-- HEADER -->
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>Últimos Registros de Entrada
+                    </h5>
+                    <span class="badge bg-light text-dark">Historial</span>
+                </div>
+
+                <!-- BODY -->
+                <div class="card-body p-0 bg-light">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle tabla-observaciones">
-                            <thead class="table-dark">
+
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark text-center">
                                 <tr>
                                     <th>Folio</th>
                                     <th>Descripción</th>
                                     <th>Unidad</th>
-                                    <th>Estado Fisico</th>
+                                    <th>Estado</th>
                                     <th>Cantidad</th>
-                                    <th>Fecha Registro</th>
+                                    <th>Fecha</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-registros">
-                                <!--aqui se insertarán los registros-->
+
+                            <tbody id="tabla-registros" class="text-center">
+                                <!-- dinámico -->
                             </tbody>
+
                         </table>
-                        <div id="paginacion-entradas" class="mt-3"></div>
+
                     </div>
                 </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer bg-white text-center">
+                    <div id="paginacion-entradas"></div>
+                </div>
+
             </div>
-
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    var ayudaBtn = document.getElementById('ayuda-entrada');
-                    if (ayudaBtn) {
-                        ayudaBtn.addEventListener('click', function () {
-                            var modal = new bootstrap.Modal(document.getElementById('modalAyudaEntrada'));
-                            modal.show();
-                        });
-                    }
-                });
-            </script>
     </main>
 
 
@@ -212,7 +187,7 @@
                 </div>
                 <div class="modal-body">
 
-                
+
 
                     <div class="mb-3">
                         <input type="text" class="form-control" id="buscar-material-modal-entrada"
@@ -250,12 +225,6 @@
         <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script type="text/javascript" src="../includes/utils/menu.js"></script>
-        <!-- <script type="text/javascript" src="scripts/helpers/materiales_utils.js"></script>
-<script type="text/javascript" src="scripts/helpers/materiales_alertas.js"></script>
-<script type="text/javascript" src="scripts/helpers/materiales_catalogos.js"></script>
-<script type="text/javascript" src="scripts/helpers/materiales_modal.js"></script>
-<script type="text/javascript" src="scripts/helpers/materiales_formularios.js"></script>
-<script type="text/javascript" src="scripts/entrada_material.js"></script> -->
         <script type="text/javascript" src="scripts/registros_E.js"></script>
 </body>
 

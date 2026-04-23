@@ -24,7 +24,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.getElementById('btn-consultar-salidas')?.addEventListener('click', function() {
+    // LISTENER PARA EL BUSCADOR DEL MODAL (CORRECCIÓN)
+    document.getElementById('buscar-material-modal-salida')?.addEventListener('input', function () {
+        filtrarMaterialesSalida(this.value);
+    });
+
+    document.getElementById('btn-consultar-salidas')?.addEventListener('click', function () {
         paginaActualSalidas = 1;
         mostrarRegistrosSalidas(paginaActualSalidas, limitePorPaginaSalidas);
     });
@@ -37,12 +42,14 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('paginacion-salidas').innerHTML = '';
     });
 
+    // Cambié el listener para que abra el modal correctamente
     document.getElementById('modal-material')?.addEventListener('click', mostrarModal);
 
     document.getElementById('adscripcion')?.addEventListener('input', function () {
         this.value = this.value.toUpperCase();
     });
 
+    // ================= VALIDACIÓN SALIDA =================
     document.getElementById('form-salida-material')?.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -58,6 +65,30 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const stockRestante = stockActualGlobal - cantidad;
+
+        if (stockRestante <= 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Stock insuficiente",
+                text: "No puedes dejar el stock en 0 o negativo."
+            });
+            return;
+        }
+
+        if (stockRestante === 1) {
+            const confirmacion = await Swal.fire({
+                icon: "warning",
+                title: "Stock crítico",
+                text: "El material quedará con solo 1 unidad",
+                showCancelButton: true,
+                confirmButtonText: "Continuar",
+                cancelButtonText: "Cancelar"
+            });
+
+            if (!confirmacion.isConfirmed) return;
+        }
+
         Swal.fire({
             title: "¿Guardar salida?",
             showCancelButton: true,
@@ -71,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data.set('id_unidad_material', document.getElementById('unidad').value);
             data.set('id_categoria_material', document.getElementById('id_categoria').value);
             data.set('id_estado_material_salida', document.getElementById('estado').value);
-            data.set('cantidad_material_salida', document.getElementById('cantidad').value);
+            data.set('cantidad_material_salida', cantidad);
             data.set('adscripcion_modulo', document.getElementById('adscripcion').value);
 
             registrarSalida(data);
@@ -80,169 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// ================= CATALOGOS =================
-async function cargarCatalogos() {
-    try {
-        const res = await fetch('query_sql/catalogo_listas.php');
-        const data = await res.json();
+// ================= VARIABLES =================
+let datosMaterialesSalida = [];
+let stockActualGlobal = 0;
 
-        llenarSelect('unidad', data.unidades, 'id_unidad_material', 'descripcion_unidad_material');
-        llenarSelect('estado', data.estados, 'id_estado_material', 'descripcion_estado_material');
-        llenarSelect('id_categoria', data.categorias, 'id_categoria_material', 'descripcion_categoria_material');
-
-    } catch {
-        console.error("Error cargando catálogos");
-    }
-}
-
-function llenarSelect(id, datos, value, text) {
-    const select = document.getElementById(id);
-    if (!select) return;
-
-    select.innerHTML = '<option disabled selected>Selecciona</option>';
-    datos?.forEach(d => {
-        select.innerHTML += `<option value="${d[value]}">${d[text]}</option>`;
-    });
-}
-
-// ================= MODAL =================
-async function mostrarModal() {
-    const modal = new bootstrap.Modal(document.getElementById('modalMaterial'));
-    modal.show();
-
-    const contenedor = document.getElementById('contenedor-materiales-modal-salida');
-
-    try {
-        const res = await fetch('query_sql/modales_datos.php?tipo=material');
-        const data = await res.json();
-
-        let html = `<table class="table">
-            <thead>
-                <tr>
-                    <th>Folio</th>
-                    <th>Descripción</th>
-                    <th></th>
-                </tr>
-            </thead><tbody>`;
-
-        data.datos.forEach(reg => {
-            html += `
-                <tr>
-                    <td>${reg.folio_material}</td>
-                    <td>${reg.descripcion_material}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary"
-                        onclick="autocompletarFormulario('${reg.folio_material}')">
-                        Seleccionar
-                        </button>
-                    </td>
-                </tr>`;
-        });
-
-        html += '</tbody></table>';
-        contenedor.innerHTML = html;
-
-    } catch {
-        contenedor.innerHTML = "Error al cargar";
-    }
-}
-
-// ================= AUTOCOMPLETE =================
-async function autocompletarFormulario(folio) {
-    try {
-        const res = await fetch(`query_sql/buscar_datos.php?folio_material=${encodeURIComponent(folio)}`);
-
-        const text = await res.text();
-
-        if (!text) {
-            throw new Error("Respuesta vacía del servidor");
-        }
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            console.error("Respuesta inválida:", text);
-            throw new Error("JSON inválido");
-        }
-
-        if (!data || data.error) {
-            throw new Error(data?.error || "No encontrado");
-        }
-
-        document.getElementById('folio').value = data.folio_material || '';
-        document.getElementById('descripcion').value = data.descripcion_material || '';
-        document.getElementById('unidad').value = data.id_unidad_material || '';
-        document.getElementById('id_categoria').value = data.id_categoria_material || '';
-        document.getElementById('adscripcion').value = data.adscripcion_modulo || '';
-
-        if (data.id_estado_material) {
-            document.getElementById('estado').value = data.id_estado_material;
-        } else {
-            document.getElementById('estado').value = '';
-        }
-
-        bloquearCamposMaterial(true);
-        document.getElementById('estado').disabled = false;
-        var modal = bootstrap.Modal.getInstance(document.getElementById('modalMaterial'));
-        if (modal) modal.hide();
-
-    } catch (error) {
-        console.error("ERROR AUTOCOMPLETE:", error);
-
-        limpiarFormularioMaterial();
-
-        Swal.fire({
-            icon: "warning",
-            title: "No encontrado",
-            text: error.message
-        });
-    }
-}
-
-// ================= REGISTRAR =================
-async function registrarSalida(formData) {
-    // Convierte FormData a objeto plano
-    const plainData = Object.fromEntries(formData.entries());
-    try {
-        const response = await fetch('query_sql/materiales_salida_guardados.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(plainData)
-        });
-
-        const text = await response.text();
-
-        if (!text) {
-            throw new Error("Respuesta vacía del servidor");
-        }
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            console.error("Respuesta inválida:", text);
-            throw new Error("El servidor no devolvió JSON válido");
-        }
-
-        if (data.status === "ok") {
-            Swal.fire("Éxito", data.message, "success");
-            document.getElementById('form-salida-material').reset();
-            limpiarFormularioMaterial();
-        } else {
-            Swal.fire("Error", data.message || "Error desconocido", "error");
-        }
-
-    } catch (error) {
-        console.error(error);
-        Swal.fire("Error", "Fallo en la comunicación con el servidor", "error");
-    }
-}
-
-// ================= PAGINACIÓN Y CONSULTA =================
+// ================= PAGINACIÓN =================
 let paginaActualSalidas = 1;
-const limitePorPaginaSalidas = 5; 
+const limitePorPaginaSalidas = 5;
 
+// ================= CONSULTA =================
 async function mostrarRegistrosSalidas(page = 1, limit = limitePorPaginaSalidas) {
     try {
         const response = await fetch(`query_sql/consultas_materiales.php?tipo=salidas&page=${page}&limit=${limit}`);
@@ -268,6 +145,7 @@ async function mostrarRegistrosSalidas(page = 1, limit = limitePorPaginaSalidas)
                     <td>${r.fecha_registro_salida}</td>
                 </tr>`;
             });
+
             const totalPaginas = Math.ceil(resultado.total / limit);
             renderPaginacionSalidas(page, totalPaginas);
         }
@@ -276,9 +154,10 @@ async function mostrarRegistrosSalidas(page = 1, limit = limitePorPaginaSalidas)
         contenedor.style.display = 'block';
 
     } catch (error) {
-        document.getElementById('tabla-salidas').innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar los registros.</td></tr>';
+        console.error(error);
+        document.getElementById('tabla-salidas').innerHTML =
+            '<tr><td colspan="6" class="text-center">Error al cargar los registros.</td></tr>';
         document.getElementById('contenedor-tabla-salidas').style.display = 'block';
-        renderPaginacionSalidas(1, 1);
     }
 }
 
@@ -291,49 +170,181 @@ function renderPaginacionSalidas(pagina, totalPaginas) {
         return;
     }
 
-    let html = `<nav aria-label="Paginación de salidas">
-        <ul class="pagination justify-content-center">`;
-
-    html += `
-        <li class="page-item${pagina === 1 ? ' disabled' : ''}">
-            <button class="page-link" ${pagina === 1 ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaSalidas(${pagina - 1})">Anterior</button>
-        </li>`;
-
-    let start = Math.max(1, pagina - 2);
-    let end = Math.min(totalPaginas, pagina + 2);
-    if (pagina <= 3) end = Math.min(5, totalPaginas);
-    if (pagina >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
-
-    for (let i = start; i <= end; i++) {
-        html += `
-            <li class="page-item${i === pagina ? ' active' : ''}">
-                <button class="page-link" onclick="cambiarPaginaSalidas(${i})">${i}</button>
+    let html = `<ul class="pagination justify-content-center">`;
+    html += `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaSalidas(${pagina - 1})">Anterior</button>
             </li>`;
+
+    for (let i = 1; i <= totalPaginas; i++) {
+        html += `<li class="page-item ${i === pagina ? 'active' : ''}">
+                    <button class="page-link" onclick="cambiarPaginaSalidas(${i})">${i}</button>
+                </li>`;
     }
 
-    html += `
-        <li class="page-item${pagina === totalPaginas ? ' disabled' : ''}">
-            <button class="page-link" ${pagina === totalPaginas ? 'tabindex="-1" aria-disabled="true"' : ''} onclick="cambiarPaginaSalidas(${pagina + 1})">Siguiente</button>
-        </li>`;
+    html += `<li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaSalidas(${pagina + 1})">Siguiente</button>
+            </li></ul>`;
 
-    html += `</ul></nav>`;
     contenedor.innerHTML = html;
 }
 
-window.cambiarPaginaSalidas = function(nuevaPagina) {
+window.cambiarPaginaSalidas = function (nuevaPagina) {
     paginaActualSalidas = nuevaPagina;
     mostrarRegistrosSalidas(paginaActualSalidas, limitePorPaginaSalidas);
+};
+
+// ================= RESTO =================
+async function cargarCatalogos() {
+    try {
+        const res = await fetch('query_sql/catalogo_listas.php');
+        const data = await res.json();
+        llenarSelect('unidad', data.unidades, 'id_unidad_material', 'descripcion_unidad_material');
+        llenarSelect('estado', data.estados, 'id_estado_material', 'descripcion_estado_material');
+        llenarSelect('id_categoria', data.categorias, 'id_categoria_material', 'descripcion_categoria_material');
+    } catch {
+        console.error("Error cargando catálogos");
+    }
 }
 
-// ================= UTIL =================
+function llenarSelect(id, datos, value, text) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = '<option disabled selected value="">Selecciona</option>';
+    datos?.forEach(d => {
+        select.innerHTML += `<option value="${d[value]}">${d[text]}</option>`;
+    });
+}
+
+async function mostrarModal() {
+    const modalElement = document.getElementById('modalMaterial');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.show();
+
+    // Limpiar buscador al abrir
+    const inputBusqueda = document.getElementById('buscar-material-modal-salida');
+    if(inputBusqueda) inputBusqueda.value = '';
+
+    try {
+        const res = await fetch('query_sql/modales_datos.php?tipo=material');
+        const data = await res.json();
+        datosMaterialesSalida = data.datos || [];
+        filtrarMaterialesSalida();
+    } catch (error) {
+        console.error("Error cargando modal:", error);
+    }
+}
+
+async function autocompletarFormulario(folio) {
+    try {
+        const res = await fetch(`query_sql/buscar_datos.php?folio_material=${encodeURIComponent(folio)}`);
+        
+        // Manejo del 404 (Material no encontrado)
+        if (res.status === 404) {
+            Swal.fire({
+                icon: "error",
+                title: "Material no registrado",
+                text: `El folio ${folio} no existe en el registro.`,
+                confirmButtonColor: "#198754"
+            });
+            document.getElementById('folio').value = ''; 
+            limpiarFormularioMaterial();
+            return;
+        }
+
+        const data = await res.json();
+
+        if (data && data.folio_material) {
+            document.getElementById('folio').value = data.folio_material;
+            document.getElementById('descripcion').value = data.descripcion_material || '';
+            document.getElementById('unidad').value = data.id_unidad_material || '';
+            document.getElementById('id_categoria').value = data.id_categoria_material || '';
+            document.getElementById('adscripcion').value = data.adscripcion_modulo || '';
+            document.getElementById('estado').value = data.id_estado_material || '';
+
+            stockActualGlobal = Number(data.stock_actual || 0);
+
+            bloquearCamposMaterial(true);
+            document.getElementById('estado').disabled = false;
+
+            const modalElement = document.getElementById('modalMaterial');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
+    } catch (error) {
+        console.error("Error al buscar datos:", error);
+        Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    }
+}
+
+async function registrarSalida(formData) {
+    const plainData = Object.fromEntries(formData.entries());
+    const response = await fetch('query_sql/materiales_salida_guardados.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(plainData)
+    });
+    const data = await response.json();
+    if (data.status === "ok") {
+        Swal.fire("Éxito", data.message, "success");
+        document.getElementById('form-salida-material').reset();
+        limpiarFormularioMaterial();
+        stockActualGlobal = 0;
+    } else {
+        Swal.fire("Error", data.message, "error");
+    }
+}
+
+function filtrarMaterialesSalida(filtro = '') {
+    const contenedor = document.getElementById('contenedor-materiales-modal-salida');
+    let filtrados = datosMaterialesSalida;
+
+    if (filtro) {
+        const f = filtro.toUpperCase();
+        filtrados = datosMaterialesSalida.filter(reg =>
+            (reg.folio_material || '').toUpperCase().includes(f) ||
+            (reg.descripcion_material || '').toUpperCase().includes(f)
+        );
+    }
+
+    if (filtrados.length === 0) {
+        contenedor.innerHTML = '<p class="text-center text-muted my-3">No se encontraron coincidencias.</p>';
+        return;
+    }
+
+    let html = `<table class="table table-sm table-hover">
+                <thead class="table-light"><tr><th>Folio</th><th>Descripción</th><th>Acción</th></tr></thead>
+                <tbody>`;
+
+    filtrados.forEach(reg => {
+        html += `
+        <tr>
+            <td>${reg.folio_material}</td>
+            <td>${reg.descripcion_material}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-primary" onclick="autocompletarFormulario('${reg.folio_material}')">
+                    Seleccionar
+                </button>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    contenedor.innerHTML = html;
+}
+
 function bloquearCamposMaterial(bloquear) {
-    ['folio','descripcion','adscripcion','estado','unidad','id_categoria']
-        .forEach(id => document.getElementById(id).disabled = bloquear);
+    ['descripcion','adscripcion','estado','unidad','id_categoria']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.disabled = bloquear;
+        });
 }
 
 function limpiarFormularioMaterial() {
     ['descripcion','cantidad','adscripcion','estado','unidad','id_categoria']
-        .forEach(id => document.getElementById(id).value = '');
-
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
     bloquearCamposMaterial(false);
 }

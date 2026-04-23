@@ -126,25 +126,7 @@ function guardarEntradaMaterial($data) {
         exit;
     }
 
-    //  SUMAR STOCK
-    // error_log("Actualizando stock para folio: {$data['folio_material']} con cantidad: {$data['cantidad_material_entrada']}");
-    // $update = pg_query_params(
-    //     $conexion,
-    //     "UPDATE control_materiales 
-    //      SET stock_actual = stock_actual + $1
-    //      WHERE folio_material = $2",
-    //     [
-    //         $data['cantidad_material_entrada'],
-    //         $data['folio_material']
-    //     ]
-    // );
-
-    // if (!$update) {
-    //     pg_query($conexion, "ROLLBACK");
-    //     echo json_encode(['status' => 'error', 'message' => 'Error al actualizar stock']);
-    //     exit;
-    // }
-
+   
     pg_query($conexion, "COMMIT");
 
     echo json_encode([
@@ -180,7 +162,7 @@ function guardarSalidaMaterial($data) {
         exit;
     }
 
-    $cantidadSalida = (float)$data['cantidad_material_salida'];
+    $cantidadSalida = (int)$data['cantidad_material_salida'];
 
     //  OBTENER STOCK REAL
     $resStock = pg_query_params(
@@ -197,17 +179,19 @@ function guardarSalidaMaterial($data) {
         exit;
     }
 
-    $stock = (float)pg_fetch_assoc($resStock)['stock_actual'];
+    $stock = (int)pg_fetch_assoc($resStock)['stock_actual'];
 
-    // 🔹 VALIDAR STOCK
-    if ($cantidadSalida > $stock) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => "Stock insuficiente. Disponible: $stock"
-        ]);
-        exit;
-    }
+    //  CALCULAR STOCK RESTANTE
+$stockRestante = $stock - $cantidadSalida;
 
+// NO permitir que llegue a 0 o menos
+if ($stockRestante < 1) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => "No puedes dejar el stock en 0."
+    ]);
+    exit;
+}
     pg_query($conexion, "BEGIN");
 
     // INSERT SALIDA

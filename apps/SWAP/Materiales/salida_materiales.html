@@ -63,32 +63,26 @@
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Unidad de Medida</label>
                                 <select class="form-select" id="unidad" name="unidad" required>
-                                    <option value="" selected disabled>Selecciona una unidad</option>
-
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Estado Físico Material</label>
                                 <select class="form-select" id="estado" name="estado" required>
-                                    <option value="" selected disabled>Selecciona un estado</option>
-
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Categoría</label>
                                 <select class="form-select" id="id_categoria" name="id_categoria" required>
-                                    <option value="" selected disabled>Selecciona una categoría</option>
-
                                 </select>
                             </div>
 
 
-                           
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold">Adscripcion</label>
-                                    <input type="text" class="form-control" id="adscripcion" name="adscripcion_modulo"
-                                        required placeholder="Ej: ALMACEN CENTRAL o MODULO 4">
-                                </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Adscripcion</label>
+                                <input type="text" class="form-control" id="adscripcion" name="adscripcion_modulo"
+                                    required placeholder="Ej: ALMACEN CENTRAL o MODULO 4">
+                            </div>
 
 
                             <div class="col-md-2">
@@ -116,99 +110,50 @@
 
             </div>
         </div>
-        <!--lista para cosultar materiales que salen-->
-        <div class="card shadow border-0" style="display:none;">
-            <div class="card-header bg-secondary text-white py-3">
-                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Materiales listos para salir</h5>
+        <div class="card mt-4 shadow-lg border-0 rounded-4 overflow-hidden" id="contenedor-tabla-salidas"
+            style="display: none;">
+
+            <!-- HEADER IGUAL -->
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-box-arrow-up me-2"></i>Últimos Registros de Salida
+                </h5>
+                <span class="badge bg-light text-dark">Historial</span>
             </div>
-            <div class="card-body p-0">
+
+            <!-- BODY IGUAL -->
+            <div class="card-body p-0 bg-light">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="tabla-previa">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Código</th>
-                                <th>Descripción</th>
-                                <th class="text-center">Cant.</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-center text-muted">
-                                <td colspan="5" class="py-4">No hay materiales agregados a la lista todavía.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between align-items-center bg-white py-3">
-                <span class="text-muted small italic">Asegúrese de que el stock sea suficiente antes de
-                    finalizar.</span>
 
-            </div>
+                    <table class="table table-hover align-middle mb-0">
 
-        </div>
-
-        <!--tabla para consultar registros de salida-->
-        <div class="card mt-4 shadow" id="contenedor-tabla-salidas" style="display: none;">
-            <div class="card-body">
-                <h4 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>Ultimos Registros Salida</h4>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle tabla-observaciones">
-                        <thead class="table-dark">
+                        <thead class="table-dark text-center">
                             <tr>
                                 <th>Folio</th>
-                                <th>Descripcion</th>
+                                <th>Descripción</th>
                                 <th>Unidad</th>
-                                <th>Estado Fisico</th>
+                                <th>Estado</th>
                                 <th>Cantidad</th>
-                                <th>Fecha Registro</th>
+                                <th>Fecha</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-salidas">
-                            <!--aqui se insertaran los registros-->
+
+                        <tbody id="tabla-salidas" class="text-center">
+                            <!-- dinámico -->
                         </tbody>
+
                     </table>
-                    <div id="paginacion-salidas" class="mt-3"></div>
+
                 </div>
             </div>
+
+            <!-- FOOTER -->
+            <div class="card-footer bg-white text-center">
+                <div id="paginacion-salidas"></div>
+            </div>
+
         </div>
 
-        <!-- Modal de ayuda salida -->
-        <div class="modal fade" id="modalAyudaSalida" tabindex="-1" aria-labelledby="modalAyudaSalidaLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-warning-subtle">
-                        <h5 class="modal-title" id="modalAyudaSalidaLabel"><i
-                                class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda para registro de salida
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <ul>
-                            <li>Selecciona un material con stock disponible.</li>
-                            <li>Usa el botón de búsqueda <i class='bi bi-search'></i> para elegir el material.</li>
-                            <li>Ingresa la cantidad a retirar (debe ser mayor a 0 y no superar el stock).</li>
-                            <li>Guarda para registrar la salida. Si el material se agota, aparecerá como agotado en
-                                inventario.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                var ayudaBtn = document.getElementById('ayuda-salida');
-                if (ayudaBtn) {
-                    ayudaBtn.addEventListener('click', function () {
-                        var modal = new bootstrap.Modal(document.getElementById('modalAyudaSalida'));
-                        modal.show();
-                    });
-                }
-            });
-        </script>
     </main>
 
 
@@ -263,8 +208,6 @@
     <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="../includes/utils/menu.js"></script>
-
-
     <script src="scripts/registros_S.js"></script>
 </body>
 
