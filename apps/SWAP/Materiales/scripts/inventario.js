@@ -82,9 +82,29 @@ function eventos() {
             });
         });
 
-    //  SOLO CLICK (NO SUBMIT)
+    //  SOLO CLICK 
     document.getElementById('btn-consultar-inventario')
         .addEventListener('click', consultarInventario);
+
+
+
+    document.getElementById('btn-limpiar-inventario').addEventListener('click', () => {
+        // Si usas un form, puedes resetearlo todo de golpe
+        // Supongamos que el form se llama 'form-inventario'
+        const form = document.getElementById('form-inventario');
+        if (form) {
+            form.reset();
+        } else {
+            // Si no hay form, limpia los campos manualmente
+            document.getElementById('folio_inventario').value = '';
+            document.getElementById('descripcion_inventario').value = '';
+            // ... repetir para cada campo
+        }
+        
+        // Si tienes una tabla de resultados de consulta, escóndela o límpiala
+        const tabla = document.getElementById('contenedor-tabla-inventario');
+        if (tabla) tabla.style.display = 'none';
+    });
 }
 
 /* =============================

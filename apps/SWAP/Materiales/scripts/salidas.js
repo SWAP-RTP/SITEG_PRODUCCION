@@ -28,7 +28,20 @@ function eventos() {
                 cargarMaterialSalida(folio);
             }
         });
+    // BOTÓN LIMPIAR SALIDA
+    document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
+        // 1. Limpia el input del folio
+        document.getElementById('folio_salida').value = '';
+        
+        // 2. Llama a tu función existente
+        limpiarSalida();
+        
 
+        // 3. Asegura que los campos vuelvan a estar editables
+        desbloquearSalida();
+        
+        console.log("Formulario de salida limpio");
+    });
     });
 
     // validación stock

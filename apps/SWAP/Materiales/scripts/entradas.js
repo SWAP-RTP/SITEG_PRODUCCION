@@ -32,6 +32,21 @@ function eventos() {
     // consultar registros
     document.getElementById('btn-consultar-entradas')
         .addEventListener('click', cargarRegistros);
+
+        // BOTÓN LIMPIAR ENTRADA
+    document.getElementById('btn-limpiar-entrada').addEventListener('click', () => {
+        // 1. Limpia el folio manualmente (ya que limpiarCampos no lo incluye)
+        document.getElementById('folio').value = '';
+        
+        // 2. Llama a tu función existente que limpia los demás campos
+        limpiarCampos();
+        document.getElementById('contenedor-tabla-registros').style.display = 'none'
+        
+        // 3. Desbloquea los campos por si estaban bloqueados tras una consulta
+        desbloquearEntrada(); 
+        
+        console.log("Formulario de entrada limpio");
+    });
 }
 // FUNCION PARA BLOQUEAR CAMPOS
 function bloquearEntrada() {
@@ -53,6 +68,7 @@ function bloquearEntrada() {
     });
 }
 // FUNCIÓN CENTRAL
+// FUNCIÓN CENTRAL CORREGIDA
 async function cargarMaterial(folio) {
     let materialExiste = false;
 
@@ -60,21 +76,18 @@ async function cargarMaterial(folio) {
 
     const result = await MaterialesService.buscarPorFolio(folio);
 
-    // 
     if (result.status !== 'ok' || !result.datos) {
-
         console.log('Material nuevo');
-
         materialExiste = false;
 
-        desbloquearEntradaCompleta();
+        // CAMBIO AQUÍ: antes decía desbloquearEntradaCompleta
+        desbloquearEntrada(); 
         limpiarCampos();
 
         return;
     }
 
     const d = result.datos;
-
     materialExiste = true;
 
     document.getElementById('descripcion').value = d.descripcion_material;
@@ -83,9 +96,9 @@ async function cargarMaterial(folio) {
     document.getElementById('id_categoria').value = d.id_categoria_material || '';
     document.getElementById('adscripcion').value = d.adscripcion_modulo || '';
 
-    bloquearSoloCatalogo();
+    // CAMBIO AQUÍ: antes decía bloquearSoloCatalogo
+    bloquearEntrada(); 
 
-    //
     document.getElementById('cantidad').readOnly = false;
     document.getElementById('cantidad').value = '';
 }
