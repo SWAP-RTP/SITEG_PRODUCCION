@@ -4,7 +4,6 @@ require '/var/www/login_shared/conf/conexion.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-//  VALIDAR DATA
 if (!$data) {
     echo json_encode([
         'status' => 'error',
@@ -13,24 +12,31 @@ if (!$data) {
     exit;
 }
 
-//  DETECTAR OPERACIÓN
-if (isset($data['cantidad_material_entrada'])) {
+/* =========================================================
+   DETECTAR OPERACIÓN
+========================================================= */
+if (!empty($data['cantidad']) && isset($data['estado'])) {
     guardarEntradaMaterial($data);
-} elseif (isset($data['cantidad_material_salida'])) {
-    guardarSalidaMaterial($data);
-} else {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'No se pudo determinar el tipo de operación'
-    ]);
+    exit;
 }
 
+if (!empty($data['cantidad'])) {
+    guardarSalidaMaterial($data);
+    exit;
+}
 
-// ==========================
-//  ENTRADA
-// ==========================
-function guardarEntradaMaterial($data) {
+echo json_encode([
+    'status' => 'error',
+    'message' => 'No se pudo determinar la operación'
+]);
+exit;
 
+
+/* =========================================================
+   ENTRADA
+========================================================= */
+function guardarEntradaMaterial($data)
+{
     $conexion = Database::conectar();
 
     if (!$conexion) {
@@ -38,112 +44,115 @@ function guardarEntradaMaterial($data) {
         exit;
     }
 
-    //  VALIDAR EXISTENCIA DEL MATERIAL
-    $folioValido = false;
+    $folio = $data['folio'];
+    $cantidad = (int)$data['cantidad'];
 
-    if (!empty($data['folio_material'])) {
-        $check = pg_query_params(
-            $conexion,
-            "SELECT 1 FROM control_materiales WHERE folio_material = $1",
-            [$data['folio_material']]
-        );
-
-        if ($check && pg_num_rows($check) > 0) {
-            $folioValido = true;
-        }
-    }
-
-    //  CREAR MATERIAL SI NO EXISTE
-    if (!$folioValido) {
-
-        if (
-            empty($data['descripcion_material_entrada']) ||
-            empty($data['id_unidad_material']) ||
-            empty($data['id_categoria_material']) ||
-            empty($data['adscripcion_modulo'])
-        ) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Faltan datos para crear el material'
-            ]);
-            exit;
-        }
-
-        $sql_control = "INSERT INTO control_materiales 
-            (descripcion_material, id_unidad_material, id_categoria_material, adscripcion_modulo)
-            VALUES ($1, $2, $3, $4) RETURNING folio_material";
-
-        $res_control = pg_query_params($conexion, $sql_control, [
-            $data['descripcion_material_entrada'],
-            $data['id_unidad_material'],
-            $data['id_categoria_material'],
-            $data['adscripcion_modulo']
-        ]);
-
-        if (!$res_control) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Error al crear material'
-            ]);
-            exit;
-        }
-
-        $row_control = pg_fetch_assoc($res_control);
-        $data['folio_material'] = $row_control['folio_material'];
-    }
-
-    //  VALIDACIÓN FINAL
-    if (
-        empty($data['folio_material']) ||
-        empty($data['cantidad_material_entrada']) ||
-        empty($data['id_estado_material_entrada'])
-    ) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Faltan datos obligatorios'
-        ]);
+    if (!$folio || !$cantidad) {
+        echo json_encode(['status' => 'error', 'message' => 'Folio y cantidad obligatorios']);
         exit;
     }
 
     pg_query($conexion, "BEGIN");
 
-    //  INSERT ENTRADA
-    $result = pg_query_params($conexion, "
-        INSERT INTO entradas_materiales 
-        (folio_material, descripcion_material_entrada, id_estado_material_entrada, cantidad_material_entrada, adscripcion_modulo)
-        VALUES ($1, $2, $3, $4, $5)
-    ", [
-        $data['folio_material'],
-        $data['descripcion_material_entrada'],
-        $data['id_estado_material_entrada'],
-        $data['cantidad_material_entrada'],
-        $data['adscripcion_modulo']
-    ]);
+    /* ==========================
+       VERIFICAR MATERIAL
+    ========================== */
+    $check = pg_query_params(
+        $conexion,
+        "SELECT 1 FROM control_materiales WHERE folio_material = $1",
+        [$folio]
+    );
 
-    if (!$result) {
+    $existe = ($check && pg_num_rows($check) > 0);
+
+    /* ==========================
+       CREAR MATERIAL SI NO EXISTE
+    ========================== */
+    if (!$existe) {
+
+        if (
+            empty($data['descripcion']) ||
+            empty($data['unidad']) ||
+            empty($data['id_categoria']) ||
+            empty($data['adscripcion'])
+        ) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Faltan datos para crear material'
+            ]);
+            exit;
+        }
+
+        $insertMat = pg_query_params(
+            $conexion,
+            "INSERT INTO control_materiales
+            (folio_material, descripcion_material, id_unidad_material, id_categoria_material, adscripcion_modulo, stock_actual)
+            VALUES ($1,$2,$3,$4,$5,0)",
+            [
+                $folio,
+                $data['descripcion'],
+                $data['unidad'],
+                $data['id_categoria'],
+                $data['adscripcion']
+            ]
+        );
+
+        if (!$insertMat) {
+            pg_query($conexion, "ROLLBACK");
+            echo json_encode(['status' => 'error', 'message' => 'Error al crear material']);
+            exit;
+        }
+    }
+
+    /* ==========================
+       INSERT ENTRADA
+    ========================== */
+    $insert = pg_query_params(
+        $conexion,
+        "INSERT INTO entradas_materiales
+        (folio_material, descripcion_material_entrada, id_estado_material_entrada, cantidad_material_entrada, adscripcion_modulo)
+        VALUES ($1,$2,$3,$4,$5)",
+        [
+            $folio,
+            $data['descripcion'],
+            $data['estado'],
+            $cantidad,
+            $data['adscripcion']
+        ]
+    );
+
+    if (!$insert) {
         pg_query($conexion, "ROLLBACK");
         echo json_encode(['status' => 'error', 'message' => 'Error al registrar entrada']);
         exit;
     }
 
-   
+    /* ==========================
+       ACTUALIZAR STOCK
+    ========================== */
+    pg_query_params(
+        $conexion,
+        "UPDATE control_materiales
+         SET stock_actual = COALESCE(stock_actual,0) + $1
+         WHERE folio_material = $2",
+        [$cantidad, $folio]
+    );
+
     pg_query($conexion, "COMMIT");
 
     echo json_encode([
         'status' => 'ok',
         'message' => 'Entrada registrada correctamente',
-        'folio' => $data['folio_material']
+        'folio' => $folio
     ]);
-
-    pg_close($conexion);
 }
 
 
-// ==========================
-//  SALIDA
-// ==========================
-function guardarSalidaMaterial($data) {
-
+/* =========================================================
+   SALIDA
+========================================================= */
+function guardarSalidaMaterial($data)
+{
     $conexion = Database::conectar();
 
     if (!$conexion) {
@@ -151,96 +160,62 @@ function guardarSalidaMaterial($data) {
         exit;
     }
 
-    if (
-        empty($data['folio_material']) ||
-        empty($data['cantidad_material_salida'])
-    ) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Folio y cantidad son obligatorios.'
-        ]);
+    $folio = $data['folio'];
+    $cantidad = (int)$data['cantidad'];
+
+    if (!$folio || !$cantidad) {
+        echo json_encode(['status' => 'error', 'message' => 'Folio y cantidad obligatorios']);
         exit;
     }
 
-    $cantidadSalida = (int)$data['cantidad_material_salida'];
-
-    //  OBTENER STOCK REAL
-    $resStock = pg_query_params(
+    $res = pg_query_params(
         $conexion,
         "SELECT stock_actual FROM control_materiales WHERE folio_material = $1",
-        [$data['folio_material']]
+        [$folio]
     );
 
-    if (!$resStock || pg_num_rows($resStock) == 0) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Material no encontrado'
-        ]);
+    $row = pg_fetch_assoc($res);
+
+    if (!$row) {
+        echo json_encode(['status' => 'error', 'message' => 'Material no encontrado']);
         exit;
     }
 
-    $stock = (int)pg_fetch_assoc($resStock)['stock_actual'];
+    $stock = (int)$row['stock_actual'];
 
-    //  CALCULAR STOCK RESTANTE
-$stockRestante = $stock - $cantidadSalida;
+    if ($cantidad > $stock) {
+        echo json_encode(['status' => 'error', 'message' => 'Stock insuficiente']);
+        exit;
+    }
 
-// NO permitir que llegue a 0 o menos
-if ($stockRestante < 1) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => "No puedes dejar el stock en 0."
-    ]);
-    exit;
-}
     pg_query($conexion, "BEGIN");
 
-    // INSERT SALIDA
-    $result = pg_query_params($conexion, "
-        INSERT INTO salidas_materiales 
-        (folio_material, descripcion_material_salida, id_estado_material_salida, cantidad_material_salida, adscripcion_modulo)
-        VALUES ($1, $2, $3, $4, $5)
-    ", [
-        $data['folio_material'],
-        $data['descripcion_material_salida'],
-        $data['id_estado_material_salida'],
-        $cantidadSalida,
-        $data['adscripcion_modulo']
-    ]);
-
-    if (!$result) {
-        pg_query($conexion, "ROLLBACK");
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Error al registrar salida'
-        ]);
-        exit;
-    }
-
-    //  RESTAR STOCK
-    $update = pg_query_params(
+    pg_query_params(
         $conexion,
-        "UPDATE control_materiales 
-         SET stock_actual = stock_actual - $1
-         WHERE folio_material = $2",
-        [$cantidadSalida, $data['folio_material']]
+        "INSERT INTO salidas_materiales
+        (folio_material, descripcion_material_salida, id_estado_material_salida, cantidad_material_salida, adscripcion_modulo)
+        VALUES ($1,$2,$3,$4,$5)",
+        [
+            $folio,
+            $data['descripcion'],
+            $data['estado'],
+            $cantidad,
+            $data['adscripcion']
+        ]
     );
 
-    if (!$update) {
-        pg_query($conexion, "ROLLBACK");
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Error al actualizar stock'
-        ]);
-        exit;
-    }
+    pg_query_params(
+        $conexion,
+        "UPDATE control_materiales
+         SET stock_actual = stock_actual - $1
+         WHERE folio_material = $2",
+        [$cantidad, $folio]
+    );
 
     pg_query($conexion, "COMMIT");
 
     echo json_encode([
         'status' => 'ok',
-        'message' => 'Salida registrada correctamente',
-        'stock_restante' => $stock - $cantidadSalida
+        'message' => 'Operación registrada correctamente'
     ]);
-
-    pg_close($conexion);
 }
