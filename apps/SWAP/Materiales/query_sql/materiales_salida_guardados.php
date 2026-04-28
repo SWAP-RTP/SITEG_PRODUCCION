@@ -1,8 +1,5 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 require '/var/www/login_shared/conf/conexion.php';
 
 function guardarSalidaMaterial() {
@@ -20,11 +17,9 @@ function guardarSalidaMaterial() {
 
     $data = json_decode(file_get_contents('php://input'), true);
 
-    file_put_contents(__DIR__ . '/debug_post_salida.log', print_r($data, true), FILE_APPEND);
+    //file_put_contents(__DIR__ . '/debug_post_salida.log', print_r($data, true), FILE_APPEND);
 
-    // =========================
-    // VALIDACIÓN BÁSICA
-    // =========================
+   #validar campos
     $folio = trim($data['folio_material'] ?? '');
     $cantidad = $data['cantidad_material_salida'] ?? null;
 
@@ -46,9 +41,6 @@ function guardarSalidaMaterial() {
         exit;
     }
 
-    // =========================
-    // STOCK ACTUAL
-    // =========================
     $sql_stock = "SELECT stock_actual FROM control_materiales WHERE folio_material = $1";
     $res_stock = pg_query_params($conexion, $sql_stock, [$folio]);
 
@@ -71,18 +63,14 @@ function guardarSalidaMaterial() {
         exit;
     }
 
-    // =========================
-    // CAMPOS OPCIONALES
-    // =========================
+
     $descripcion = trim($data['descripcion_material_salida'] ?? '');
     $estado = $data['id_estado_material_salida'] ?? null;
     $adscripcion = trim($data['adscripcion_modulo'] ?? '');
 
     pg_query($conexion, "BEGIN");
 
-    // =========================
-    // INSERT SALIDA
-    // =========================
+#insertar salida
     $sql = "INSERT INTO salidas_materiales 
         (folio_material, descripcion_material_salida, id_estado_material_salida, cantidad_material_salida, adscripcion_modulo)
         VALUES ($1, $2, $3, $4, $5)";
@@ -107,9 +95,6 @@ function guardarSalidaMaterial() {
         exit;
     }
 
-    // =========================
-    // UPDATE STOCK
-    // =========================
     $sql_update = "UPDATE control_materiales 
                    SET stock_actual = stock_actual - $1 
                    WHERE folio_material = $2";
