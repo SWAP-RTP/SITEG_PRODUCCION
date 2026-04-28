@@ -14,10 +14,7 @@ function eventos() {
 
     const folioInput = document.getElementById('folio_salida');
     let ultimoFolioSalida = '';
-
-    /* =========================
-       AUTOCOMPLETAR AUTOMÁTICO
-    ========================= */
+    //autocompletador de folio
     const regexFolio = /^MA-\d{8,9}$/;
 
     folioInput.addEventListener('input', () => {
@@ -29,10 +26,6 @@ function eventos() {
             cargarMaterialSalida(folio);
         }
     });
-
-    /* =========================
-       MODAL
-    ========================= */
     document.getElementById('btn-modal-salida').addEventListener('click', () => {
 
         ModalService.abrir({
@@ -45,7 +38,6 @@ function eventos() {
             }
         });
     });
-
      //BUSCAR EN MODAL
     const inputBuscar = document.getElementById('buscar-material-modal-salida');
 
@@ -55,23 +47,18 @@ if (inputBuscar) {
     });
 }
 
-    /* =========================
-       LIMPIAR 
-    ========================= */
    document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
 
-    // reset form
+   
     document.getElementById('form-salida-material').reset();
 
-    // limpiar tabla (usar MISMO selector que usas al pintar)
     const tabla = document.getElementById('tabla-salidas');
     if (tabla) tabla.innerHTML = '';
 
-    // ocultar contenedor de resultados
+
     const contenedor = document.getElementById('contenedor-tabla-salidas');
     if (contenedor) contenedor.style.display = 'none';
 
-    // reset variables
     stockDisponible = 0;
     ultimoFolioSalida = '';
 
@@ -80,9 +67,7 @@ if (inputBuscar) {
 
     console.log("Formulario, tabla y consulta limpiados correctamente");
 });
-    /* =========================
-       VALIDACIÓN STOCK
-    ========================= */
+  
     document.getElementById('cantidad_salida').addEventListener('input', (e) => {
 
         const cantidad = Number(e.target.value);
@@ -101,7 +86,6 @@ if (inputBuscar) {
     document.getElementById('btn-consultar-salidas')
         ?.addEventListener('click', cargarRegistrosSalidas);
 }
-
 function filtrarMaterialesModal(texto) {
 
     const filtro = texto.toUpperCase();
@@ -161,7 +145,6 @@ function limpiarSalida() {
     document.getElementById('categoria_salida').value = '';
 }
 
-
 async function cargarMaterialSalida(folio) {
 
     if (!folio) {
@@ -197,7 +180,6 @@ async function cargarMaterialSalida(folio) {
 
     bloquearSalida();
 }
-
 
 async function guardarSalida(e) {
 
