@@ -12,53 +12,87 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function eventos() {
 
-    // buscar por folio
-    document.getElementById('folio_salida').addEventListener('change', (e) => {
-        cargarMaterialSalida(e.target.value);
+    const folioInput = document.getElementById('folio_salida');
+    let ultimoFolioSalida = '';
+
+    /* =========================
+       AUTOCOMPLETAR AUTOMÁTICO
+    ========================= */
+    const regexFolio = /^MA-\d{8,9}$/;
+
+    folioInput.addEventListener('input', () => {
+
+        const folio = folioInput.value.trim();
+
+        if (regexFolio.test(folio) && folio !== ultimoFolioSalida) {
+            ultimoFolioSalida = folio;
+            cargarMaterialSalida(folio);
+        }
     });
 
-    // modal
+    /* =========================
+       MODAL (sin cambios)
+    ========================= */
     document.getElementById('btn-modal-salida').addEventListener('click', () => {
 
         ModalService.abrir({
             modalId: 'modalMaterialSalida',
             contenedorId: 'contenedor-materiales-modal-salida',
             callback: (folio) => {
-                document.getElementById('folio_salida').value = folio;
+                folioInput.value = folio;
+                ultimoFolioSalida = folio;
                 cargarMaterialSalida(folio);
             }
         });
-    // BOTÓN LIMPIAR SALIDA
-    document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
-        // Limpia todos los campos del formulario
-        document.getElementById('form-salida-material').reset();
-
-        // Limpia el contenido de la tabla de registros
-        const tablaRegistros = document.querySelector('#tabla-salidas tbody');
-        if (tablaRegistros) {
-            tablaRegistros.innerHTML = '';
-        }
-
-        console.log("Formulario y consulta de salida limpiados");
-    });
     });
 
-    // validación stock
+    /* =========================
+       LIMPIAR 
+    ========================= */
+   document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
+
+    // reset form
+    document.getElementById('form-salida-material').reset();
+
+    // limpiar tabla (usar MISMO selector que usas al pintar)
+    const tabla = document.getElementById('tabla-salidas');
+    if (tabla) tabla.innerHTML = '';
+
+    // ocultar contenedor de resultados
+    const contenedor = document.getElementById('contenedor-tabla-salidas');
+    if (contenedor) contenedor.style.display = 'none';
+
+    // reset variables
+    stockDisponible = 0;
+    ultimoFolioSalida = '';
+
+    limpiarSalida();
+    desbloquearSalida();
+
+    console.log("Formulario, tabla y consulta limpiados correctamente");
+});
+    /* =========================
+       VALIDACIÓN STOCK
+    ========================= */
     document.getElementById('cantidad_salida').addEventListener('input', (e) => {
 
         const cantidad = Number(e.target.value);
 
         if (cantidad > stockDisponible) {
             e.target.value = stockDisponible;
-            Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
+            Swal.fire('¡Atención!', 'Stock insuficiente', 'warning');
         }
     });
 
-    // guardar salida
+    /* =========================
+       GUARDAR
+    ========================= */
     document.getElementById('form-salida-material')
         .addEventListener('submit', guardarSalida);
 
-    // consultar registros (opcional si ya tienes tabla)
+    /* =========================
+       CONSULTAR
+    ========================= */
     document.getElementById('btn-consultar-salidas')
         ?.addEventListener('click', cargarRegistrosSalidas);
 }
