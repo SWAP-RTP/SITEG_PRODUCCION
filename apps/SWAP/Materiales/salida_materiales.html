@@ -58,10 +58,7 @@
                                         <i class="bi bi-search"></i>
                                     </button>
 
-                                    <button type="button" class="btn p-0 ms-2" id="ayuda-salida"
-                                        style="background: none; border: none;">
-                                        <i class="bi bi-question-circle-fill text-warning fs-4"></i>
-                                    </button>
+                                  
                                 </div>
                             </div>
 
@@ -179,10 +176,10 @@
                 </div>
 
                 <div class="modal-body">
-
                     <div class="mb-3">
                         <input type="text" class="form-control" id="buscar-material-modal-salida"
-                            placeholder="Buscar por código o descripción...">
+                            placeholder="Buscar por código o descripción..."
+                            oninput="this.value = this.value.toUpperCase()">
                     </div>
 
                     <div id="contenedor-materiales-modal-salida">
@@ -215,7 +212,7 @@
     <script src="../includes/utils/menu.js"></script>
 
     <!-- JS MODULAR -->
-  <script src="/app-swap/Materiales/scripts/salidas.js" type="module"></script>
+    <script src="/app-swap/Materiales/scripts/salidas.js" type="module"></script>
 
 </body>
 

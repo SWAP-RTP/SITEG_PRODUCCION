@@ -31,7 +31,7 @@ function eventos() {
     });
 
     /* =========================
-       MODAL (sin cambios)
+       MODAL
     ========================= */
     document.getElementById('btn-modal-salida').addEventListener('click', () => {
 
@@ -45,6 +45,15 @@ function eventos() {
             }
         });
     });
+
+     //BUSCAR EN MODAL
+    const inputBuscar = document.getElementById('buscar-material-modal-salida');
+
+if (inputBuscar) {
+    inputBuscar.addEventListener('input', () => {
+        filtrarMaterialesModal(inputBuscar.value);
+    });
+}
 
     /* =========================
        LIMPIAR 
@@ -84,23 +93,33 @@ function eventos() {
         }
     });
 
-    /* =========================
-       GUARDAR
-    ========================= */
+  
     document.getElementById('form-salida-material')
         .addEventListener('submit', guardarSalida);
 
-    /* =========================
-       CONSULTAR
-    ========================= */
+ 
     document.getElementById('btn-consultar-salidas')
         ?.addEventListener('click', cargarRegistrosSalidas);
 }
 
-/* =========================
-   BLOQUEO / DESBLOQUEO
-========================= */
+function filtrarMaterialesModal(texto) {
 
+    const filtro = texto.toUpperCase();
+
+    const filas = document.querySelectorAll('#contenedor-materiales-modal-salida table tbody tr');
+
+    filas.forEach(tr => {
+
+        const folio = tr.children[0]?.textContent.toUpperCase() || '';
+        const descripcion = tr.children[1]?.textContent.toUpperCase() || '';
+
+        if (folio.includes(filtro) || descripcion.includes(filtro)) {
+            tr.style.display = '';
+        } else {
+            tr.style.display = 'none';
+        }
+    });
+}
 function bloquearSalida() {
 
     document.getElementById('descripcion_salida').readOnly = true;
@@ -142,9 +161,6 @@ function limpiarSalida() {
     document.getElementById('categoria_salida').value = '';
 }
 
-/* =========================
-   CARGAR MATERIAL
-========================= */
 
 async function cargarMaterialSalida(folio) {
 
@@ -182,9 +198,6 @@ async function cargarMaterialSalida(folio) {
     bloquearSalida();
 }
 
-/* =========================
-   GUARDAR SALIDA
-========================= */
 
 async function guardarSalida(e) {
 
@@ -227,9 +240,6 @@ async function guardarSalida(e) {
     }
 }
 
-/* =========================
-   CONSULTA SALIDAS
-========================= */
 
 async function cargarRegistrosSalidas() {
 
