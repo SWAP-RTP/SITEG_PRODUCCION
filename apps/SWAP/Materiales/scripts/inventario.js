@@ -14,9 +14,26 @@ async function iniciar() {
     eventos();
 }
 
-/* =============================
-   CATALOGOS
-============================= */
+
+function filtrarMaterialesModal(texto) {
+
+    const filtro = texto.toUpperCase();
+
+    const filas = document.querySelectorAll('#contenedor-materiales-modal-inventario table tbody tr');
+
+    filas.forEach(tr => {
+
+        const folio = tr.children[0]?.textContent.toUpperCase() || '';
+        const descripcion = tr.children[1]?.textContent.toUpperCase() || '';
+
+        tr.style.display =
+            (folio.includes(filtro) || descripcion.includes(filtro))
+                ? ''
+                : 'none';
+    });
+}
+
+
 async function cargarCatalogosInventario() {
 
     const res = await fetch('query_sql/catalogo_listas.php');
@@ -38,9 +55,6 @@ function llenar(id, datos, value, text) {
     });
 }
 
-/* =============================
-   AUTOCOMPLETAR CENTRAL
-============================= */
 async function autocompletarFolio(folio) {
 
     if (!folio || folio === ultimoFolio) return;
@@ -68,32 +82,28 @@ async function autocompletarFolio(folio) {
     });
 }
 
-/* =============================
-   EVENTOS
-============================= */
+
 function eventos() {
 
-   const folioInput = document.getElementById('folio_inventario');
+    const folioInput = document.getElementById('folio_inventario');
     const form = document.getElementById('form-inventario');
 
-folioInput.addEventListener('input', () => {
+    /* AUTOCOMPLETAR */
+    folioInput.addEventListener('input', () => {
 
-    const folio = folioInput.value.trim();
+        const folio = folioInput.value.trim().toUpperCase();
+        folioInput.value = folio;
 
-   if (folio.length >= 11) {
-    autocompletarFolio(folio);
-}
-});
-    /* =============================
-       BLUR = AUTOCOMPLETAR
-    ============================= */
+        if (folio.length >= 11) {
+            autocompletarFolio(folio);
+        }
+    });
+
     folioInput.addEventListener('blur', () => {
         autocompletarFolio(folioInput.value);
     });
 
-    /* =============================
-       MODAL
-    ============================= */
+     
     document.getElementById('btn-modal-inventario')
         .addEventListener('click', () => {
 
@@ -105,11 +115,28 @@ folioInput.addEventListener('input', () => {
                     autocompletarFolio(folio);
                 }
             });
+
+            
+            setTimeout(() => {
+
+                const inputBuscar = document.getElementById('buscar-material-modal-inventario');
+
+                if (inputBuscar) {
+
+                    inputBuscar.addEventListener('input', (e) => {
+
+                        // MAYÚSCULAS
+                        e.target.value = e.target.value.toUpperCase();
+
+                        // FILTRAR
+                        filtrarMaterialesModal(e.target.value);
+                    });
+                }
+
+            }, 200);
         });
 
-    /* =============================
-       VALIDAR ANTES DE GUARDAR
-    ============================= */
+    /* VALIDACIÓN */
     if (form) {
         form.addEventListener('submit', (e) => {
 
@@ -117,27 +144,23 @@ folioInput.addEventListener('input', () => {
 
             if (!descripcion) {
                 e.preventDefault();
-             Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
+                Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
             }
         });
     }
 
-    /* =============================
-       CONSULTAR DASHBOARD
-    ============================= */
+
     document.getElementById('btn-consultar-inventario')
         .addEventListener('click', consultarInventario);
 
-    /* =============================
-       LIMPIAR
-    ============================= */
+  
     document.getElementById('btn-limpiar-inventario').addEventListener('click', () => {
 
         if (form) form.reset();
 
         document.getElementById('stock_actual_inventario').value = '0';
 
-        ultimoFolio = ''; 
+        ultimoFolio = '';
 
         const btnGuardar = document.getElementById('btn-guardar');
         if (btnGuardar) btnGuardar.disabled = true;
@@ -152,9 +175,6 @@ folioInput.addEventListener('input', () => {
     });
 }
 
-/* =============================
-   CONSULTAR INVENTARIO
-============================= */
 async function consultarInventario() {
 
     try {
@@ -177,9 +197,6 @@ async function consultarInventario() {
     }
 }
 
-/* =============================
-   DASHBOARD
-============================= */
 function renderDashboard(data) {
 
     document.getElementById('dashboard-inventario').style.display = 'block';

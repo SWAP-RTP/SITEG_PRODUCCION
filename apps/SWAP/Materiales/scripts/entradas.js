@@ -2,64 +2,97 @@ import { cargarCatalogos } from './core/catalogosService.js';
 import { ModalService } from './core/modalService.js';
 import { MaterialesService } from './core/materialesService.js';
 
-
 document.addEventListener('DOMContentLoaded', async () => {
-
     await cargarCatalogos();
-
     eventos();
 });
 
 function eventos() {
 
-    //  ESCRIBIR FOLIO
-    document.getElementById('folio').addEventListener('input', (e) => {
-        cargarMaterial(e.target.value);
+    const folioInput = document.getElementById('folio');
+
+    /* =========================
+       FORZAR MAYÚSCULAS GLOBAL
+    ========================= */
+    ['folio', 'descripcion', 'adscripcion'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', () => {
+                input.value = input.value.toUpperCase();
+            });
+        }
     });
 
-    //  MODAL
+    /* =========================
+       ESCRIBIR FOLIO
+    ========================= */
+    folioInput.addEventListener('input', (e) => {
+        const valor = e.target.value.toUpperCase();
+        e.target.value = valor;
+        cargarMaterial(valor);
+    });
+
+    /* =========================
+       MODAL
+    ========================= */
     document.getElementById('modal-material-entrada').addEventListener('click', () => {
         ModalService.abrir({
             modalId: 'exampleModalCenter',
             contenedorId: 'contenedor-materiales-modal',
             callback: (folio) => {
-                document.getElementById('folio').value = folio;
-                cargarMaterial(folio);
+
+                const folioMayus = (folio || '').toUpperCase();
+
+                document.getElementById('folio').value = folioMayus;
+                cargarMaterial(folioMayus);
             }
         });
     });
 
-    // consultar registros
+    /* =========================
+       BUSCAR EN MODAL
+    ========================= */
+    const inputBuscar = document.getElementById('buscar-material-modal-entrada');
+
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', () => {
+            inputBuscar.value = inputBuscar.value.toUpperCase();
+            filtrarMaterialesModal(inputBuscar.value);
+        });
+    }
+
+    /* =========================
+       CONSULTAR REGISTROS
+    ========================= */
     document.getElementById('btn-consultar-entradas')
         .addEventListener('click', cargarRegistros);
 
-        // BOTÓN LIMPIAR ENTRADA
+    /* =========================
+       LIMPIAR
+    ========================= */
     document.getElementById('btn-limpiar-entrada').addEventListener('click', () => {
-        // 1. Limpia el folio manualmente
+
         document.getElementById('folio').value = '';
-        
-        // 2. Llama a tu función existente que limpia los demás campos
         limpiarCampos();
-        document.getElementById('contenedor-tabla-registros').style.display = 'none'
-        
-        // 3. Desbloquea los campos por si estaban bloqueados tras una consulta
-        desbloquearEntrada(); 
-        
+
+        document.getElementById('contenedor-tabla-registros').style.display = 'none';
+
+        desbloquearEntrada();
+
         console.log("Formulario de entrada limpio");
     });
 }
-// FUNCION PARA BLOQUEAR CAMPOS
+
+/* =========================
+   BLOQUEAR CAMPOS
+========================= */
 function bloquearEntrada() {
 
-    // inputs normales
     document.getElementById('descripcion').readOnly = true;
     document.getElementById('cantidad').readOnly = true;
     document.getElementById('adscripcion').readOnly = true;
 
-    // selects 
-    const selects = ['unidad', 'estado', 'id_categoria'];
-
-    selects.forEach(id => {
+    ['unidad', 'estado', 'id_categoria'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.style.pointerEvents = 'none';
@@ -67,41 +100,10 @@ function bloquearEntrada() {
         }
     });
 }
-// FUNCIÓN CENTRAL
-// FUNCIÓN CENTRAL CORREGIDA
-async function cargarMaterial(folio) {
-    let materialExiste = false;
 
-    if (!folio) return;
-
-    const result = await MaterialesService.buscarPorFolio(folio);
-
-    if (result.status !== 'ok' || !result.datos) {
-        console.log('Material nuevo');
-        materialExiste = false;
-
-        // CAMBIO AQUÍ: antes decía desbloquearEntradaCompleta
-        desbloquearEntrada(); 
-        limpiarCampos();
-
-        return;
-    }
-
-    const d = result.datos;
-    materialExiste = true;
-
-    document.getElementById('descripcion').value = d.descripcion_material;
-    document.getElementById('unidad').value = d.id_unidad_material || '';
-    document.getElementById('estado').value = d.id_estado_material || '';
-    document.getElementById('id_categoria').value = d.id_categoria_material || '';
-    document.getElementById('adscripcion').value = d.adscripcion_modulo || '';
-
-    // CAMBIO AQUÍ: antes decía bloquearSoloCatalogo
-    bloquearEntrada(); 
-
-    document.getElementById('cantidad').readOnly = false;
-    document.getElementById('cantidad').value = '';
-}
+/* =========================
+   DESBLOQUEAR CAMPOS
+========================= */
 function desbloquearEntrada() {
 
     document.getElementById('descripcion').readOnly = false;
@@ -117,6 +119,9 @@ function desbloquearEntrada() {
     });
 }
 
+/* =========================
+   LIMPIAR CAMPOS
+========================= */
 function limpiarCampos() {
     document.getElementById('descripcion').value = '';
     document.getElementById('cantidad').value = '';
@@ -126,6 +131,67 @@ function limpiarCampos() {
     document.getElementById('adscripcion').value = '';
 }
 
+/* =========================
+   CARGAR MATERIAL
+========================= */
+async function cargarMaterial(folio) {
+
+    if (!folio) return;
+
+    const result = await MaterialesService.buscarPorFolio(folio);
+
+    if (result.status !== 'ok' || !result.datos) {
+
+        console.log('Material nuevo');
+
+        desbloquearEntrada();
+        limpiarCampos();
+
+        return;
+    }
+
+    const d = result.datos;
+
+    document.getElementById('descripcion').value =
+        (d.descripcion_material || '').toUpperCase();
+
+    document.getElementById('unidad').value = d.id_unidad_material || '';
+    document.getElementById('estado').value = d.id_estado_material || '';
+    document.getElementById('id_categoria').value = d.id_categoria_material || '';
+
+    document.getElementById('adscripcion').value =
+        (d.adscripcion_modulo || '').toUpperCase();
+
+    bloquearEntrada();
+
+    document.getElementById('cantidad').readOnly = false;
+    document.getElementById('cantidad').value = '';
+}
+
+/* =========================
+   FILTRAR MODAL
+========================= */
+function filtrarMaterialesModal(texto) {
+
+    const filtro = texto.toUpperCase();
+
+    const filas = document.querySelectorAll('#contenedor-materiales-modal table tbody tr');
+
+    filas.forEach(tr => {
+
+        const folio = tr.children[0]?.textContent.toUpperCase() || '';
+        const descripcion = tr.children[1]?.textContent.toUpperCase() || '';
+
+        tr.style.display =
+            (folio.includes(filtro) || descripcion.includes(filtro))
+                ? ''
+                : 'none';
+    });
+}
+
+/* =========================
+   CONSULTAR REGISTROS
+========================= */
 async function cargarRegistros() {
 
     const res = await fetch('query_sql/consultas_materiales.php?tipo=entradas');
@@ -154,23 +220,26 @@ async function cargarRegistros() {
 
     document.getElementById('contenedor-tabla-registros').style.display = 'block';
 }
-//FUNCION PARA GUARDAR ENTRADA
-document.getElementById('form-entrada-material').addEventListener('submit', guardarEntrada);
+
+/* =========================
+   GUARDAR ENTRADA
+========================= */
+document.getElementById('form-entrada-material')
+    .addEventListener('submit', guardarEntrada);
+
 async function guardarEntrada(e) {
 
     e.preventDefault();
 
     const data = {
-        folio: document.getElementById('folio').value,
-        descripcion: document.getElementById('descripcion').value,
+        folio: document.getElementById('folio').value.toUpperCase(),
+        descripcion: document.getElementById('descripcion').value.toUpperCase(),
         unidad: document.getElementById('unidad').value,
         estado: document.getElementById('estado').value,
         id_categoria: document.getElementById('id_categoria').value,
-        adscripcion: document.getElementById('adscripcion').value,
+        adscripcion: document.getElementById('adscripcion').value.toUpperCase(),
         cantidad: document.getElementById('cantidad').value
     };
-
-    // console.log('DATA A ENVIAR:', data); 
 
     const res = await fetch('query_sql/materiales_guardados.php', {
         method: 'POST',
