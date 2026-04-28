@@ -9,355 +9,248 @@
     <link rel="stylesheet" type="text/css" href="/app-swap/public/fontawesome/css/all.min.css" />
     <link rel="stylesheet" type="text/css" href="/app-swap/public/Bootstrap-5-5.3.0/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/app-swap/Materiales/css/estilo_catalogo_materiales.css" />
-
     <link rel="stylesheet" type="text/css" href="/app-swap/includes/css/custom_rtp.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
 </head>
 
 <body class="bg-light">
+
     <?php include './components/encabezado.html'; ?>
     <?php include './components/menu.html'; ?>
 
-    <main class="container py-5">
+    <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-12 col-lg-12">
+
                 <div class="card modern-form shadow">
+
+                    <!-- HEADER -->
                     <div class="card-header modern-form-header text-white p-4" style="background-color: #003366;">
                         <h2 class="mb-0 fw-bold text-center">
-                            <i class="bi bi-box-seam me-2"></i>CATÁLOGO E INVENTARIO
+                            <i class="bi bi-box-seam me-2"></i>INVENTARIO DE MATERIALES
                         </h2>
                     </div>
+
                     <div class="card-body modern-form-body p-5">
+
                         <form id="form-inventario-material" autocomplete="off" novalidate>
+
                             <div class="row g-3">
+
+                                <!-- FOLIO -->
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Código</label>
-                                    <input type="text" class="form-control" id="codigo" name="codigo"
-                                        oninput="this.value = this.value.toUpperCase()" maxlength="10" required
-                                        placeholder="Ej: MA000000">
-                                    <div id="estado-material" class="mt-1"
-                                        style="min-height: 25px; font-size: 0.85rem;"></div>
+                                    <input type="text" class="form-control" id="folio_inventario" name="folio"
+                                        oninput="this.value = this.value.toUpperCase()" maxlength="11"
+                                        pattern="^MA-[0-9]{8}$" placeholder="Ej: MA-00000001">
+
+                                    <div id="estado-material-inventario" class="mt-1"
+                                        style="min-height: 25px; font-size: 0.85rem;">
+                                    </div>
                                 </div>
+
+                                <!-- DESCRIPCION -->
                                 <div class="col-md-9">
                                     <label class="form-label fw-bold">Descripción del Material</label>
+
                                     <div class="input-group align-items-center">
-                                        <input type="text" class="form-control" id="descripcion" name="descripcion"
-                                            oninput="this.value = this.value.toUpperCase()" required>
-                                        <button class="btn btn-primary" type="button" id="modal-material"
-                                            data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+
+                                        <input type="text" class="form-control" id="descripcion_inventario"
+                                            name="descripcion" oninput="this.value = this.value.toUpperCase()">
+
+                                        <button class="btn btn-primary" type="button" id="btn-modal-inventario">
                                             <i class="bi bi-search"></i>
                                         </button>
-                                        <button type="button" class="btn p-0 ms-2" id="ayuda-inventario" style="background: none; border: none; outline: none;">
-                                            <i class="bi bi-question-circle-fill text-warning fs-4" title="Ayuda"></i>
+
+                                        <button type="button" class="btn p-0 ms-2" id="ayuda-inventario"
+                                            style="background: none; border: none;">
+                                            <i class="bi bi-question-circle-fill text-warning fs-4"></i>
                                         </button>
+
                                     </div>
-                                    <!-- Modal de ayuda inventario -->
-                                    <div class="modal fade" id="modalAyudaInventario" tabindex="-1" aria-labelledby="modalAyudaInventarioLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-warning-subtle">
-                                                    <h5 class="modal-title" id="modalAyudaInventarioLabel"><i class="bi bi-question-circle-fill text-warning me-2"></i>Ayuda para inventario</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <ul>
-                                                        <li>Consulta el inventario de materiales disponibles y agotados.</li>
-                                                        <li>Usa el buscador para filtrar materiales por descripción o código.</li>
-                                                        <li>Los materiales agotados se muestran resaltados en rojo.</li>
-                                                        <li>Puedes registrar nuevas entradas o salidas desde los formularios correspondientes.</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            var ayudaBtn = document.getElementById('ayuda-inventario');
-                                            if (ayudaBtn) {
-                                                ayudaBtn.addEventListener('click', function () {
-                                                    var modal = new bootstrap.Modal(document.getElementById('modalAyudaInventario'));
-                                                    modal.show();
-                                                });
-                                            }
-                                        });
-                                    </script>
                                 </div>
-<!-- 
 
-                                <div class="col-md-2">
-                                    <label class="form-label fw-bold">Cantidad</label>
-                                    <input type="number" class="form-control bg-light" id="cantidad" name="cantidad"
-                                        min="1" readonly value="0">
-                                </div> -->
-
-
+                                <!-- SELECTS -->
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Unidad de Medida</label>
-                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="unidad" name="unidad" size="1">
-                                        <option value="">Cargando...</option>
+                                    <select class="form-select" id="unidad_inventario" name="unidad">
+                                        <option value="">Selecciona...</option>
                                     </select>
                                 </div>
 
-
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Estado Físico Material</label>
-                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="estado" name="estado" size="1">
-                                        <option value="">Cargando...</option>
+                                    <select class="form-select" id="estado_inventario" name="estado">
+                                        <option value="">Selecciona...</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold">Categoría</label>
-                                    <select class="form-select catalogo-scroll catalogo-scroll-cerrado" id="id_categoria" name="id_categoria"
-                                        size="1">
-                                        <option value="">Cargando...</option>
+                                    <select class="form-select" id="categoria_inventario" name="id_categoria">
+                                        <option value="">Selecciona...</option>
                                     </select>
                                 </div>
 
-                                <div class="col-12">
-                                <div class="row g-3 mt-1">
-                                    <div class="col-md-3">
-                                        <label for="existencia" class="form-label fw-bold text-uppercase">Existencia
-                                            Actual</label>
-                                        <input type="number" class="form-control form-control-sm text-center bg-light"
-                                            id="existencia" name="existencia" readonly value="0">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label for="stock_minimo" class="form-label fw-bold text-uppercase">Stock
-                                            Mínimo</label>
-                                        <input type="number" class="form-control form-control-sm" id="stock_minimo"
-                                            name="stock_minimo" min="0">
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold">Adscripcion</label>
-                                        <select class="form-select" id="adscripcion" name="adscripcion" required>
-                                            <option value="MODULO 4" selected>MODULO 4</option>
-                                            <option value="ALMACEN CENTRAL">ALMACEN CENTRAL</option>
-                                        </select>
-                                    </div>
-
-
-                                </div>
+                                <!-- STOCK -->
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-uppercase">Stock Actual</label>
+                                    <input type="number" class="form-control text-center bg-light"
+                                        id="stock_actual_inventario" readonly value="0">
                                 </div>
 
-
+                                <!-- ADSCRIPCION -->
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Adscripción</label>
+                                    <input type="text" class="form-control" id="adscripcion_inventario"
+                                        name="adscripcion_modulo" placeholder="Ej: ALMACEN CENTRAL o MODULO 4">
+                                </div>
 
                             </div>
+
+                            <!-- BOTONES -->
                             <div class="col-12 text-center mt-4">
-                                <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm me-2"
-                                    id="btn-guardar-inventario">
-                                    <i class="bi bi-clipboard-data me-2"></i>Consultar estado del inventario
+                                <button type="button" class="btn btn-success btn-lg px-4 shadow-sm me-2"
+                                    id="btn-consultar-inventario">
+                                    <i class="bi bi-clipboard-data me-2"></i>Consultar inventario
                                 </button>
                                 <button type="reset" class="btn btn-outline-secondary btn-lg px-4 shadow-sm"
                                     id="btn-limpiar-inventario">
                                     <i class="bi bi-eraser me-2"></i>Limpiar
                                 </button>
                             </div>
+
+                            <!-- DASHBOARD -->
+                            <div class="container mt-5" id="dashboard-inventario" style="display: none;">
+
+                                <h3 class="mb-4 fw-bold text-center text-primary">
+                                    <i class="bi bi-graph-up-arrow me-2"></i>Dashboard de Inventario
+                                </h3>
+
+                                <!-- KPIs -->
+                                <div class="row g-4">
+
+                                    <div class="col-md-3">
+                                        <div class="card text-white shadow-lg rounded-4 bg-primary">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-box-seam fs-1"></i>
+                                                <h6 class="mt-2">Total Materiales</h6>
+                                                <h2 id="total_materiales">0</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="card text-white shadow-lg rounded-4 bg-success">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-stack fs-1"></i>
+                                                <h6 class="mt-2">Stock Total</h6>
+                                                <h2 id="stock_total">0</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="card text-white shadow-lg rounded-4 bg-danger">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                                                <h6 class="mt-2">Stock Bajo</h6>
+                                                <h2 id="stock_bajo">0</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="card text-white shadow-lg rounded-4 bg-dark">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-clock-history fs-1"></i>
+                                                <h6 class="mt-2">Movimientos Hoy</h6>
+                                                <h2 id="movimientos_hoy">0</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- TABLA -->
+                                <div class="card mt-5 shadow-lg rounded-4">
+
+                                    <div class="card-header bg-warning fw-bold d-flex justify-content-between">
+                                        <span>
+                                            <i class="bi bi-exclamation-circle me-2"></i>
+                                            Materiales con bajo stock
+                                        </span>
+                                        <span class="badge bg-dark">Atención</span>
+                                    </div>
+
+                                    <div class="card-body table-responsive">
+
+                                        <table class="table table-hover text-center">
+
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Folio</th>
+                                                    <th>Descripción</th>
+                                                    <th>Stock</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody id="tabla_stock_bajo"></tbody>
+
+                                        </table>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
                         </form>
+
                     </div>
                 </div>
+
             </div>
         </div>
+    </div>
 
-        <div class="card mt-4 shadow" id="contenedor-tabla-inventario" style="display: none;">
-            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Estado General del Inventario</h5>
-                <small>
-                    <span class="badge bg-success">Disponible</span>
-                    <span class="badge bg-warning text-dark">Bajo</span>
-                    <span class="badge bg-danger">Agotado</span>
-                </small>
-            </div>
-            <div class="card-body">
-                <div class="row g-3 mb-3" id="resumen-dashboard-inventario">
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Total de materiales</p>
-                                    <h4 class="mb-0 fw-bold" id="kpi-total-materiales">0</h4>
-                                </div>
-                                <i class="bi bi-box-seam fs-2 text-primary"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Stock acumulado</p>
-                                    <h4 class="mb-0 fw-bold" id="kpi-stock-total">0</h4>
-                                </div>
-                                <i class="bi bi-stack fs-2 text-success"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Bajo stock</p>
-                                    <h4 class="mb-0 fw-bold" id="kpi-bajo-stock">0</h4>
-                                </div>
-                                <i class="bi bi-exclamation-triangle fs-2 text-warning"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Agotados</p>
-                                    <h4 class="mb-0 fw-bold" id="kpi-agotados">0</h4>
-                                </div>
-                                <i class="bi bi-x-octagon fs-2 text-danger"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- MODAL -->
+    <div class="modal fade" id="modalMaterialInventario" tabindex="-1" aria-hidden="true">
 
-                <div class="row g-3 mb-4">
-                    <div class="col-12 col-xl-7">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line me-2"></i>Progreso de Stock
-                                    General</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between small mb-1">
-                                        <span>Disponibles</span>
-                                        <span id="progreso-disponible-texto">0%</span>
-                                    </div>
-                                    <div class="progress" style="height: 12px;">
-                                        <div id="progreso-disponible" class="progress-bar bg-success" style="width: 0%">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between small mb-1">
-                                        <span>Bajo stock</span>
-                                        <span id="progreso-bajo-texto">0%</span>
-                                    </div>
-                                    <div class="progress" style="height: 12px;">
-                                        <div id="progreso-bajo" class="progress-bar bg-warning" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="d-flex justify-content-between small mb-1">
-                                        <span>Agotados</span>
-                                        <span id="progreso-agotado-texto">0%</span>
-                                    </div>
-                                    <div class="progress" style="height: 12px;">
-                                        <div id="progreso-agotado" class="progress-bar bg-danger" style="width: 0%">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-xl-5">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>Lista de Materiales
-                                    Críticos</h6>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-group list-group-flush" id="lista-criticos-inventario">
-                                    <li class="list-group-item text-muted">Sin elementos críticos por mostrar.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <div class="d-flex justify-content-end align-items-center mb-2 px-1">
-                        <label for="inventario-limite" class="me-2 mb-0 small text-muted">Mostrar</label>
-                        <select id="inventario-limite" class="form-select form-select-sm" style="width: auto;">
-                            <option value="5" selected>5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                        </select>
-                        <span class="ms-2 small text-muted">registros</span>
-                    </div>
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Folio</th>
-                                <th>Descripción</th>
-                                <th>Categoría</th>
-                                <th>Unidad</th>
-                                <th>Stock Actual</th>
-                                <th>Stock Mínimo</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-inventario">
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-3">Sin datos para mostrar.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-    <!-- Modal Bootstrap-5 de materiales -->
-    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
+
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">
-                        <i class="bi bi-search me-2"></i>Resultados de búsqueda de materiales
+                    <h5 class="modal-title">
+                        <i class="bi bi-search me-2"></i>Buscar Material
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Cerrar"></button>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <input type="text" class="form-control" id="buscar-material-modal-inventario"
-                            placeholder="Buscar por código o descripción...">
-                    </div>
-                    <div id="contenedor-materiales-modal">
-                        <p class="text-center text-muted">Escriba en descripción para filtrar o presione buscar...</p>
-                    </div>
-                    <!-- PAGINACIÓN FUNCIONAL -->
-                    <nav aria-label="Page navigation" class="mt-3" id="nav-paginacion-materiales"
-                        style="display: none;">
-                        <ul class="pagination justify-content-end" id="ul-paginacion-materiales">
-                            <!-- Se generará dinámicamente -->
-                        </ul>
+
+                    <input type="text" class="form-control mb-3" id="buscar-material-modal-inventario"
+                        placeholder="Buscar...">
+
+                    <div id="contenedor-materiales-modal-inventario"></div>
+
+                    <nav id="nav-paginacion-materiales-inventario" class="mt-3" style="display:none;">
+                        <ul class="pagination justify-content-end" id="ul-paginacion-materiales-inventario"></ul>
                     </nav>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-2"></i>Cerrar
-                    </button>
+
                 </div>
 
             </div>
         </div>
+    </div>
 
-        <?php include './components/pie.html'; ?>
+    <?php include './components/pie.html'; ?>
 
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-        <script type="text/javascript" src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_utils.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_alertas.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_catalogos.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_modal.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/helpers/materiales_formularios.js"></script>
-        <script type="text/javascript" src="/app-swap/Materiales/scripts/inventario_material.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- JS MODULAR -->
+    <script type="module" src="/app-swap/Materiales/scripts/inventario.js"></script>
 
 </body>
 
