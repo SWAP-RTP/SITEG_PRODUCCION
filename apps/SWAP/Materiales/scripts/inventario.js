@@ -3,6 +3,8 @@ import { ModalService } from './core/modalService.js';
 import { MaterialesService } from './core/materialesService.js';
 import { autocompletarBase } from './core/autocomplete.js';
 
+let ultimoFolio = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     iniciar();
 });
@@ -37,37 +39,61 @@ function llenar(id, datos, value, text) {
 }
 
 /* =============================
+   AUTOCOMPLETAR CENTRAL
+============================= */
+async function autocompletarFolio(folio) {
+
+    if (!folio || folio === ultimoFolio) return;
+
+    ultimoFolio = folio;
+
+    await autocompletarBase(folio, {
+        fields: [],
+        lockFields: false,
+        setValues: (d) => {
+
+            document.getElementById('folio_inventario').value = d.folio_material;
+            document.getElementById('descripcion_inventario').value = d.descripcion_material;
+            document.getElementById('unidad_inventario').value = d.id_unidad_material || '';
+            document.getElementById('estado_inventario').value = d.id_estado_material || '';
+            document.getElementById('categoria_inventario').value = d.id_categoria_material || '';
+            document.getElementById('adscripcion_inventario').value = d.adscripcion_modulo || '';
+
+            document.getElementById('stock_actual_inventario').value =
+                MaterialesService.formatearCantidad(d.stock_actual || 0);
+
+            const btnGuardar = document.getElementById('btn-guardar');
+            if (btnGuardar) btnGuardar.disabled = false;
+        }
+    });
+}
+
+/* =============================
    EVENTOS
 ============================= */
 function eventos() {
 
-    const folioInput = document.getElementById('folio_inventario');
+   const folioInput = document.getElementById('folio_inventario');
+    const form = document.getElementById('form-inventario');
 
-    // AUTOCOMPLETAR
-    folioInput.addEventListener('input', async (e) => {
+folioInput.addEventListener('input', () => {
 
-        const folio = e.target.value;
-        if (!folio) return;
+    const folio = folioInput.value.trim();
 
-        await autocompletarBase(folio, {
-            fields: [],
-            lockFields: false,
-            setValues: (d) => {
-
-                folioInput.value = d.folio_material;
-                document.getElementById('descripcion_inventario').value = d.descripcion_material;
-                document.getElementById('unidad_inventario').value = d.id_unidad_material || '';
-                document.getElementById('estado_inventario').value = d.id_estado_material || '';
-                document.getElementById('categoria_inventario').value = d.id_categoria_material || '';
-                document.getElementById('adscripcion_inventario').value = d.adscripcion_modulo || '';
-
-                document.getElementById('stock_actual_inventario').value =
-                    MaterialesService.formatearCantidad(d.stock_actual || 0);
-            }
-        });
+   if (folio.length >= 11) {
+    autocompletarFolio(folio);
+}
+});
+    /* =============================
+       BLUR = AUTOCOMPLETAR
+    ============================= */
+    folioInput.addEventListener('blur', () => {
+        autocompletarFolio(folioInput.value);
     });
 
-    // MODAL
+    /* =============================
+       MODAL
+    ============================= */
     document.getElementById('btn-modal-inventario')
         .addEventListener('click', () => {
 
@@ -75,46 +101,54 @@ function eventos() {
                 modalId: 'modalMaterialInventario',
                 contenedorId: 'contenedor-materiales-modal-inventario',
                 callback: (folio) => {
-
                     folioInput.value = folio;
-                    folioInput.dispatchEvent(new Event('blur'));
+                    autocompletarFolio(folio);
                 }
             });
         });
 
-    //  SOLO CLICK 
+    /* =============================
+       VALIDAR ANTES DE GUARDAR
+    ============================= */
+    if (form) {
+        form.addEventListener('submit', (e) => {
+
+            const descripcion = document.getElementById('descripcion_inventario').value;
+
+            if (!descripcion) {
+                e.preventDefault();
+             Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
+            }
+        });
+    }
+
+    /* =============================
+       CONSULTAR DASHBOARD
+    ============================= */
     document.getElementById('btn-consultar-inventario')
         .addEventListener('click', consultarInventario);
 
-
-
+    /* =============================
+       LIMPIAR
+    ============================= */
     document.getElementById('btn-limpiar-inventario').addEventListener('click', () => {
-        // Limpia el formulario
-        const form = document.getElementById('form-inventario');
-        if (form) {
-            form.reset();
-        } else {
-            document.getElementById('folio_inventario').value = '';
-            document.getElementById('descripcion_inventario').value = '';
-            document.getElementById('unidad_inventario').value = '';
-            document.getElementById('estado_inventario').value = '';
-            document.getElementById('categoria_inventario').value = '';
-            document.getElementById('adscripcion_inventario').value = '';
-            document.getElementById('stock_actual').value = '0';
-        }
 
-        // Limpia la tabla de resultados y oculta el dashboard
+        if (form) form.reset();
+
+        document.getElementById('stock_actual_inventario').value = '0';
+
+        ultimoFolio = ''; 
+
+        const btnGuardar = document.getElementById('btn-guardar');
+        if (btnGuardar) btnGuardar.disabled = true;
+
         const tabla = document.getElementById('tabla_stock_bajo');
-        if (tabla) {
-            tabla.innerHTML = '';
-        }
+        if (tabla) tabla.innerHTML = '';
 
         const dashboard = document.getElementById('dashboard-inventario');
-        if (dashboard) {
-            dashboard.style.display = 'none';
-        }
+        if (dashboard) dashboard.style.display = 'none';
 
-        console.log("Formulario, tabla y dashboard de inventario limpiados");
+        console.log("Formulario limpio correctamente");
     });
 }
 
@@ -128,8 +162,6 @@ async function consultarInventario() {
         const res = await fetch(`query_sql/dashboard.php`);
         const data = await res.json();
 
-        console.log('DASHBOARD:', data);
-
         if (!data || data.status === 'error') {
             Swal.fire('Error', 'Sin datos del servidor', 'error');
             return;
@@ -137,7 +169,6 @@ async function consultarInventario() {
 
         renderDashboard(data);
 
-        // mostrar dashboard
         document.getElementById('dashboard-inventario').style.display = 'block';
 
     } catch (error) {
@@ -145,6 +176,7 @@ async function consultarInventario() {
         Swal.fire('Error', 'Error al consultar inventario', 'error');
     }
 }
+
 /* =============================
    DASHBOARD
 ============================= */
