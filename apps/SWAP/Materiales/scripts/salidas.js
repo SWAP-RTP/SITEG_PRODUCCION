@@ -30,17 +30,16 @@ function eventos() {
         });
     // BOTÓN LIMPIAR SALIDA
     document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
-        // 1. Limpia el input del folio
-        document.getElementById('folio_salida').value = '';
-        
-        // 2. Llama a tu función existente
-        limpiarSalida();
-        
+        // Limpia todos los campos del formulario
+        document.getElementById('form-salida-material').reset();
 
-        // 3. Asegura que los campos vuelvan a estar editables
-        desbloquearSalida();
-        
-        console.log("Formulario de salida limpio");
+        // Limpia el contenido de la tabla de registros
+        const tablaRegistros = document.querySelector('#tabla-salidas tbody');
+        if (tablaRegistros) {
+            tablaRegistros.innerHTML = '';
+        }
+
+        console.log("Formulario y consulta de salida limpiados");
     });
     });
 
@@ -51,7 +50,7 @@ function eventos() {
 
         if (cantidad > stockDisponible) {
             e.target.value = stockDisponible;
-            Swal.fire('Error', 'Stock insuficiente', 'warning');
+            Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
         }
     });
 
@@ -100,16 +99,13 @@ function desbloquearSalida() {
 }
 
 function limpiarSalida() {
-
+    document.getElementById('folio_salida').value = '';
     document.getElementById('descripcion_salida').value = '';
     document.getElementById('adscripcion_salida').value = '';
     document.getElementById('cantidad_salida').value = '';
-
     document.getElementById('unidad_salida').value = '';
     document.getElementById('estado_salida').value = '';
     document.getElementById('categoria_salida').value = '';
-
-    stockDisponible = 0;
 }
 
 /* =========================
@@ -164,7 +160,7 @@ async function guardarSalida(e) {
     const folio = document.getElementById('folio_salida').value;
 
     if (!folio) {
-        Swal.fire('Error', 'Ingresa un folio', 'warning');
+        Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
         return;
     }
 

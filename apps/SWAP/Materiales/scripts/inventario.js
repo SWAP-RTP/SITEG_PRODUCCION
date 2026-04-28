@@ -44,7 +44,7 @@ function eventos() {
     const folioInput = document.getElementById('folio_inventario');
 
     // AUTOCOMPLETAR
-    folioInput.addEventListener('blur', async (e) => {
+    folioInput.addEventListener('input', async (e) => {
 
         const folio = e.target.value;
         if (!folio) return;
@@ -89,21 +89,32 @@ function eventos() {
 
 
     document.getElementById('btn-limpiar-inventario').addEventListener('click', () => {
-        // Si usas un form, puedes resetearlo todo de golpe
-        // Supongamos que el form se llama 'form-inventario'
+        // Limpia el formulario
         const form = document.getElementById('form-inventario');
         if (form) {
             form.reset();
         } else {
-            // Si no hay form, limpia los campos manualmente
             document.getElementById('folio_inventario').value = '';
             document.getElementById('descripcion_inventario').value = '';
-            // ... repetir para cada campo
+            document.getElementById('unidad_inventario').value = '';
+            document.getElementById('estado_inventario').value = '';
+            document.getElementById('categoria_inventario').value = '';
+            document.getElementById('adscripcion_inventario').value = '';
+            document.getElementById('stock_actual').value = '0';
         }
-        
-        // Si tienes una tabla de resultados de consulta, escóndela o límpiala
-        const tabla = document.getElementById('contenedor-tabla-inventario');
-        if (tabla) tabla.style.display = 'none';
+
+        // Limpia la tabla de resultados y oculta el dashboard
+        const tabla = document.getElementById('tabla_stock_bajo');
+        if (tabla) {
+            tabla.innerHTML = '';
+        }
+
+        const dashboard = document.getElementById('dashboard-inventario');
+        if (dashboard) {
+            dashboard.style.display = 'none';
+        }
+
+        console.log("Formulario, tabla y dashboard de inventario limpiados");
     });
 }
 

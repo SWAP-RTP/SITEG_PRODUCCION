@@ -27,7 +27,7 @@ if (!empty($data['cantidad'])) {
 
 echo json_encode([
     'status' => 'error',
-    'message' => 'No se pudo determinar la operación'
+    'message' => 'Datos insuficientes'
 ]);
 exit;
 
