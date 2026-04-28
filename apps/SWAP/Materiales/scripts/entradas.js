@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function eventos() {
 
     //  ESCRIBIR FOLIO
-    document.getElementById('folio').addEventListener('change', (e) => {
+    document.getElementById('folio').addEventListener('input', (e) => {
         cargarMaterial(e.target.value);
     });
 
@@ -35,7 +35,7 @@ function eventos() {
 
         // BOTÓN LIMPIAR ENTRADA
     document.getElementById('btn-limpiar-entrada').addEventListener('click', () => {
-        // 1. Limpia el folio manualmente (ya que limpiarCampos no lo incluye)
+        // 1. Limpia el folio manualmente
         document.getElementById('folio').value = '';
         
         // 2. Llama a tu función existente que limpia los demás campos
@@ -184,6 +184,6 @@ async function guardarEntrada(e) {
         Swal.fire('Éxito', result.message, 'success');
         document.getElementById('form-entrada-material').reset();
     } else {
-        Swal.fire('Error', result.message, 'error');
+        Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
     }
 }
