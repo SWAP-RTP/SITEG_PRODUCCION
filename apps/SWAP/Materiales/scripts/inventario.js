@@ -13,8 +13,6 @@ async function iniciar() {
     await cargarCatalogosInventario();
     eventos();
 }
-
-
 function filtrarMaterialesModal(texto) {
 
     const filtro = texto.toUpperCase();
@@ -32,8 +30,6 @@ function filtrarMaterialesModal(texto) {
                 : 'none';
     });
 }
-
-
 async function cargarCatalogosInventario() {
 
     const res = await fetch('query_sql/catalogo_listas.php');
@@ -43,7 +39,6 @@ async function cargarCatalogosInventario() {
     llenar('estado_inventario', data.estados, 'id_estado_material', 'descripcion_estado_material');
     llenar('categoria_inventario', data.categorias, 'id_categoria_material', 'descripcion_categoria_material');
 }
-
 function llenar(id, datos, value, text) {
     const select = document.getElementById(id);
     if (!select) return;
@@ -54,7 +49,6 @@ function llenar(id, datos, value, text) {
         select.innerHTML += `<option value="${d[value]}">${d[text]}</option>`;
     });
 }
-
 async function autocompletarFolio(folio) {
 
     if (!folio || folio === ultimoFolio) return;
@@ -81,8 +75,6 @@ async function autocompletarFolio(folio) {
         }
     });
 }
-
-
 function eventos() {
 
     const folioInput = document.getElementById('folio_inventario');
@@ -174,7 +166,6 @@ function eventos() {
         console.log("Formulario limpio correctamente");
     });
 }
-
 async function consultarInventario() {
 
     try {
@@ -196,7 +187,6 @@ async function consultarInventario() {
         Swal.fire('Error', 'Error al consultar inventario', 'error');
     }
 }
-
 function renderDashboard(data) {
 
     document.getElementById('dashboard-inventario').style.display = 'block';
