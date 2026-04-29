@@ -11,10 +11,6 @@ if (!$data) {
     ]);
     exit;
 }
-
-/* =========================================================
-   DETECTAR OPERACIÓN
-========================================================= */
 if (!empty($data['cantidad']) && isset($data['estado'])) {
     guardarEntradaMaterial($data);
     exit;
@@ -31,10 +27,6 @@ echo json_encode([
 ]);
 exit;
 
-
-/* =========================================================
-   ENTRADA
-========================================================= */
 function guardarEntradaMaterial($data)
 {
     $conexion = Database::conectar();
@@ -54,9 +46,6 @@ function guardarEntradaMaterial($data)
 
     pg_query($conexion, "BEGIN");
 
-    /* ==========================
-       VERIFICAR MATERIAL
-    ========================== */
     $check = pg_query_params(
         $conexion,
         "SELECT 1 FROM control_materiales WHERE folio_material = $1",
@@ -65,9 +54,6 @@ function guardarEntradaMaterial($data)
 
     $existe = ($check && pg_num_rows($check) > 0);
 
-    /* ==========================
-       CREAR MATERIAL SI NO EXISTE
-    ========================== */
     if (!$existe) {
 
         if (
@@ -86,7 +72,10 @@ function guardarEntradaMaterial($data)
         $insertMat = pg_query_params(
             $conexion,
             "INSERT INTO control_materiales
-            (folio_material, descripcion_material, id_unidad_material, id_categoria_material, adscripcion_modulo, stock_actual)
+            (folio_material, descripcion_material, 
+            id_unidad_material, 
+            id_categoria_material, 
+            adscripcion_modulo, stock_actual)
             VALUES ($1,$2,$3,$4,$5,0)",
             [
                 $folio,
@@ -104,9 +93,6 @@ function guardarEntradaMaterial($data)
         }
     }
 
-    /* ==========================
-       INSERT ENTRADA
-    ========================== */
     $insert = pg_query_params(
         $conexion,
         "INSERT INTO entradas_materiales
@@ -127,9 +113,9 @@ function guardarEntradaMaterial($data)
         exit;
     }
 
-    /* ==========================
-       ACTUALIZAR STOCK
-    ========================== */
+    /* COMENTADO PARA EVITAR DUPLICIDAD: 
+       El Trigger 'tr_entrada_material_stock' en la BD ya realiza esta suma.
+    
     pg_query_params(
         $conexion,
         "UPDATE control_materiales
@@ -137,6 +123,7 @@ function guardarEntradaMaterial($data)
          WHERE folio_material = $2",
         [$cantidad, $folio]
     );
+    */
 
     pg_query($conexion, "COMMIT");
 
@@ -147,10 +134,6 @@ function guardarEntradaMaterial($data)
     ]);
 }
 
-
-/* =========================================================
-   SALIDA
-========================================================= */
 function guardarSalidaMaterial($data)
 {
     $conexion = Database::conectar();
@@ -190,10 +173,14 @@ function guardarSalidaMaterial($data)
 
     pg_query($conexion, "BEGIN");
 
-    pg_query_params(
+    $insert = pg_query_params(
         $conexion,
         "INSERT INTO salidas_materiales
-        (folio_material, descripcion_material_salida, id_estado_material_salida, cantidad_material_salida, adscripcion_modulo)
+        (folio_material, 
+        descripcion_material_salida, 
+        id_estado_material_salida, 
+        cantidad_material_salida, 
+        adscripcion_modulo)
         VALUES ($1,$2,$3,$4,$5)",
         [
             $folio,
@@ -204,6 +191,15 @@ function guardarSalidaMaterial($data)
         ]
     );
 
+    if (!$insert) {
+        pg_query($conexion, "ROLLBACK");
+        echo json_encode(['status' => 'error', 'message' => 'Error al registrar salida']);
+        exit;
+    }
+
+    /* COMENTADO PARA EVITAR DUPLICIDAD: 
+       Se debe usar un Trigger en la BD para restar el stock automáticamente.
+    
     pg_query_params(
         $conexion,
         "UPDATE control_materiales
@@ -211,6 +207,7 @@ function guardarSalidaMaterial($data)
          WHERE folio_material = $2",
         [$cantidad, $folio]
     );
+    */
 
     pg_query($conexion, "COMMIT");
 

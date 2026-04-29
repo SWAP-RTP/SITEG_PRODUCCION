@@ -14,7 +14,6 @@ function eventos() {
 
     const folioInput = document.getElementById('folio_salida');
     let ultimoFolioSalida = '';
-    //autocompletador de folio
     const regexFolio = /^MA-\d{8,9}$/;
 
     folioInput.addEventListener('input', () => {
@@ -119,7 +118,6 @@ function bloquearSalida() {
         }
     });
 }
-
 function desbloquearSalida() {
 
     document.getElementById('descripcion_salida').readOnly = false;
@@ -134,7 +132,6 @@ function desbloquearSalida() {
         }
     });
 }
-
 function limpiarSalida() {
     document.getElementById('folio_salida').value = '';
     document.getElementById('descripcion_salida').value = '';
@@ -144,7 +141,6 @@ function limpiarSalida() {
     document.getElementById('estado_salida').value = '';
     document.getElementById('categoria_salida').value = '';
 }
-
 async function cargarMaterialSalida(folio) {
 
     if (!folio) {
@@ -180,7 +176,6 @@ async function cargarMaterialSalida(folio) {
 
     bloquearSalida();
 }
-
 async function guardarSalida(e) {
 
     e.preventDefault();
@@ -221,8 +216,6 @@ async function guardarSalida(e) {
         Swal.fire('Error', result.message, 'error');
     }
 }
-
-
 async function cargarRegistrosSalidas() {
 
     const res = await MaterialesService.consultarSalidas();
