@@ -1,38 +1,36 @@
 import { cargarCatalogos } from './core/catalogosService.js';
 import { ModalService } from './core/modalService.js';
 import { MaterialesService } from './core/materialesService.js';
-
 let stockDisponible = 0;
-
 document.addEventListener('DOMContentLoaded', async () => {
-
     await cargarCatalogos();
     eventos();
 });
-
 function eventos() {
-
     const folioInput = document.getElementById('folio_salida');
     let ultimoFolioSalida = '';
     const regexFolio = /^MA-\d{8,9}$/;
+   folioInput.addEventListener('input', () => {
+    let valor = folioInput.value.toUpperCase();
+    // Elimina cualquier cantidad de prefijos MA- al inicio
+    valor = valor.replace(/^(MA-)+/i, '');
+    valor = 'MA-' + valor;
+    folioInput.value = valor;
 
-    folioInput.addEventListener('input', () => {
-        const folio = folioInput.value.trim();
 
-        // Si el campo está vacío, limpia todo
-        if (!folio) {
-            limpiarSalida();
-            desbloquearSalida();
-            stockDisponible = 0;
-            ultimoFolioSalida = '';
-            return;
-        }
+    if (!valor || valor === 'MA-') {
+        limpiarSalida();
+        desbloquearSalida();
+        stockDisponible = 0;
+        ultimoFolioSalida = '';
+        return;
+    }
 
-        if (regexFolio.test(folio) && folio !== ultimoFolioSalida) {
-            ultimoFolioSalida = folio;
-            cargarMaterialSalida(folio);
-        }
-    });
+    if (regexFolio.test(valor) && valor !== ultimoFolioSalida) {
+        ultimoFolioSalida = valor;
+        cargarMaterialSalida(valor);
+    }
+});
     document.getElementById('btn-modal-salida').addEventListener('click', () => {
 
         ModalService.abrir({
@@ -45,53 +43,47 @@ function eventos() {
             }
         });
     });
-  
     const inputBuscar = document.getElementById('buscar-material-modal-salida');
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', () => {
+            filtrarMaterialesModal(inputBuscar.value);
+        });
+    }
+    document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
+        document.getElementById('form-salida-material').reset();
 
-if (inputBuscar) {
-    inputBuscar.addEventListener('input', () => {
-        filtrarMaterialesModal(inputBuscar.value);
+        const tabla = document.getElementById('tabla-salidas');
+        if (tabla) tabla.innerHTML = '';
+
+
+        const contenedor = document.getElementById('contenedor-tabla-salidas');
+        if (contenedor) contenedor.style.display = 'none';
+
+        stockDisponible = 0;
+        ultimoFolioSalida = '';
+
+        limpiarCamposSalida();
+        desbloquearSalida();
+
+        console.log("Formulario, tabla y consulta limpiados correctamente");
     });
-}
-
-   document.getElementById('btn-limpiar-salida').addEventListener('click', () => {
-
-   
-    document.getElementById('form-salida-material').reset();
-
-    const tabla = document.getElementById('tabla-salidas');
-    if (tabla) tabla.innerHTML = '';
-
-
-    const contenedor = document.getElementById('contenedor-tabla-salidas');
-    if (contenedor) contenedor.style.display = 'none';
-
-    stockDisponible = 0;
-    ultimoFolioSalida = '';
-
-    limpiarCamposSalida();
-    desbloquearSalida();
-
-    console.log("Formulario, tabla y consulta limpiados correctamente");
-});
-  
     document.getElementById('cantidad_salida').addEventListener('input', (e) => {
-
         const cantidad = Number(e.target.value);
-
         if (cantidad > stockDisponible) {
             e.target.value = stockDisponible;
             Swal.fire('¡Atención!', 'Stock insuficiente', 'warning');
         }
     });
-
-  
-    document.getElementById('form-salida-material')
-        .addEventListener('submit', guardarSalida);
-
- 
-    document.getElementById('btn-consultar-salidas')
-        ?.addEventListener('click', cargarRegistrosSalidas);
+    document.getElementById('form-salida-material').addEventListener('submit', guardarSalida);
+    document.getElementById('btn-consultar-salidas')?.addEventListener('click', cargarRegistrosSalidas);
+  const inputBusquedaSalida = document.getElementById('busqueda-salida');
+if (inputBusquedaSalida) {
+    inputBusquedaSalida.addEventListener('input', function () {
+        this.value = this.value.toUpperCase(); // fuerza mayúsculas visualmente
+        const valor = this.value.trim();
+        cargarRegistrosSalidas(1, valor);
+    });
+}
 }
 function filtrarMaterialesModal(texto) {
 
@@ -181,22 +173,17 @@ async function cargarMaterialSalida(folio) {
     }
 }
 async function guardarSalida(e) {
-
     e.preventDefault();
-
     const cantidad = Number(document.getElementById('cantidad_salida').value);
     const folio = document.getElementById('folio_salida').value;
-
     if (!folio) {
-        Swal.fire('¡Atención!', 'Datos incompletos', 'warning');
+        Swal.fire('¡Atención!', 'Datos incompletos o inválidos', 'warning');
         return;
     }
-
     if (cantidad <= 0 || cantidad > stockDisponible) {
         Swal.fire('Error', 'Stock insuficiente o cantidad inválida', 'error');
         return;
     }
-
     const data = {
         folio_material: folio,
         cantidad_material_salida: cantidad,
@@ -204,53 +191,42 @@ async function guardarSalida(e) {
         id_estado_material_salida: document.getElementById('estado_salida').value,
         adscripcion_modulo: document.getElementById('adscripcion_salida').value
     };
-
     const result = await MaterialesService.guardarSalida(data);
-
     if (result.status === 'ok') {
-    Swal.fire({
-        title: 'Éxito',
-        text: result.message + '\n¿Desea registrar otra salida de material?',
-        icon: 'success',
-        showCancelButton: true,
-        confirmButtonText: 'Sí',
-        cancelButtonText: 'No'
-    }).then((respuesta) => {
-        if (respuesta.isConfirmed) {
-            document.getElementById('form-salida-material').reset();
-            limpiarCamposSalida();
-            desbloquearSalida();
-            stockDisponible = 0;
-        }
-       
-    });
-} else {
-    Swal.fire('Error', result.message, 'error');
+        Swal.fire({
+            title: 'Éxito',
+            text: result.message + '\n¿Desea registrar otra salida de material?',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: 'Sí',
+            cancelButtonText: 'No'
+        }).then((respuesta) => {
+            if (respuesta.isConfirmed) {
+                document.getElementById('form-salida-material').reset();
+                limpiarCamposSalida();
+                desbloquearSalida();
+                stockDisponible = 0;
+            }
+        });
+    } else {
+        Swal.fire('Error', result.message, 'error');
+    }
 }
-}
-async function cargarRegistrosSalidas() {
-
-    const res = await MaterialesService.consultarSalidas();
-
+async function cargarRegistrosSalidas(pagina = 1, busqueda = '') {
+    const res = await MaterialesService.consultarSalidas(pagina, 5, busqueda);
     if (res.status !== 'ok' || !Array.isArray(res.datos)) {
         console.warn('Sin datos de salidas');
         return;
     }
-
     const tbody = document.getElementById('tabla-salidas');
-
     if (!tbody) {
         console.error('No existe el tbody #tabla-salidas en el DOM');
         return;
     }
-
     tbody.innerHTML = '';
-
     res.datos.forEach(r => {
-
         const tr = document.createElement('tr');
-
-       tr.innerHTML = `
+        tr.innerHTML = `
     <td>${r.folio_material ?? ''}</td>
     <td>${r.descripcion_material_salida ?? ''}</td>
     <td>${r.unidad ?? ''}</td>
@@ -258,9 +234,33 @@ async function cargarRegistrosSalidas() {
     <td>${r.cantidad ?? 0}</td>
     <td>${r.fecha_registro ?? ''}</td>
 `;
-
         tbody.appendChild(tr);
     });
-
     document.getElementById('contenedor-tabla-salidas').style.display = 'block';
+    paginacionSalidas(res.actualPagina, res.totalPaginas, busqueda);
+}
+function paginacionSalidas(actualPagina, totalPaginas, busqueda = '') {
+    const paginacion = document.getElementById('paginacion-salidas');
+    paginacion.innerHTML = '';
+    function crearBoton(label, pagina, disabled = false, active = false) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+        li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
+        if (!disabled && !active) {
+            li.addEventListener('click', (e) => {
+                e.preventDefault();
+                cargarRegistrosSalidas(pagina, busqueda);
+            });
+        }
+        paginacion.appendChild(li);
+    }
+    crearBoton('Anterior', actualPagina - 1, actualPagina === 1);
+    let start = Math.max(1, actualPagina - 2);
+    let end = Math.min(totalPaginas, start + 4);
+    if (end - start < 4) start = Math.max(1, end - 4);
+    for (let i = start; i <= end; i++) {
+        crearBoton(i, i, false, i === actualPagina);
+    }
+    crearBoton('Siguiente', actualPagina + 1, actualPagina === totalPaginas);
+
 }
