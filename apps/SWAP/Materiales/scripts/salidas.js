@@ -17,8 +17,16 @@ function eventos() {
     const regexFolio = /^MA-\d{8,9}$/;
 
     folioInput.addEventListener('input', () => {
-
         const folio = folioInput.value.trim();
+
+        // Si el campo está vacío, limpia todo
+        if (!folio) {
+            limpiarSalida();
+            desbloquearSalida();
+            stockDisponible = 0;
+            ultimoFolioSalida = '';
+            return;
+        }
 
         if (regexFolio.test(folio) && folio !== ultimoFolioSalida) {
             ultimoFolioSalida = folio;
@@ -37,7 +45,7 @@ function eventos() {
             }
         });
     });
-     //BUSCAR EN MODAL
+  
     const inputBuscar = document.getElementById('buscar-material-modal-salida');
 
 if (inputBuscar) {
@@ -61,7 +69,7 @@ if (inputBuscar) {
     stockDisponible = 0;
     ultimoFolioSalida = '';
 
-    limpiarSalida();
+    limpiarCamposSalida();
     desbloquearSalida();
 
     console.log("Formulario, tabla y consulta limpiados correctamente");
@@ -132,19 +140,16 @@ function desbloquearSalida() {
         }
     });
 }
-function limpiarSalida() {
-    document.getElementById('folio_salida').value = '';
-    document.getElementById('descripcion_salida').value = '';
-    document.getElementById('adscripcion_salida').value = '';
-    document.getElementById('cantidad_salida').value = '';
-    document.getElementById('unidad_salida').value = '';
-    document.getElementById('estado_salida').value = '';
-    document.getElementById('categoria_salida').value = '';
+function limpiarCamposSalida() {
+    ['descripcion_salida', 'adscripcion_salida', 'cantidad_salida', 'unidad_salida', 'estado_salida', 'categoria_salida']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
 }
 async function cargarMaterialSalida(folio) {
-
     if (!folio) {
-        limpiarSalida();
+        limpiarCamposSalida();
         desbloquearSalida();
         return;
     }
@@ -152,12 +157,10 @@ async function cargarMaterialSalida(folio) {
     const result = await MaterialesService.buscarPorFolio(folio);
 
     if (result.status !== 'ok' || !result.datos) {
-
         console.log('Material nuevo o no encontrado');
-
-        limpiarSalida();
+        Swal.fire('¡Atención!', 'El material con ese folio no está registrado.', 'warning');
+        limpiarCamposSalida();
         desbloquearSalida();
-
         return;
     }
 
@@ -165,16 +168,17 @@ async function cargarMaterialSalida(folio) {
 
     document.getElementById('folio_salida').value = d.folio_material;
     document.getElementById('descripcion_salida').value = d.descripcion_material;
-
     stockDisponible = Number(d.stock_actual || 0);
-
     document.getElementById('adscripcion_salida').value = d.adscripcion_modulo || '';
-
     document.getElementById('unidad_salida').value = d.id_unidad_material || '';
     document.getElementById('estado_salida').value = d.id_estado_material || '';
     document.getElementById('categoria_salida').value = d.id_categoria_material || '';
-
     bloquearSalida();
+
+    // ALERTA DE STOCK BAJO
+    if (stockDisponible <= 5) {
+        Swal.fire('¡Atención!', 'El material está a punto de agotarse. Stock actual: ' + stockDisponible, 'warning');
+    }
 }
 async function guardarSalida(e) {
 
@@ -204,17 +208,25 @@ async function guardarSalida(e) {
     const result = await MaterialesService.guardarSalida(data);
 
     if (result.status === 'ok') {
-
-        Swal.fire('Éxito', result.message, 'success');
-
-        document.getElementById('form-salida-material').reset();
-        limpiarSalida();
-        desbloquearSalida();
-        stockDisponible = 0;
-
-    } else {
-        Swal.fire('Error', result.message, 'error');
-    }
+    Swal.fire({
+        title: 'Éxito',
+        text: result.message + '\n¿Desea registrar otra salida de material?',
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'Sí',
+        cancelButtonText: 'No'
+    }).then((respuesta) => {
+        if (respuesta.isConfirmed) {
+            document.getElementById('form-salida-material').reset();
+            limpiarCamposSalida();
+            desbloquearSalida();
+            stockDisponible = 0;
+        }
+       
+    });
+} else {
+    Swal.fire('Error', result.message, 'error');
+}
 }
 async function cargarRegistrosSalidas() {
 
