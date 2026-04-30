@@ -43,7 +43,7 @@ function llenar(id, datos, value, text) {
     const select = document.getElementById(id);
     if (!select) return;
 
-    select.innerHTML = '<option value="">Selecciona...</option>';
+    select.innerHTML = '<option value="">Selecciona</option>';
 
     datos?.forEach(d => {
         select.innerHTML += `<option value="${d[value]}">${d[text]}</option>`;
@@ -59,19 +59,28 @@ async function autocompletarFolio(folio) {
         fields: [],
         lockFields: false,
         setValues: (d) => {
-
             document.getElementById('folio_inventario').value = d.folio_material;
             document.getElementById('descripcion_inventario').value = d.descripcion_material;
             document.getElementById('unidad_inventario').value = d.id_unidad_material || '';
             document.getElementById('estado_inventario').value = d.id_estado_material || '';
             document.getElementById('categoria_inventario').value = d.id_categoria_material || '';
             document.getElementById('adscripcion_inventario').value = d.adscripcion_modulo || '';
-
             document.getElementById('stock_actual_inventario').value =
                 MaterialesService.formatearCantidad(d.stock_actual || 0);
 
             const btnGuardar = document.getElementById('btn-guardar');
             if (btnGuardar) btnGuardar.disabled = false;
+
+            //se bloquean los campos
+            document.getElementById('descripcion_inventario').readOnly = true;
+            document.getElementById('adscripcion_inventario').readOnly = true;
+            ['unidad_inventario', 'estado_inventario', 'categoria_inventario'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#e9ecef';
+                }
+            });
         }
     });
 }
