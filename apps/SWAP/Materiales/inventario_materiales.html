@@ -160,7 +160,7 @@
                                 </div>  
                             </div> -->
                             <div class="container mt-5 dashboard-dark" id="dashboard-inventario" style="display: none;">
-                                <h3 class="mb-4 fw-bold text-center" style="color:#0b9033;">
+                                <h3 class="mb-4 fw-bold text-center" style="color:#6be690;">
                                     <i class="bi bi-graph-up-arrow me-2"></i>Dashboard de Inventario
                                 </h3>
                                 <!-- KPIs -->
@@ -177,7 +177,7 @@
                                     <div class="col-12 col-md-3">
                                         <div class="card card-dark text-center">
                                             <div class="card-body">
-                                                <i class="bi bi-stack fs-1" style="color:#2ecc71;"></i>
+                                                <i class="bi bi-stack fs-1" style="color:#26633f;"></i>
                                                 <div class="kpi-label mt-2">Stock Total</div>
                                                 <div class="kpi-value" id="stock_total">0</div>
                                             </div>
@@ -196,7 +196,7 @@
                                     <div class="col-12 col-md-3">
                                         <div class="card card-dark text-center">
                                             <div class="card-body">
-                                                <i class="bi bi-clock-history fs-1" style="color:#f1c40f;"></i>
+                                                <i class="bi bi-clock-history fs-1" style="color:#4055da;"></i>
                                                 <div class="kpi-label mt-2">Movimientos Hoy</div>
                                                 <div class="kpi-value" id="movimientos_hoy">0</div>
                                             </div>
@@ -204,9 +204,9 @@
                                     </div>
                                 </div>
                                 <!-- Tabla -->
-                                <div class="card card-dark mt-5">
+                                <div class="card card-dark mt-5 card-stock-bajo">
                                     <div class="card-header bg-warning fw-bold d-flex justify-content-between"
-                                        style="color:#23284a;">
+                                        style="color:#181c37;">
                                         <span>
                                             <i class="bi bi-exclamation-circle me-2"></i>
                                             Materiales con bajo stock
@@ -255,6 +255,9 @@
             </div>
         </div>
     </div>
+
+    
+ 
     <?php include './components/pie.html'; ?>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="/app-swap/public/Bootstrap-5-5.3.0/js/bootstrap.bundle.min.js"></script>

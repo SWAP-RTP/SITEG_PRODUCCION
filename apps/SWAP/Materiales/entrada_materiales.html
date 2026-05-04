@@ -30,8 +30,7 @@
                             <div class="row g-3">
                                 <div class="col-md-3">
                                     <label class="form-label fw-bold">Código</label>
-                                    <input type="text" class="form-control" id="folio" name="folio"
-                                        oninput="this.value = this.value.toUpperCase()" maxlength="11"
+                                    <input type="text" class="form-control" id="folio" name="folio" maxlength="11"
                                         pattern="^MA-[0-9]{8}$" placeholder="Ej: MA-00000001">
                                     <div id="estado-material" class="mt-1"></div>
                                 </div>
@@ -70,7 +69,7 @@
                                     <button type="submit" class="btn btn-success btn-lg" id="btn-guardar-entrada">
                                         Registrar Entrada
                                     </button>
-                                    <button type="button" class="btn btn-info btn-lg" id="btn-consultar-entradas">
+                                    <button type="button" class=" bi bi-search me-2 btn btn-info btn-lg px-4 shadow-sm" id="btn-consultar-entradas">
                                         Consultar Entradas
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary btn-lg"

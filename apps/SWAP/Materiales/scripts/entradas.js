@@ -1,126 +1,11 @@
+//******* 1. Importaciones (SIEMPRE AL INICIO) *******
 import { cargarCatalogos } from './core/catalogosService.js';
 import { ModalService } from './core/modalService.js';
 import { MaterialesService } from './core/materialesService.js';
+
+//******* 2. Variable global de módulo *******
 let timeoutBusqueda = null;
-document.addEventListener('DOMContentLoaded', async () => {
-    await cargarCatalogos();
-    eventos();
-    prepararVistaNuevoRegistro();
-});
-function eventos() {
-    const folioInput = document.getElementById('folio');
-    if (folioInput) {
-        folioInput.readOnly = false;
-        folioInput.placeholder = "Ej: MA-00000001";
-
-        folioInput.addEventListener('input', () => {
-            let valor = folioInput.value.toUpperCase();
-            // Elimina cualquier cantidad de prefijos MA- al inicio
-            valor = valor.replace(/^(MA-)+/i, '');
-            valor = 'MA-' + valor;
-            folioInput.value = valor;
-            clearTimeout(timeoutBusqueda);
-            if (!valor || valor === 'MA-') {
-                prepararVistaNuevoRegistro();
-                return;
-            }
-            timeoutBusqueda = setTimeout(async () => {
-                const folioActual = document.getElementById('folio').value.trim().toUpperCase();
-                if (!folioActual) return;
-                const result = await MaterialesService.buscarPorFolio(folioActual);
-                if (result.status === 'ok' && result.datos) {
-                    cargarMaterial(folioActual);
-                } else {
-                    document.getElementById('estado-material').style.display = 'none';
-                    desbloquearEntrada();
-                    if (/^MA-\d{8,9}$/.test(folioActual)) {
-                        await Swal.fire({
-                            icon: 'info',
-                            title: 'Código no registrado',
-                            text: `El código "${folioActual}" No existe. Complete los demás campos para registrar uno nuevo.`,
-                            confirmButtonText: 'Entendido'
-                        });
-                        folioInput.value = folioActual;
-                        folioInput.readOnly = true;
-                        folioInput.style.backgroundColor = '#e9ecef';
-                        folioInput.style.cursor = 'not-allowed';
-                        desbloquearEntrada();
-                        document.getElementById('descripcion').focus();
-                    }
-                }
-            }, 500);
-        });
-        folioInput.addEventListener('blur', async () => {
-            const folioValue = folioInput.value.trim().toUpperCase();
-            if (folioValue) {
-                const result = await MaterialesService.buscarPorFolio(folioValue);
-                if (result.status !== 'ok' || !result.datos) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Código no registrado',
-                        text: `El código "${folioValue}" no existe. Complete los campos para registrar uno nuevo.`,
-                        confirmButtonText: 'Entendido'
-                    });
-                    folioInput.value = '';
-                    prepararVistaNuevoRegistro();
-                }
-            }
-        });
-    }
-    const inputBusqueda = document.getElementById('busqueda-entrada');
-if (inputBusqueda) {
-    inputBusqueda.addEventListener('input', function () {
-        this.value = this.value.toUpperCase(); // fuerza mayúsculas visualmente
-        const valor = this.value.trim();
-        cargarRegistros(1, valor);
-    });
-}
-    const inputBuscarModal = document.getElementById('buscar-material-modal-entrada');
-    if (inputBuscarModal) {
-        inputBuscarModal.addEventListener('input', function () {
-            this.value = this.value.toUpperCase();
-            filtrarMaterialesModalEntrada(this.value);
-        });
-    }
-    ['descripcion', 'adscripcion'].forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('input', () => {
-                input.value = input.value.toUpperCase();
-            });
-        }
-    });
-    document.getElementById('modal-material-entrada').addEventListener('click', () => {
-        ModalService.abrir({
-            modalId: 'exampleModalCenter',
-            contenedorId: 'contenedor-materiales-modal',
-            callback: (folio) => {
-                const folioMayus = (folio || '').toUpperCase();
-                document.getElementById('folio').value = folioMayus;
-                cargarMaterial(folioMayus);
-            }
-        });
-    });
-    document.getElementById('btn-consultar-entradas').addEventListener('click', cargarRegistros);
-    document.getElementById('btn-limpiar-entrada').addEventListener('click', () => {
-        clearTimeout(timeoutBusqueda);
-        document.getElementById('form-entrada-material').reset();
-        document.getElementById('contenedor-tabla-registros').style.display = 'none';
-        desbloquearEntrada();
-        //desbloquea el folio con el boton de limpiar
-        const folioInput = document.getElementById('folio');
-        folioInput.readOnly = false;
-        folioInput.style.backgroundColor = '';
-        folioInput.style.cursor = '';
-    });
-    document.getElementById('form-entrada-material').addEventListener('submit', guardarEntrada);
-
-}
-function prepararVistaNuevoRegistro() {
-    document.getElementById('estado-material').style.display = 'none';
-    limpiarCamposEntrada();
-    desbloquearEntrada();
-}
+//******* 3. Funciones de lógica principal *******
 async function cargarMaterial(folio) {
     if (!folio) return;
     const result = await MaterialesService.buscarPorFolio(folio);
@@ -128,25 +13,44 @@ async function cargarMaterial(folio) {
         prepararVistaNuevoRegistro();
         return;
     }
-    const d = result.datos;
-    document.getElementById('folio').value = folio;
-    document.getElementById('descripcion').value = (d.descripcion_material || '').toUpperCase();
-    document.getElementById('unidad').value = d.id_unidad_material || '';
-    document.getElementById('estado').value = d.id_estado_material || '';
-    document.getElementById('id_categoria').value = d.id_categoria_material || '';
-    document.getElementById('adscripcion').value = (d.adscripcion_modulo || '').toUpperCase();
-    bloquearEntrada();
-    document.getElementById('cantidad').readOnly = false;
-    document.getElementById('cantidad').focus();
+    const datoMateriales = result.datos;
+    const campos = [
+        ['folio', folio],
+        ['descripcion', (datoMateriales.descripcion_material || '').toUpperCase()],
+        ['unidad', datoMateriales.id_unidad_material || ''],
+        ['estado', datoMateriales.id_estado_material || ''],
+        ['id_categoria', datoMateriales.id_categoria_material || ''],
+        ['adscripcion', (datoMateriales.adscripcion_modulo || '').toUpperCase()]
+    ];
+    campos.forEach(([id, valor]) => {
+        const elemento = document.getElementById(id);
+        if (elemento) elemento.value = valor;
+    });
+    // Bloquear campos excepto cantidad
+    const desc = document.getElementById('descripcion');
+    const adsc = document.getElementById('adscripcion');
+    if (desc) desc.readOnly = true;
+    if (adsc) adsc.readOnly = true;
+    ['unidad', 'estado', 'id_categoria'].forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.style.pointerEvents = 'none';
+            elemento.style.backgroundColor = '#f8f9fa';
+        }
+    });
+    const cantInput = document.getElementById('cantidad');
+    if (cantInput) {
+        cantInput.readOnly = false;
+        cantInput.focus();
+    }
 }
-async function guardarEntrada(e) {
-    e.preventDefault();
+async function guardarEntrada(eventoformulario) {
+    eventoformulario.preventDefault();
     const cantidad = document.getElementById('cantidad').value;
     if (!cantidad || cantidad <= 0) {
         Swal.fire('Atención', 'Datos incompletos o inválidos', 'warning');
         return;
     }
-
     let folio = document.getElementById('folio').value.trim();
     try {
         if (!folio) {
@@ -174,19 +78,28 @@ async function guardarEntrada(e) {
                 cancelButtonText: 'No'
             });
             document.getElementById('form-entrada-material').reset();
-            limpiarCamposEntrada();
-            desbloquearEntrada();
-            //aqui se desbloquea todo el formulario para un nuevo registro, incluyendo el folio
+            ['descripcion', 'adscripcion', 'cantidad', 'unidad', 'estado', 'id_categoria'].forEach(id => {
+                const elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.readOnly = false;
+                    elemento.style.pointerEvents = 'auto';
+                    elemento.style.backgroundColor = '';
+                }
+            });
+
             const folioInput = document.getElementById('folio');
             folioInput.readOnly = false;
             folioInput.style.backgroundColor = '';
             folioInput.style.cursor = '';
             if (respuesta.isConfirmed) {
-                document.getElementById('folio').focus();
+                folioInput.focus();
             }
+        } else {
+            // Mostrar el mensaje real del backend si existe
+            Swal.fire('Error', result.message || 'Error desconocido', 'error');
         }
-    } catch {
-        Swal.fire('Error', 'Error de comunicación', 'error');
+    } catch (err) {
+        Swal.fire('Error', err?.message || 'Error de comunicación', 'error');
     }
 }
 async function cargarRegistros(pagina = 1, busqueda = '') {
@@ -214,11 +127,10 @@ async function cargarRegistros(pagina = 1, busqueda = '') {
     }
 }
 function paginacion(actualPagina, totalPaginas, busqueda = '') {
-    const paginacion = document.getElementById('paginacion');
-    paginacion.innerHTML = '';
+    const paginacionContenedor = document.getElementById('paginacion');
+    paginacionContenedor.innerHTML = '';
 
-    // CREA LOS BOTONES DE PAGINACIÓN
-    function crearBoton(label, pagina, disabled = false, active = false) {
+    const crearBoton = (label, pagina, disabled = false, active = false) => {
         const li = document.createElement('li');
         li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
         li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
@@ -228,58 +140,155 @@ function paginacion(actualPagina, totalPaginas, busqueda = '') {
                 cargarRegistros(pagina, busqueda);
             });
         }
-        paginacion.appendChild(li);
-    }
+        paginacionContenedor.appendChild(li);
+    };
 
-    //BOTON ANTERIOR
     crearBoton('Anterior', actualPagina - 1, actualPagina === 1);
-
-    // RANGO DE PÁGINAS
     let start = Math.max(1, actualPagina - 2);
     let end = Math.min(totalPaginas, start + 4);
     if (end - start < 4) start = Math.max(1, end - 4);
-
     for (let i = start; i <= end; i++) {
         crearBoton(i, i, false, i === actualPagina);
     }
-
-    //BOTON SIGUIENTE
     crearBoton('Siguiente', actualPagina + 1, actualPagina === totalPaginas);
 }
-function bloquearEntrada() {
-    document.getElementById('descripcion').readOnly = true;
-    document.getElementById('adscripcion').readOnly = true;
-    ['unidad', 'estado', 'id_categoria'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.style.pointerEvents = 'none';
-            el.style.backgroundColor = '#f8f9fa';
+
+
+function filtrarMaterialesModal(termino) {
+ 
+    const contenedor = document.getElementById('contenedor-materiales-modal');
+    if (!contenedor) return;
+    const elementos = contenedor.querySelectorAll('tr, .material-row, .list-group-item');
+    elementos.forEach(el => {
+        const texto = el.textContent.toUpperCase();
+        if (texto.includes(termino.toUpperCase())) {
+            el.style.display = ''; // Mostrar
+        } else {
+            el.style.display = 'none'; // Ocultar
         }
     });
 }
-function desbloquearEntrada() {
-    document.getElementById('descripcion').readOnly = false;
-    document.getElementById('adscripcion').readOnly = false;
-    ['unidad', 'estado', 'id_categoria'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.style.pointerEvents = 'auto';
-            el.style.backgroundColor = '';
-        }
-    });
-}
-function limpiarCamposEntrada() {
-    ['descripcion', 'cantidad', 'unidad', 'estado', 'id_categoria', 'adscripcion']
-        .forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
+//******* 4. Configuración de Eventos *******
+function configurarEventos() {
+    const folioInput = document.getElementById('folio');
+    if (folioInput) {
+        folioInput.readOnly = false;
+        folioInput.placeholder = "Ej: MA-00000001";
+        folioInput.addEventListener('input', () => {
+            let valor = folioInput.value.toUpperCase();
+            // Permitir que el usuario escriba "M", "MA", "MA-" sin modificar
+            if (
+                valor === '' ||
+                valor === 'M' ||
+                valor === 'MA' ||
+                valor === 'MA-'
+            ) {
+                folioInput.value = valor;
+                return;
+            }
+            // Si no empieza con 'MA-', anteponerlo y solo permitir números después
+            if (!valor.startsWith('MA-')) {
+                valor = 'MA-' + valor.replace(/[^0-9]/g, '');
+            } else {
+                // Si empieza con MA-, solo permitir números después
+                valor = 'MA-' + valor.slice(3).replace(/[^0-9]/g, '');
+            }
+            folioInput.value = valor;
+
+            clearTimeout(timeoutBusqueda);
+            if (!valor || valor === 'MA-') {
+                const estadoMat = document.getElementById('estado-material');
+                if (estadoMat) estadoMat.style.display = 'none';
+                ['descripcion', 'cantidad', 'unidad', 'estado', 'id_categoria', 'adscripcion']
+                    .forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = '';
+                    });
+                const desc = document.getElementById('descripcion');
+                const adsc = document.getElementById('adscripcion');
+                if (desc) desc.readOnly = false;
+                if (adsc) adsc.readOnly = false;
+                ['unidad', 'estado', 'id_categoria'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.pointerEvents = 'auto';
+                        el.style.backgroundColor = '';
+                    }
+                });
+                return;
+            }
+            timeoutBusqueda = setTimeout(async () => {
+                const result = await MaterialesService.buscarPorFolio(valor);
+                if (result.status === 'ok' && result.datos) {
+                    cargarMaterial(valor);
+                } else {
+                    if (/^MA-\d{8,9}$/.test(valor)) {
+                        await Swal.fire({
+                            icon: 'info',
+                            title: 'Código no registrado',
+                            text: `El código "${valor}" no existe. Acomplete los demás campos  para generar un nuevo folio.`,
+                            confirmButtonText: 'Entendido'
+                        });
+                        folioInput.readOnly = true;
+                        folioInput.style.backgroundColor = '#e9ecef';
+                        //desbloquearEntrada();
+                        document.getElementById('descripcion').focus();
+                    }
+                }
+            }, 500);
         });
+    }
+
+    const inputBusqueda = document.getElementById('busqueda-entrada');
+    if (inputBusqueda) {
+        inputBusqueda.addEventListener('input', function () {
+            this.value = this.value.toUpperCase();
+            cargarRegistros(1, this.value.trim());
+        });
+    }
+
+    //******* Botones y Formularios *******
+    document.getElementById('modal-material-entrada')?.addEventListener('click', () => {
+        ModalService.abrir({
+            modalId: 'exampleModalCenter',
+            contenedorId: 'contenedor-materiales-modal',
+            callback: (folio) => {
+                const folioMayus = (folio || '').toUpperCase();
+                document.getElementById('folio').value = folioMayus;
+                cargarMaterial(folioMayus);
+            }
+        });
+        // Asegura que el filtro de búsqueda del modal siempre funcione
+        setTimeout(() => {
+            const inputBuscar = document.getElementById('buscar-material-modal-entrada');
+            if (inputBuscar) {
+                // Elimina listeners previos para evitar duplicados
+                inputBuscar.oninput = null;
+                inputBuscar.addEventListener('input', () => {
+                    const valor = inputBuscar.value.toUpperCase();
+                    inputBuscar.value = valor;
+                    filtrarMaterialesModal(valor);
+                });
+            }
+        }, 200);
+    });
+
+    document.getElementById('btn-consultar-entradas')?.addEventListener('click', () => cargarRegistros());
+    document.getElementById('form-entrada-material')?.addEventListener('submit', guardarEntrada);
+
+    document.getElementById('btn-limpiar-entrada')?.addEventListener('click', () => {
+        clearTimeout(timeoutBusqueda);
+        document.getElementById('form-entrada-material').reset();
+        document.getElementById('contenedor-tabla-registros').style.display = 'none';
+        const f = document.getElementById('folio');
+        f.readOnly = false;
+        f.style.backgroundColor = '';
+    });
 }
 
-function filtrarMaterialesModalEntrada(texto) {
-    const filtro = (texto || '').toUpperCase();
-    document.querySelectorAll('#contenedor-materiales-modal table tbody tr').forEach(tr => {
-        const [folio, descripcion] = [tr.children[0], tr.children[1]].map(td => (td?.textContent || '').toUpperCase());
-        tr.style.display = (folio.includes(filtro) || descripcion.includes(filtro)) ? '' : 'none';
-    });
-}
+// ******* 5. Ejecución Inicial ******* 
+document.addEventListener('DOMContentLoaded', async () => {
+    await cargarCatalogos();
+    configurarEventos();
+    prepararVistaNuevoRegistro();
+});
