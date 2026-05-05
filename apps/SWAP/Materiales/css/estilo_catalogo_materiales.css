@@ -39,7 +39,7 @@
 
 .modern-form .btn-search-modern {
     border-radius: 0 1.5rem 1.5rem 0 !important;
-    border-left: 1px solid rgba(0,0,0,0.1) !important;
+    border-left: 1px solid rgba(34, 31, 31, 0.196) !important;
 }
 
 /* Estilo para inputs que van SOLOS (Cantidad, Fecha, etc.) */
@@ -82,4 +82,179 @@
     background-color: #b2d8b2 !important;
 }
 
+/* Listas de catálogos con scroll visible */
+.catalogo-scroll {
+    height: 12.5rem;
+    padding-left: 0.65rem;
+    padding-right: 0.45rem;
+    overflow-y: auto;
+    border: 1px solid #cfd7df;
+    background: linear-gradient(180deg, #fbfcfd 0%, #f5f8fb 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #7d95a8 #edf2f7;
+}
+
+.catalogo-scroll.catalogo-scroll-cerrado {
+    height: calc(2.25rem + 2px);
+    overflow-y: hidden;
+    background: #ffffff;
+}
+
+.catalogo-scroll.catalogo-scroll-abierto {
+    height: 12.5rem;
+    overflow-y: auto;
+    border-color: #7aa7d9;
+    box-shadow: 0 0 0 3px rgba(47, 127, 222, 0.12);
+}
+
+.catalogo-scroll option {
+    padding: 0.4rem 0.45rem;
+    border-radius: 0.45rem;
+    font-size: 0.95rem;
+    line-height: 1.2;
+}
+
+.catalogo-scroll option:checked {
+    background: linear-gradient(180deg, #1f8fd6 0%, #1578bb 100%);
+    color: #ffffff;
+}
+
+.catalogo-scroll:focus {
+    border-color: #2f7fde;
+    box-shadow: 0 0 0 3px rgba(47, 127, 222, 0.18);
+    outline: none;
+}
+
+/* WebKit (Chrome/Edge) */
+.catalogo-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.catalogo-scroll::-webkit-scrollbar-track {
+    background: #edf2f7;
+    border-radius: 999px;
+}
+
+.catalogo-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #9ab0c2 0%, #6d879b 100%);
+    border-radius: 999px;
+    border: 2px solid #edf2f7;
+}
+
+.catalogo-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #7f9bae 0%, #5e798e 100%);
+}
+
+.oculto {
+    display: none !important;
+}
+
+/* 1. El contenedor principal (el marco grande) */
+.dashboard-dark {
+  /* Fondo oscuro muy transparente */
+  background: rgba(26, 43, 39, 0.3); 
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   
+  color: #f1f1f1;
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  /* Borde sutil para definir el límite del dashboard */
+  /* border: 1px solid rgba(255, 255, 255, 0.1); */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* 2. Las tarjetas KPI */
+.card-dark {
+  /* Fondo verde musgo con transparencia */
+  background: rgba(107, 208, 90, 0.25); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  color: #fff;
+  /* Borde neón sutil */
+  border: 1px solid rgba(73, 149, 182, 0.3);
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card-dark:hover {
+  transform: translateY(-5px);
+  background: rgba(81, 108, 76, 0.4); /* Se aclara un poco al pasar el mouse */
+  border-color: rgba(38, 226, 163, 0.8);
+}
+
+/* 3. La tabla y secciones inferiores */
+.table-dark-custom {
+  /* Quitamos el color sólido y ponemos transparencia */
+  background: rgba(182, 199, 218, 0.4) !important;
+  backdrop-filter: blur(5px);
+  color: #fff;
+  border: 1px solid rgba(0, 153, 102, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Ajustes de texto para mejor contraste */
+.kpi-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  color: #00ffbf; /* Un verde un poco más brillante para que resalte */
+  text-shadow: 0 0 10px rgba(0, 179, 134, 0.5);
+}
+.kpi-label {
+  font-size: 0.9rem;
+  color: #e0f7eb;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+/*el card del stock bajo*/
+/* Contenedor de la tabla con transparencia */
+.card-stock-bajo {
+    background: rgba(35, 43, 52, 0.4) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 193, 7, 0.3) !important; /* Borde ámbar sutil */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Encabezado con estilo de advertencia moderno */
+.header-alerta {
+    background: rgba(255, 193, 7, 0.15) !important; /* Fondo ámbar muy suave */
+    color: #ffc107 !important; /* Texto ámbar para contraste */
+    border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Badge de "Atención" personalizado */
+.badge-alerta {
+    background-color: #ffc107 !important;
+    color: #1a2b27 !important; /* Texto oscuro para máxima legibilidad */
+    font-size: 0.75rem;
+    padding: 0.5em 1em;
+}
+
+/* Ajuste de la tabla interna */
+.table-dark-custom {
+    background: transparent !important;
+    margin-bottom: 0;
+}
+
+.table-dark-custom thead th {
+    color: #252927; /* Verde pálido consistente con tu sistema */
+    border-bottom: 2px solid rgba(255, 193, 7, 0.2);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.table-dark-custom tbody td {
+    color: #35373c;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
