@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/app-swap/Materiales/css/estilo_catalogo_materiales.css" />
 </head>
+
 <body>
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
     <?php include './components/encabezado.html'; ?>
@@ -29,13 +31,11 @@
                             <!-- FOLIO -->
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Código</label>
-                                <input type="text" class="form-control" id="folio_salida" name="folio"
-                                    oninput="this.value = this.value.toUpperCase()" maxlength="11" required
+                                <input type="text" class="form-control" id="folio_salida" name="folio" maxlength="11"
                                     pattern="^MA-[0-9]{8}$" title="Formato válido: MA-00000001"
                                     placeholder="Ej: MA-00000001">
                                 <div id="estado-material-salida" class="mt-1"
-                                    style="min-height: 25px; font-size: 0.85rem;">
-                                </div>
+                                    style="min-height: 25px; font-size: 0.85rem;"></div>
                             </div>
                             <!-- DESCRIPCION -->
                             <div class="col-md-9 position-relative">
@@ -46,7 +46,7 @@
 
                                     <button class="btn btn-primary" type="button" id="btn-modal-salida">
                                         <i class="bi bi-search"></i>
-                                    </button>                                  
+                                    </button>
                                 </div>
                             </div>
                             <!-- SELECTS -->
@@ -102,7 +102,7 @@
         </div>
         <!-- TABLA -->
         <div class="card mt-3 shadow-lg" id="contenedor-tabla-salidas" style="display: none;">
-         <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+            <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
                 <h3 class="mb-0 fw-bold">Últimos Registros de Salida</h3>
                 <div class="input-group input-group-sm" style="width: 180px;">
                     <span class="input-group-text bg-white">
@@ -128,10 +128,10 @@
                         <tbody id="tabla-salidas" class="text-center">
                         </tbody>
                     </table>
-                     <!--PAGINACION PARA CONSULTA-->
-                <nav aria-label="Paginación" class="my-3">
-                    <ul class="pagination justify-content-center" id="paginacion-salidas"></ul>
-                </nav>
+                    <!--PAGINACION PARA CONSULTA-->
+                    <nav aria-label="Paginación" class="my-3">
+                        <ul class="pagination justify-content-center" id="paginacion-salidas"></ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -151,7 +151,7 @@
                     <div class="mb-3">
                         <input type="text" class="form-control" id="buscar-material-modal-salida"
                             placeholder="Buscar por código o descripción..."
-                            oninput="this.value = this.value.toUpperCase()">
+                          >
                     </div>
                     <div id="contenedor-materiales-modal-salida">
                         <p class="text-center text-muted">
@@ -178,4 +178,5 @@
     <!-- JS MODULAR -->
     <script src="/app-swap/Materiales/scripts/salidas.js" type="module"></script>
 </body>
+
 </html>

@@ -45,6 +45,16 @@ export const MaterialesService = {
         const res = await fetch('query_sql/generar_folio.php');
         return await res.json();
     },
+    async cargarMaterialesModal(busqueda = '') {
+    let url = 'query_sql/modales_datos.php?tipo=material';
+
+    if (busqueda && busqueda.trim() !== '') {
+        url += `&busqueda=${encodeURIComponent(busqueda)}`;
+    }
+
+    const res = await fetch(url);
+    return await res.json();
+},
     formatearCantidad(valor) {
         const n = Number(valor);
         return Number.isFinite(n) ? n : 0;
